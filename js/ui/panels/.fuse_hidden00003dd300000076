@@ -134,8 +134,6 @@ export class PanelOscillators {
       ],
       selectedIndex: 1,
     });
-    this.osc1Waveform.getElement().classList.add('wave-switch');
-    this.osc2Waveform.getElement().classList.add('wave-switch');
     this.osc1Waveform.getElement().dataset.tooltip = 'Selects the raw waveform shape for oscillator 1';
     this.osc2Waveform.getElement().dataset.tooltip = 'Selects the raw waveform shape for oscillator 2';
     grid.appendChild(this.osc1Waveform.getElement());

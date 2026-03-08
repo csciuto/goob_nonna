@@ -57,8 +57,14 @@ export class PanelModulation {
     this.pitchAmt.getElement().dataset.tooltip = 'How much the LFO wobbles pitch (vibrato) via mod wheel';
     this.cutoffAmt.getElement().dataset.tooltip = 'How much the LFO wobbles the filter (wah) via mod wheel';
 
+    const row4 = document.createElement('div');
+    row4.className = 'knob-row';
+    row4.appendChild(this.pitchAmt.getElement());
+    row4.appendChild(this.cutoffAmt.getElement());
+    this.element.appendChild(row4);
+
     // Row 5: PW AMT, WAVEFORM
-    this.pwAmt = new Knob({ label: 'PW AMT', min: 0, max: 10, value: 0 });
+    this.pwAmt = new Knob({ label: 'PULSE WIDTH AMT', min: 0, max: 10, value: 0 });
     this.pwAmt.getElement().classList.add('mod-pw');
     this.pwAmt.getElement().dataset.tooltip = 'How much the LFO modulates pulse width via mod wheel';
 
@@ -75,14 +81,11 @@ export class PanelModulation {
     this.lfoWaveform.getElement().classList.add('wave-switch');
     this.lfoWaveform.getElement().dataset.tooltip = 'Shape of the LFO waveform';
 
-    // 2x2 grid: left column (PITCH AMT, PW AMT), right column (CUTOFF AMT, WAVE)
-    const modGrid = document.createElement('div');
-    modGrid.className = 'mod-amt-grid';
-    modGrid.appendChild(this.pitchAmt.getElement());
-    modGrid.appendChild(this.cutoffAmt.getElement());
-    modGrid.appendChild(this.pwAmt.getElement());
-    modGrid.appendChild(this.lfoWaveform.getElement());
-    this.element.appendChild(modGrid);
+    const row5 = document.createElement('div');
+    row5.className = 'knob-row';
+    row5.appendChild(this.pwAmt.getElement());
+    row5.appendChild(this.lfoWaveform.getElement());
+    this.element.appendChild(row5);
   }
 
   wire(engine) {

@@ -227,14 +227,6 @@ body {
   padding: 1px 4px;
   border-radius: 2px;
 }
-.mod-amt-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  align-items: end;
-  justify-items: center;
-}
-
 .panel-modulation .mod-pitch .knob-label { color: #78b8d0; }
 .panel-modulation .mod-cutoff .knob-label { color: #7bc87b; }
 .panel-modulation .mod-pw .knob-label {
@@ -507,11 +499,15 @@ body {
   flex: 0 0 auto;
 }
 
-.sustain-wrapper {
-  position: relative;
-  flex: 1;
+.sustain-with-grads {
   display: flex;
+  gap: 4px;
+  flex: 1;
   align-items: stretch;
+}
+
+.sustain-tall .slider-track {
+  height: 100%;
 }
 
 .sustain-tall {
@@ -520,37 +516,22 @@ body {
   flex-direction: column;
 }
 
-.sustain-tall .slider-track {
-  width: 32px;
-  height: 100%;
-}
-
-.sustain-tall .slider-thumb {
-  left: -4px;
-  width: 40px;
-}
-
 .sustain-grads {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
   display: flex;
   flex-direction: column-reverse;
   justify-content: space-between;
-  pointer-events: none;
   padding: 4px 0;
 }
 
 .sustain-grad {
-  width: 100%;
+  width: 6px;
   height: 1px;
-  background: rgba(255, 255, 255, 0.15);
+  background: #555;
 }
 
 .sustain-grad-major {
-  background: rgba(255, 255, 255, 0.3);
+  width: 10px;
+  background: #888;
 }
 
 .panel-output {

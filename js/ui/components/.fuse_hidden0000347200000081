@@ -37,8 +37,8 @@ export class Slider {
     track.appendChild(fill);
     track.appendChild(thumb);
 
-    container.appendChild(track);
     container.appendChild(labelEl);
+    container.appendChild(track);
 
     this._track = track;
     this._thumb = thumb;

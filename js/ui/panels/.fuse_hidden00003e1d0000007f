@@ -60,10 +60,7 @@ export class PanelEnvelope {
     this.sustain.getElement().dataset.tooltip = 'Sustain — level held while the key is pressed';
     this.sustain.getElement().classList.add('sustain-tall');
 
-    // Graduation marks overlaid on the slider track
-    const sustainWrapper = document.createElement('div');
-    sustainWrapper.className = 'sustain-wrapper';
-
+    // Graduation marks
     const grads = document.createElement('div');
     grads.className = 'sustain-grads';
     for (let i = 0; i <= 10; i++) {
@@ -72,9 +69,12 @@ export class PanelEnvelope {
       grads.appendChild(mark);
     }
 
-    sustainWrapper.appendChild(this.sustain.getElement());
-    sustainWrapper.appendChild(grads);
-    sustainCol.appendChild(sustainWrapper);
+    const sustainRow = document.createElement('div');
+    sustainRow.className = 'sustain-with-grads';
+    sustainRow.appendChild(grads);
+    sustainRow.appendChild(this.sustain.getElement());
+
+    sustainCol.appendChild(sustainRow);
 
     adsr.appendChild(knobCol);
     adsr.appendChild(sustainCol);
