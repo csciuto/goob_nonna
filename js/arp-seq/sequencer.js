@@ -10,6 +10,7 @@ export class Sequencer {
     this._stepIndex = 0;
     this._recording = false;
     this._playing = false;
+    this._transpose = 0; // semitones offset for live transposition
   }
 
   /**
@@ -48,6 +49,29 @@ export class Sequencer {
   }
 
   /**
+   * Transpose the sequence relative to its first note.
+   * Called when a key is pressed during SEQ playback.
+   */
+  setTranspose(midiNote) {
+    const firstNote = this._getBaseNote();
+    if (firstNote !== null) {
+      this._transpose = midiNote - firstNote;
+    }
+  }
+
+  clearTranspose() {
+    this._transpose = 0;
+  }
+
+  _getBaseNote() {
+    const seq = this.sequence;
+    for (const step of seq) {
+      if (!step.rest) return step.note;
+    }
+    return null;
+  }
+
+  /**
    * Get the next step in the sequence.
    * Returns step object or null if empty.
    */
@@ -56,7 +80,9 @@ export class Sequencer {
 
     const step = this.sequence[this._stepIndex];
     this._stepIndex = (this._stepIndex + 1) % this.sequence.length;
-    return step;
+    // Apply transposition
+    if (step.rest) return step;
+    return { ...step, note: step.note + this._transpose };
   }
 
   /**

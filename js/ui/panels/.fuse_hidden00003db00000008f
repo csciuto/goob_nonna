@@ -46,8 +46,8 @@ export class PanelUtilities {
     this.element.appendChild(multSection);
 
     // HPF: knob then input/output jacks
-    this.hpfCutoff = new Knob({ label: 'HIGH PASS', min: 0, max: 10, value: 5 });
-    this.hpfCutoff.getElement().dataset.tooltip = 'Cutoff frequency — passes frequencies above this point';
+    this.hpfCutoff = new Knob({ label: 'CUTOFF', min: 0, max: 10, value: 5 });
+    this.hpfCutoff.getElement().dataset.tooltip = 'Cutoff frequency for the high-pass filter';
     this.element.appendChild(this.hpfCutoff.getElement());
 
     this.jacks.hpfIn = new Jack({ id: PATCH_POINTS.HPF_IN, type: 'input', label: 'INPUT', onClick: onJackClick });
@@ -68,8 +68,8 @@ export class PanelUtilities {
     this.element.appendChild(divider);
 
     // Attenuator: knob then input/output jacks
-    this.attenAmount = new Knob({ label: 'ATTENUATOR', min: -10, max: 10, value: 0, bipolar: true });
-    this.attenAmount.getElement().dataset.tooltip = 'Center = zero output. CW = positive, CCW = inverted';
+    this.attenAmount = new Knob({ label: 'ATTEN', min: -10, max: 10, value: 10, bipolar: true });
+    this.attenAmount.getElement().dataset.tooltip = 'Scales or inverts a signal passing through';
     this.element.appendChild(this.attenAmount.getElement());
 
     this.jacks.attenIn = new Jack({ id: PATCH_POINTS.ATTEN_IN, type: 'input', label: 'INPUT', onClick: onJackClick });

@@ -78,9 +78,9 @@ export class OscillatorModule {
     this._updateFrequency();
   }
 
-  setNote(midiNote, glideTime = 0) {
+  setNote(midiNote) {
     this._baseNote = midiNote;
-    this._updateFrequency(glideTime);
+    this._updateFrequency();
   }
 
   setPitchBend(semitones) {
@@ -88,23 +88,12 @@ export class OscillatorModule {
     this.oscillator.detune.setValueAtTime(semitones * 100, this.ctx.currentTime);
   }
 
-  _updateFrequency(glideTime = 0) {
+  _updateFrequency() {
     const baseFreq = midiToFrequency(this._baseNote);
     const octaveMultiplier = footToOctaveMultiplier(this._octaveFoot);
     const freq = detuneFrequency(baseFreq * octaveMultiplier, this._detuneSemitones);
-    const now = this.ctx.currentTime;
-    if (glideTime > 0) {
-      // Cancel any in-progress ramp and anchor at current frequency.
-      // Use our tracked _frequency (not .value which is unreliable during ramps).
-      const fromFreq = Math.max(this._frequency, 1); // exponentialRamp needs > 0
-      this.oscillator.frequency.cancelScheduledValues(now);
-      this.oscillator.frequency.setValueAtTime(fromFreq, now);
-      this.oscillator.frequency.exponentialRampToValueAtTime(freq, now + glideTime);
-    } else {
-      this.oscillator.frequency.cancelScheduledValues(now);
-      this.oscillator.frequency.setValueAtTime(freq, now);
-    }
     this._frequency = freq;
+    this.oscillator.frequency.setValueAtTime(freq, this.ctx.currentTime);
   }
 
   getFrequency() {

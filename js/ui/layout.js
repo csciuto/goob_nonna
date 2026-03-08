@@ -23,6 +23,8 @@ export class Layout {
     this.keyboard = null;
     this.patchCables = null;
     this._jackElements = new Map(); // jackId → DOM element
+    this._toastEl = null;
+    this._toastTimer = null;
   }
 
   /**
@@ -113,7 +115,7 @@ export class Layout {
 
     const versionLabel = document.createElement('div');
     versionLabel.className = 'version-label';
-    versionLabel.textContent = 'v0.9';
+    versionLabel.textContent = 'v0.1';
     backPopover.appendChild(versionLabel);
     titleStrip.querySelector('.title-right').appendChild(backPopover);
 
@@ -192,7 +194,37 @@ export class Layout {
     // Store jack elements from all panels
     this._collectJackElements();
 
+    // Toast notification element
+    this._toastEl = document.createElement('div');
+    this._toastEl.className = 'synth-toast';
+    document.body.appendChild(this._toastEl);
+
     return this;
+  }
+
+  _showToast(msg) {
+    clearTimeout(this._toastTimer);
+    this._toastEl.textContent = msg;
+    this._toastEl.classList.add('visible');
+    this._toastTimer = setTimeout(() => this._toastEl.classList.remove('visible'), 1500);
+  }
+
+  _shiftKeyboard(dir) {
+    const kb = this.keyboard;
+    const newOffset = kb.getNoteOffset() + dir * 12;
+    // Clamp so lowest visual key (F2=41) + offset stays >= 0
+    // and highest visual key (C5=72) + offset stays <= 127
+    if (41 + newOffset < 0 || 72 + newOffset > 127) return;
+    kb.setNoteOffset(newOffset);
+    // Show current range in toast
+    const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const lowNote = 41 + newOffset;
+    const lowName = NOTE_NAMES[lowNote % 12];
+    const lowOct = Math.floor(lowNote / 12) - 1;
+    const hiNote = 72 + newOffset;
+    const hiName = NOTE_NAMES[hiNote % 12];
+    const hiOct = Math.floor(hiNote / 12) - 1;
+    this._showToast(`KEYBOARD: ${lowName}${lowOct} – ${hiName}${hiOct}`);
   }
 
   _makeTripleButton(button, aboveLabel, belowLabel) {
@@ -239,13 +271,29 @@ export class Layout {
       if (panel.wire) panel.wire(engine);
     }
     // Wire glide knob
-    this.glideKnob.onChange = (v) => engine.setGlide(v);
+    // Shift + glide knob: legato glide on (right) / off (left)
+    this._lastGlideValue = this.glideKnob.value;
+    this.glideKnob.onChange = (v) => {
+      engine.setGlide(v);
+      if (this._shiftHeld) {
+        const turningRight = v > this._lastGlideValue;
+        engine.setLegatoGlide(turningRight);
+        this._showToast(turningRight ? 'LEGATO GLIDE ON' : 'LEGATO GLIDE OFF');
+      }
+      this._lastGlideValue = v;
+    };
 
     // Wire arp/seq controls
     const arpSeq = engine.getArpSeq();
 
     // Arp/seq panel controls
-    this.panels.arpSeq.mode.onChange = (v) => arpSeq.setMode(v);
+    this.panels.arpSeq.mode.onChange = (v) => {
+      arpSeq.setMode(v);
+      if (v === 'rec') {
+        this.playBtn.setActive(false);
+        this.holdBtn.setActive(false);
+      }
+    };
     this.panels.arpSeq.direction.onChange = (v) => arpSeq.setDirection(v);
     this.panels.arpSeq.octSeq.onChange = (v) => arpSeq.setOctSeq(v);
     this.panels.arpSeq.rate.onChange = (v) => arpSeq.setRate(v);
@@ -256,14 +304,17 @@ export class Layout {
       setTimeout(() => this.panels.arpSeq.led.setOn(false), 50);
     };
 
-    // Octave shift wired to keyboard
-    arpSeq.onOctaveShift = (dir) => {
-      this.keyboard._baseOctave = Math.max(41, Math.min(72, this.keyboard._baseOctave + dir * 12));
-      if (this.keyboard._labelMode === 'key') this.keyboard._updateLabels();
-    };
 
     // Wire buttons
+    // Shift + PLAY = octave down (< KB), Shift + TAP = octave up (KB >)
     this.playBtn.onChange = (active) => {
+      if (this._shiftHeld) {
+        // < KB: shift keyboard down one octave
+        this._shiftKeyboard(-1);
+        // Undo the toggle
+        this.playBtn.setActive(arpSeq.isPlaying());
+        return;
+      }
       arpSeq.pressPlay();
       // Sync button state with arp/seq state
       if (!arpSeq.isPlaying() && active) this.playBtn.setActive(false);
@@ -271,16 +322,50 @@ export class Layout {
     };
 
     this.holdBtn.onChange = (active) => {
+      if (this._shiftHeld) {
+        // SHIFT is already the modifier key — HOLD click while shift held does nothing
+        this.holdBtn.setActive(arpSeq.isHolding());
+        return;
+      }
       arpSeq.pressHold();
       const holding = arpSeq.isHolding();
       if (active !== holding) this.holdBtn.setActive(holding);
+      this._showToast(holding ? 'HOLD ON' : 'HOLD OFF');
     };
 
+    // Shift key acts as HOLD-modifier for combo functions
+    // (on real hardware you'd hold the HOLD button, but mouse can't do two things at once)
+    this._shiftHeld = false;
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Shift') {
+        this._shiftHeld = true;
+        this.holdBtn.setActive(true);
+      }
+    });
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'Shift') {
+        this._shiftHeld = false;
+        this.holdBtn.setActive(arpSeq.isHolding());
+      }
+    });
+
     this.tapBtn.onPress = () => {
+      if (this._shiftHeld) {
+        // KB >: shift keyboard up one octave
+        this._shiftKeyboard(1);
+        return;
+      }
       arpSeq.pressTap();
     };
     this.tapBtn.onRelease = () => {
+      if (this._shiftHeld) return;
       arpSeq.releaseTap();
+    };
+
+    // TAP LED: lights when tap tempo is active
+    arpSeq.onTapTempoChange = (active) => {
+      this.tapBtn.setActive(active);
+      this._showToast(active ? 'TAP TEMPO ON' : 'TAP TEMPO OFF');
     };
 
     // Feed keyboard notes into arp/seq OR engine depending on mode

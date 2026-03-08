@@ -49,10 +49,12 @@ export class Keyboard {
     this._activeNote = null;
     this._noteSource = null; // 'mouse' | 'kb'
     this._mouseDown = false;
-    this._keys = new Map(); // midiNote → element
-    this._labels = new Map(); // midiNote → label element
+    this._keys = new Map(); // visualNote (41-72) → element
+    this._labels = new Map(); // visualNote (41-72) → label element
     this._heldKeys = new Set(); // currently held QWERTY keys
-    this._baseOctave = 48; // C3 — default QWERTY base
+    this._heldMidiNotes = new Set(); // all currently held MIDI notes (for polyphonic arp)
+    this._baseOctave = 48; // C3 — default QWERTY base (fixed, never changes)
+    this._noteOffset = 0; // semitone offset applied to all output notes
     this._labelMode = 'key'; // 'none' | 'key' | 'note'
 
     this.element = this._create();
@@ -65,14 +67,15 @@ export class Keyboard {
     return [1, 3, 6, 8, 10].includes(n);
   }
 
-  _getNoteName(midiNote) {
+  _getNoteName(visualNote) {
+    const midiNote = visualNote + this._noteOffset;
     const name = NOTE_NAMES[midiNote % 12];
     const octave = Math.floor(midiNote / 12) - 1;
     return `${name}${octave}`;
   }
 
-  _getShortcutLabel(midiNote) {
-    const offset = midiNote - this._baseOctave;
+  _getShortcutLabel(visualNote) {
+    const offset = visualNote - this._baseOctave;
     return OFFSET_TO_LABEL[offset] || '';
   }
 
@@ -100,17 +103,20 @@ export class Keyboard {
     // Mouse interaction
     container.addEventListener('mousedown', (e) => {
       this._mouseDown = true;
-      const note = this._getNoteFromEvent(e);
-      if (note !== null) this._pressNote(note, 'mouse');
+      const visualNote = this._getNoteFromEvent(e);
+      if (visualNote !== null) this._pressNote(visualNote + this._noteOffset, 'mouse');
       e.preventDefault();
     });
 
     container.addEventListener('mousemove', (e) => {
       if (!this._mouseDown) return;
-      const note = this._getNoteFromEvent(e);
-      if (note !== null && note !== this._activeNote) {
-        this._releaseNote();
-        this._pressNote(note, 'mouse');
+      const visualNote = this._getNoteFromEvent(e);
+      if (visualNote !== null) {
+        const midiNote = visualNote + this._noteOffset;
+        if (midiNote !== this._activeNote) {
+          this._releaseNote();
+          this._pressNote(midiNote, 'mouse');
+        }
       }
     });
 
@@ -127,6 +133,20 @@ export class Keyboard {
   setLabelMode(mode) {
     this._labelMode = mode;
     this._updateLabels();
+  }
+
+  /**
+   * Shift all output notes by the given number of semitones.
+   * Updates labels to reflect the new pitch range.
+   * @param {number} offset - semitones (multiple of 12 for octave shift)
+   */
+  setNoteOffset(offset) {
+    this._noteOffset = offset;
+    this._updateLabels();
+  }
+
+  getNoteOffset() {
+    return this._noteOffset;
   }
 
   _updateLabels() {
@@ -150,23 +170,11 @@ export class Keyboard {
 
       const key = e.key.toLowerCase();
 
-      // Octave shift
-      if (key === '-' || key === '_') {
-        this._baseOctave = Math.max(KEYBOARD_START_NOTE, this._baseOctave - 12);
-        if (this._labelMode === 'key') this._updateLabels();
-        return;
-      }
-      if (key === '=' || key === '+') {
-        this._baseOctave = Math.min(KEYBOARD_END_NOTE - 12, this._baseOctave + 12);
-        if (this._labelMode === 'key') this._updateLabels();
-        return;
-      }
-
       const offset = LOWER_ROW[key] ?? UPPER_ROW[key] ?? null;
       if (offset === null) return;
 
-      const midiNote = this._baseOctave + offset;
-      if (midiNote < KEYBOARD_START_NOTE || midiNote > KEYBOARD_END_NOTE) return;
+      const midiNote = this._baseOctave + offset + this._noteOffset;
+      if (midiNote < 0 || midiNote > 127) return;
 
       this._heldKeys.add(key);
       this._pressNote(midiNote, 'kb');
@@ -180,14 +188,28 @@ export class Keyboard {
       const offset = LOWER_ROW[key] ?? UPPER_ROW[key] ?? null;
       if (offset === null) return;
 
-      const midiNote = this._baseOctave + offset;
+      const midiNote = this._baseOctave + offset + this._noteOffset;
 
+      // Always send noteOff for released keys (polyphonic tracking for arp)
+      if (this._heldMidiNotes.has(midiNote)) {
+        this._heldMidiNotes.delete(midiNote);
+        if (this.onNoteOff) this.onNoteOff(midiNote);
+      }
+
+      // Update visual active key
       if (midiNote === this._activeNote && this._noteSource === 'kb') {
+        const visualNote = midiNote - this._noteOffset;
+        const keyEl = this._keys.get(visualNote);
+        if (keyEl) keyEl.classList.remove('active');
         const fallback = this._getFallbackNote();
         if (fallback !== null) {
-          this._pressNote(fallback, 'kb');
+          this._activeNote = fallback;
+          const fallbackVisual = fallback - this._noteOffset;
+          const fallbackEl = this._keys.get(fallbackVisual);
+          if (fallbackEl) fallbackEl.classList.add('active');
         } else {
-          this._releaseNote();
+          this._activeNote = null;
+          this._noteSource = null;
         }
       }
     });
@@ -198,8 +220,8 @@ export class Keyboard {
     for (const key of this._heldKeys) {
       const offset = LOWER_ROW[key] ?? UPPER_ROW[key] ?? null;
       if (offset === null) continue;
-      const note = this._baseOctave + offset;
-      if (note >= KEYBOARD_START_NOTE && note <= KEYBOARD_END_NOTE) {
+      const note = this._baseOctave + offset + this._noteOffset;
+      if (note >= 0 && note <= 127) {
         last = note;
       }
     }
@@ -214,21 +236,32 @@ export class Keyboard {
 
   _pressNote(midiNote, source) {
     if (this._activeNote !== null && this._activeNote !== midiNote) {
-      const prevEl = this._keys.get(this._activeNote);
+      const prevVisual = this._activeNote - this._noteOffset;
+      const prevEl = this._keys.get(prevVisual);
       if (prevEl) prevEl.classList.remove('active');
-      if (this.onNoteOff) this.onNoteOff(this._activeNote);
+      // For mouse input, release previous note (monophonic drag).
+      // For QWERTY, DON'T release — the key is still physically held.
+      // This lets the arpeggiator accumulate multiple held notes.
+      if (source === 'mouse') {
+        if (this.onNoteOff) this.onNoteOff(this._activeNote);
+        this._heldMidiNotes.delete(this._activeNote);
+      }
     }
     this._activeNote = midiNote;
     this._noteSource = source;
-    const keyEl = this._keys.get(midiNote);
+    this._heldMidiNotes.add(midiNote);
+    const visualNote = midiNote - this._noteOffset;
+    const keyEl = this._keys.get(visualNote);
     if (keyEl) keyEl.classList.add('active');
     if (this.onNoteOn) this.onNoteOn(midiNote, 1.0);
   }
 
   _releaseNote() {
     if (this._activeNote === null) return;
-    const keyEl = this._keys.get(this._activeNote);
+    const visualNote = this._activeNote - this._noteOffset;
+    const keyEl = this._keys.get(visualNote);
     if (keyEl) keyEl.classList.remove('active');
+    this._heldMidiNotes.delete(this._activeNote);
     if (this.onNoteOff) this.onNoteOff(this._activeNote);
     this._activeNote = null;
     this._noteSource = null;

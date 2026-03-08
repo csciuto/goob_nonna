@@ -10,7 +10,7 @@ import { CABLE_COLORS } from './utils/constants.js';
 let engine = null;
 let layout = null;
 let uiBuilt = false;
-let audioReady = false;
+let initPromise = null;
 
 function buildUI() {
   if (uiBuilt) return;
@@ -20,12 +20,22 @@ function buildUI() {
   layout = new Layout();
   layout.build(container);
 
-  // Wire keyboard — audio engine starts lazily on first interaction
+  // Wire keyboard — audio engine starts lazily on first interaction.
+  // After engine exists, calls are synchronous (no microtask delay).
+  // During init, all calls wait on the same shared promise.
   layout.keyboard.onNoteOn = (note, vel) => {
-    initAudio().then(() => engine.noteOn(note, vel));
+    if (engine) {
+      engine.noteOn(note, vel);
+    } else {
+      initAudio().then(() => engine.noteOn(note, vel));
+    }
   };
   layout.keyboard.onNoteOff = (note) => {
-    if (engine) engine.noteOff(note);
+    if (engine) {
+      engine.noteOff(note);
+    } else {
+      initAudio().then(() => engine.noteOff(note));
+    }
   };
 
   // Initialize audio on any click in the synth (so arp buttons work without playing a note first)
@@ -55,14 +65,15 @@ function buildUI() {
   console.log('Goob Nonna UI ready');
 }
 
-async function initAudio() {
-  if (audioReady) return;
-  audioReady = true;
-
-  const ctx = await ensureAudioContextRunning();
-  engine = new AudioEngine(ctx);
-  layout.wireToEngine(engine);
-  console.log('Goob Nonna audio initialized');
+function initAudio() {
+  if (initPromise) return initPromise;
+  initPromise = (async () => {
+    const ctx = await ensureAudioContextRunning();
+    engine = new AudioEngine(ctx);
+    layout.wireToEngine(engine);
+    console.log('Goob Nonna audio initialized');
+  })();
+  return initPromise;
 }
 
 async function loadPresetSelector() {
@@ -108,52 +119,54 @@ async function applyPreset(preset) {
   engine.removeAllPatches();
   layout.patchCables.removeAllCables();
 
-  // Apply knob/switch settings
+  // Apply knob/switch settings to BOTH engine AND UI controls.
+  // Setting UI controls via setValue() fires onChange which sets the engine,
+  // so we only need to call engine directly for controls without UI counterparts.
   if (preset.settings) {
     const s = preset.settings;
+    const p = layout.panels;
 
-    // Oscillators
+    // Oscillators — UI switches + knobs
     if (s.osc1Waveform !== undefined) {
       engine.setOsc1Waveform(s.osc1Waveform);
-      // Update UI switch would require panel reference
     }
     if (s.osc1Octave !== undefined) engine.setOsc1Octave(s.osc1Octave);
     if (s.osc1Detune !== undefined) engine.setOsc1Detune(s.osc1Detune);
     if (s.osc2Waveform !== undefined) engine.setOsc2Waveform(s.osc2Waveform);
     if (s.osc2Octave !== undefined) engine.setOsc2Octave(s.osc2Octave);
-    if (s.osc2Detune !== undefined) engine.setOsc2Detune(s.osc2Detune);
+    if (s.osc2Detune !== undefined) p.oscillators.osc2Freq.setValue(s.osc2Detune);
     if (s.osc2Sync !== undefined) engine.setOsc2Sync(s.osc2Sync);
 
     // Mixer
-    if (s.osc1Level !== undefined) engine.setMixerOsc1Level(s.osc1Level);
-    if (s.osc2Level !== undefined) engine.setMixerOsc2Level(s.osc2Level);
-    if (s.noiseLevel !== undefined) engine.setMixerNoiseLevel(s.noiseLevel);
+    if (s.osc1Level !== undefined) p.mixer.osc1Level.setValue(s.osc1Level);
+    if (s.osc2Level !== undefined) p.mixer.osc2Level.setValue(s.osc2Level);
+    if (s.noiseLevel !== undefined) p.mixer.noiseLevel.setValue(s.noiseLevel);
 
     // Filter
-    if (s.cutoff !== undefined) engine.setFilterCutoff(s.cutoff / 10);
-    if (s.resonance !== undefined) engine.setFilterResonance(s.resonance);
-    if (s.envAmt !== undefined) engine.setFilterEnvAmount(s.envAmt / 5);
+    if (s.cutoff !== undefined) p.filter.cutoff.setValue(s.cutoff);
+    if (s.resonance !== undefined) p.filter.resonance.setValue(s.resonance);
+    if (s.envAmt !== undefined) p.filter.envAmt.setValue(s.envAmt);
     if (s.kbTrack !== undefined) engine.setFilterKbTrack(s.kbTrack);
 
     // Envelope
-    if (s.attack !== undefined) engine.setEnvAttack(s.attack);
-    if (s.decay !== undefined) engine.setEnvDecay(s.decay);
-    if (s.sustain !== undefined) engine.setEnvSustain(s.sustain);
-    if (s.release !== undefined) engine.setEnvRelease(s.release);
+    if (s.attack !== undefined) p.envelope.attack.setValue(s.attack);
+    if (s.decay !== undefined) p.envelope.decay.setValue(s.decay);
+    if (s.sustain !== undefined) p.envelope.sustain.setValue(s.sustain);
+    if (s.release !== undefined) p.envelope.release.setValue(s.release);
 
     // VCA
     if (s.vcaMode !== undefined) engine.setVCAMode(s.vcaMode);
-    if (s.volume !== undefined) engine.setOutputLevel(s.volume);
+    if (s.volume !== undefined) p.output.volume.setValue(s.volume);
 
     // Reverb
-    if (s.reverbMix !== undefined) engine.setReverbMix(s.reverbMix);
+    if (s.reverbMix !== undefined) p.output.reverbMix.setValue(s.reverbMix);
 
     // LFO
-    if (s.lfoRate !== undefined) engine.setLFORate(s.lfoRate);
+    if (s.lfoRate !== undefined) p.modulation.lfoRate.setValue(s.lfoRate);
     if (s.lfoWaveform !== undefined) engine.setLFOWaveform(s.lfoWaveform);
-    if (s.pitchAmt !== undefined) engine.setPitchAmount(s.pitchAmt / 10);
-    if (s.cutoffAmt !== undefined) engine.setCutoffAmount(s.cutoffAmt / 10);
-    if (s.pwAmt !== undefined) engine.setPWAmount(s.pwAmt / 10);
+    if (s.pitchAmt !== undefined) p.modulation.pitchAmt.setValue(s.pitchAmt);
+    if (s.cutoffAmt !== undefined) p.modulation.cutoffAmt.setValue(s.cutoffAmt);
+    if (s.pwAmt !== undefined) p.modulation.pwAmt.setValue(s.pwAmt);
   }
 
   // Apply patch cables

@@ -99,6 +99,10 @@ export class Clock {
     }
   }
 
+  isTapOverride() {
+    return this._tapOverride;
+  }
+
   /** Clear tap override so knob controls rate again. */
   clearTapOverride() {
     this._tapOverride = false;

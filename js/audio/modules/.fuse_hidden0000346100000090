@@ -18,7 +18,7 @@ export class AttenuatorModule {
 
     // Attenuator gain (bipolar: -1 to +1)
     this.attenuator = this.ctx.createGain();
-    this.attenuator.gain.value = 0; // Center position = fully attenuated
+    this.attenuator.gain.value = 1.0;
 
     // Output junction
     this.output = this.ctx.createGain();

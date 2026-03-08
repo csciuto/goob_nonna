@@ -80,8 +80,8 @@ export const FILTER_FREQ_MAX = 20000;
 /**
  * LFO rate range
  */
-export const LFO_RATE_MIN = 0.07;
-export const LFO_RATE_MAX = 1300;
+export const LFO_RATE_MIN = 0.1;
+export const LFO_RATE_MAX = 50;
 
 /**
  * Pitch wheel range in semitones

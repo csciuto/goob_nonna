@@ -71,11 +71,37 @@ Modulation: LFO → (via mod wheel) → OSC pitch, Filter cutoff, PWM
 - 4 jacks, all connected together
 
 ## Keyboard
-- 32 notes: F2 to C5
+- 32 notes: F2 to C5 (default range, shifts with octave offset)
 - Outputs: Pitch CV (1V/oct), Gate (on/off), Velocity (if supported)
 - Visual piano keys, mouse-click to play
+- QWERTY input: two rows (Z-; bottom, Q-P top), polyphonic for arpeggiator
+- Mouse input: monophonic (dragging releases previous note)
 - Pitch wheel: ±2 semitones, spring-return to center
 - Mod wheel: 0-1, stays where positioned
+- Octave shift: Shift+PLAY (< KB) shifts down, Shift+TAP (KB >) shifts up. Both visual keys and QWERTY keys shift together. Range clamped to MIDI 0-127.
+
+### Glide (Portamento)
+- GLIDE knob (0-10): controls pitch slide time between notes
+- Time range: 5ms (min) to 2s (max), logarithmic mapping
+- No glide on the very first note played (no previous pitch to slide from)
+- After first note, glide always works — even between non-overlapping notes (oscillator sits at last frequency)
+- Glide knob at 0 = instant pitch change (no portamento)
+
+### Legato Glide
+- Activated via Shift + turn GLIDE knob right (toast: "LEGATO GLIDE ON")
+- Deactivated via Shift + turn GLIDE knob left (toast: "LEGATO GLIDE OFF")
+- In legato mode: glide ONLY occurs between overlapping notes (key held while pressing another)
+- Non-overlapping notes: no glide, envelope retriggers normally
+- Overlapping notes: pitch slides, envelope does NOT retrigger (smooth legato)
+
+### SHIFT Key (Modifier)
+- The keyboard Shift key acts as the hardware HOLD button modifier
+- Holding Shift lights up the HOLD button
+- Shift combos:
+  - Shift + PLAY = keyboard octave down (< KB)
+  - Shift + TAP = keyboard octave up (KB >)
+  - Shift + GLIDE knob right = legato glide on
+  - Shift + GLIDE knob left = legato glide off
 
 ## Arpeggiator / Sequencer
 
@@ -100,7 +126,7 @@ Modulation: LFO → (via mod wheel) → OSC pitch, Filter cutoff, PWM
 ### Sequencer
 - 256 steps max, 3 sequence slots
 - **Recording**: Set MODE→REC, select slot with OCT/SEQ (1/2/3), play notes on keyboard. First note erases existing sequence data for that slot.
-- **Playback**: Set MODE→SEQ, press PLAY, press a note to set transposition base
+- **Playback**: Set MODE→SEQ, press PLAY, press a note to transpose (offset = pressed note minus first recorded note). Transpose resets on stop/start.
 - **Editing**: While seq is playing in SEQ mode, switch to REC — edits overwrite current step in real time. Switch back to SEQ to stop editing.
 - WARNING: If MODE=REC and seq is stopped, pressing a note erases the sequence.
 

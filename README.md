@@ -35,8 +35,10 @@ Open `index.html` in a modern browser (Chrome/Firefox/Edge) or deploy to GitHub 
 - **Sequencer** — 256 steps, 3 slots, record/play with tie/rest/accent per step
 - **Clock** — Adjustable rate with tap tempo
 
-### 14 Factory Presets
+### 14 Factory Presets (TODO)
 Funky Robot, Showdown Guitar, Dynasty Plucks, Haunted Cave, Ultra Sub Bass, Cavern Strings, J-Bass, Auto Zap Bass, Stepped Drone, Cyclical Patterns, Bag Pipes, Piano Bass, Lift Off, 3 Saws
+
+> **Note:** Preset values were OCR'd from documentation and do not sound correct. They need to be rebuilt by ear against actual Grandmother behavior.
 
 ### UI
 - **32-note keyboard** (F2 to C5) with mouse and QWERTY input
@@ -44,7 +46,7 @@ Funky Robot, Showdown Guitar, Dynasty Plucks, Haunted Cave, Ultra Sub Bass, Cave
 - **Multi-position switches** for waveform/mode selection
 - **Vertical sliders** for ADSR
 - **Pitch wheel** (spring-return) and **Mod wheel** (stays in position)
-- **Shift+hover tooltips** on every control and patch point
+- **Hover tooltips** on every control and patch point
 - Flat CSS visuals, charcoal case with cream panels and colorful module accents, desktop-first (1280px minimum)
 
 ## Architecture
@@ -137,9 +139,9 @@ npx playwright test
 
 1. **Play notes** — click the keyboard or use your computer keyboard
 2. **QWERTY mapping** — bottom row `Z S X D C V G B H N J M` and top row `Q 2 W 3 E R 5 T 6 Y 7 U` (two octaves, chromatic)
-3. **Octave shift** — `-` / `=` keys move the QWERTY range down/up
-4. **Hold Shift** — shows note names on keys; release to go back to shortcuts
-5. **Shift + hover** — hold Shift and hover over any control or patch jack to see a tooltip explaining what it does
+3. **Octave shift** — Hold Shift, then click PLAY (down) or TAP (up)
+4. **Glide** — Turn GLIDE knob for portamento. Shift + turn right for legato glide.
+5. **Hover tooltips** — hover over any control or patch jack to see what it does
 6. **Drag knobs vertically** to adjust parameters (up = increase, down = decrease)
 7. **Click switches** to change waveforms, modes, etc.
 8. **Patch cables**: Click an output jack, then click an input jack to connect. Click a cable to disconnect.
@@ -158,13 +160,21 @@ Keyboard ──→ OSC 1 ──→ Mixer ──→ Filter ──→ VCA ──�
                        LFO × Mod wheel ──→ Pitch / Cutoff / PWM
 ```
 
+## TODO
+
+- **Presets**: Current values were OCR'd and are wrong — need to be rebuilt by ear
+- **Patch cable testing**: Many patch point combinations are untested and may not route correctly
+- **Glide**: Mostly works but has minor Web Audio timing issues
+- **Hard Sync**: OSC2-to-OSC1 hard sync is a placeholder (requires AudioWorklet)
+- **Continuous PWM**: Pulse width modulation via LFO requires AudioWorklet for smooth operation
+- **Sequencer editing**: Live step editing while playing is not fully implemented
+- **MIDI support**: Currently mouse and QWERTY keyboard only
+- **Mobile/responsive**: Desktop only (1280px+ screens)
+
 ## Known Limitations
 
-- **Hard Sync**: OSC2-to-OSC1 hard sync is a placeholder (requires AudioWorklet for proper implementation)
-- **Continuous PWM**: Pulse width modulation via LFO requires AudioWorklet for smooth operation
 - **Ladder Filter**: Approximated with cascaded BiquadFilters rather than true OTA modeling
-- **No MIDI**: Mouse and QWERTY keyboard input only
-- **Desktop Only**: Designed for 1280px+ screens
+- **Spring Reverb**: Procedural impulse response, not a physical model
 
 ## Technologies
 

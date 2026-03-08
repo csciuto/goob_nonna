@@ -12,7 +12,7 @@ import { SignalBus } from './routing/signal-bus.js';
 import { PatchManager } from './routing/patch-manager.js';
 import { ArpSeqController } from '../arp-seq/arp-seq-controller.js';
 import { PATCH_POINTS, JACK_TYPE, VCA_MODES, PITCH_WHEEL_RANGE } from '../utils/constants.js';
-import { midiToFrequency } from '../utils/math.js';
+import { midiToFrequency, mapToLogRange } from '../utils/math.js';
 
 /**
  * Main Audio Engine.
@@ -34,7 +34,8 @@ export class AudioEngine {
     this._pitchAmt = 0;
     this._cutoffAmt = 0;
     this._pwAmt = 0;
-    this._glide = 0;
+    this._glide = 0; // knob value 0-10
+    this._legatoGlide = false;
 
     // Create modules
     this._createModules();
@@ -214,17 +215,31 @@ export class AudioEngine {
    * Note on - called when a key is pressed.
    */
   noteOn(midiNote, velocity = 1.0) {
+    const wasHoldingNotes = this._heldNotes.length > 0;
+    const hadPreviousNote = this._currentNote !== null;
+    const prevNote = this._currentNote;
     this._currentNote = midiNote;
     this._heldNotes.push(midiNote);
 
-    const freq = midiToFrequency(midiNote);
+    // Glide between notes. Skip only for the very first note ever played
+    // (when _currentNote was null — oscillator is at a default frequency).
+    // Once any note has played, the oscillator sits at that pitch, so glide is correct.
+    const glideTime = this._glide > 0 ? this._getGlideTime() : 0;
+    const shouldGlide = glideTime > 0 && hadPreviousNote && (!this._legatoGlide || wasHoldingNotes);
 
-    // Set oscillator frequencies
-    this.osc1.setNote(midiNote);
-    this.osc2.setNote(midiNote);
+    console.log(`noteOn(${midiNote}): prev=${prevNote} held=[${this._heldNotes}] glide=${this._glide} shouldGlide=${shouldGlide} glideTime=${shouldGlide ? glideTime.toFixed(3) : 0}`);
+
+    // Set oscillator frequencies (with glide if applicable)
+    this.osc1.setNote(midiNote, shouldGlide ? glideTime : 0);
+    this.osc2.setNote(midiNote, shouldGlide ? glideTime : 0);
 
     // Set filter keyboard tracking
     this.filter.setNote(midiNote);
+
+    // Legato glide: don't retrigger envelope when gliding between held notes
+    if (this._legatoGlide && wasHoldingNotes) {
+      return;
+    }
 
     // Trigger envelope
     if (this._vcaMode === VCA_MODES.KB_RELEASE) {
@@ -239,17 +254,25 @@ export class AudioEngine {
    */
   noteOff(midiNote) {
     this._heldNotes = this._heldNotes.filter(n => n !== midiNote);
+    console.log(`noteOff(${midiNote}): held=[${this._heldNotes}] currentNote=${this._currentNote}`);
 
     if (this._heldNotes.length > 0) {
       // Play the last held note (for legato behavior)
       const lastNote = this._heldNotes[this._heldNotes.length - 1];
-      this.osc1.setNote(lastNote);
-      this.osc2.setNote(lastNote);
+      const glideTime = this._glide > 0 ? this._getGlideTime() : 0;
+      this.osc1.setNote(lastNote, glideTime);
+      this.osc2.setNote(lastNote, glideTime);
       this.filter.setNote(lastNote);
     } else {
       // Release envelope
       this.envelope.release();
     }
+  }
+
+  _getGlideTime() {
+    // Knob 0-10 → 5ms to 2 seconds, logarithmic
+    if (this._glide <= 0) return 0;
+    return mapToLogRange(this._glide / 10, 0.005, 2.0);
   }
 
   // OSC 1 controls
@@ -328,6 +351,7 @@ export class AudioEngine {
 
   // Glide
   setGlide(value) { this._glide = value; }
+  setLegatoGlide(enabled) { this._legatoGlide = enabled; }
 
   // Arp/Seq
   getArpSeq() { return this.arpSeq; }

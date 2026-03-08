@@ -33,6 +33,7 @@ export class ArpSeqController {
     this.onNoteOff = null; // (midiNote) => {}
     this.onStep = null;    // () => {} — for LED blink
     this.onOctaveShift = null; // (direction) => {} — -1 or +1
+    this.onTapTempoChange = null; // (active) => {} — TAP LED
 
     this._lastNote = null;
   }
@@ -73,6 +74,10 @@ export class ArpSeqController {
   noteOn(midiNote, velocity) {
     if (this._mode === 'arp') {
       this.arp.addNote(midiNote);
+    }
+    if (this._mode === 'seq' && this._playing) {
+      // Live transposition: pressed note transposes sequence relative to first note
+      this.seq.setTranspose(midiNote);
     }
     if (this._mode === 'rec' && this.seq.isRecording()) {
       this.seq.recordStep(midiNote, {
@@ -142,13 +147,22 @@ export class ArpSeqController {
     }
     // Tap tempo
     this._tapPressTime = performance.now();
+    const wasTapActive = this.clock.isTapOverride();
     this.clock.tap();
+    if (!wasTapActive && this.clock.isTapOverride()) {
+      if (this.onTapTempoChange) this.onTapTempoChange(true);
+    }
+  }
+
+  isTapTempoActive() {
+    return this.clock.isTapOverride();
   }
 
   /** TAP button released — hold for 1s to exit tap tempo */
   releaseTap() {
     if (this._tapPressTime && performance.now() - this._tapPressTime > 1000) {
       this.clock.clearTapOverride();
+      if (this.onTapTempoChange) this.onTapTempoChange(false);
     }
     this._tapPressTime = null;
   }
@@ -169,6 +183,7 @@ export class ArpSeqController {
     this._playing = true;
     this.arp.reset();
     this.seq.reset();
+    this.seq.clearTranspose();
 
     this.clock.start((step, time) => {
       this._onClockStep(step, time);
@@ -207,6 +222,7 @@ export class ArpSeqController {
         if (this.onNoteOn) this.onNoteOn(stepData.note, vel);
       }
     }
+
   }
 
   destroy() {

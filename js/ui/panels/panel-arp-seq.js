@@ -60,7 +60,7 @@ export class PanelArpSeq {
       ],
       selectedIndex: 0,
     });
-    this.mode.getElement().dataset.tooltip = 'ARP plays held notes as pattern, SEQ plays recorded sequence, REC records new sequence';
+    this.mode.getElement().dataset.tooltip = 'ARP / SEQ playback / REC to record';
     this.element.appendChild(this.mode.getElement());
 
     // DIRECTION toggle: ORDR, FWD/BWD, RNDM

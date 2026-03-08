@@ -38,26 +38,9 @@ export class PanelModulation {
     jackRow2.appendChild(this.jacks.lfoShOut.getElement());
     this.element.appendChild(jackRow2);
 
-    // Row 3: RATE knob with LED below — display Hz/kHz
+    // Row 3: RATE knob with LED below
     this.lfoRate = new Knob({ label: 'RATE', min: 0, max: 10, value: 5 });
-    this.lfoRate.getElement().dataset.tooltip = 'LFO speed — 0.07 Hz to 1.3 kHz';
-    const origLfoUpdate = this.lfoRate._updateVisual.bind(this.lfoRate);
-    this.lfoRate._updateVisual = () => {
-      origLfoUpdate();
-      // Log scale: 0.07 to 1300 Hz
-      const norm = Math.max(this.lfoRate.value, 0.01) / 10;
-      const minLog = Math.log(0.07);
-      const maxLog = Math.log(1300);
-      const freq = Math.exp(minLog + norm * (maxLog - minLog));
-      if (freq >= 1000) {
-        this.lfoRate._valueEl.textContent = `${(freq / 1000).toFixed(1)} kHz`;
-      } else if (freq >= 10) {
-        this.lfoRate._valueEl.textContent = `${Math.round(freq)} Hz`;
-      } else {
-        this.lfoRate._valueEl.textContent = `${freq.toFixed(1)} Hz`;
-      }
-    };
-    this.lfoRate._updateVisual();
+    this.lfoRate.getElement().dataset.tooltip = 'Speed of the low-frequency oscillator';
     this.led = new LED();
 
     const rateSection = document.createElement('div');

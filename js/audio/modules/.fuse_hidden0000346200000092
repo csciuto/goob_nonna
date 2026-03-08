@@ -31,24 +31,11 @@ export class EnvelopeModule {
     this.source.connect(this.output);
 
     this._gateOpen = false;
-    this._inSustainPhase = false;
-    this._sustainTimer = null;
   }
 
   setAttack(value) { this._attack = value; }
   setDecay(value) { this._decay = value; }
-  setSustain(value) {
-    this._sustain = value;
-    // If gate is open and we're past attack/decay, update sustain level immediately
-    // (real analog synths respond instantly to the sustain knob)
-    if (this._gateOpen && this._inSustainPhase) {
-      const now = this.ctx.currentTime;
-      const sustainLevel = Math.max(this.getSustainLevel(), 0.001);
-      const param = this.source.offset;
-      param.cancelScheduledValues(now);
-      param.setTargetAtTime(sustainLevel, now, 0.01); // fast smooth transition
-    }
-  }
+  setSustain(value) { this._sustain = value; }
   setRelease(value) { this._release = value; }
 
   getAttackTime() { return msToSeconds(envTimeKnobToMs(this._attack)); }
@@ -83,13 +70,6 @@ export class EnvelopeModule {
     param.setTargetAtTime(sustainTarget, now + attackTime, decayTime / 3);
 
     this._gateOpen = true;
-    this._inSustainPhase = false;
-    clearTimeout(this._sustainTimer);
-    // Mark sustain phase after attack + ~3x decay time constants
-    const sustainDelay = (attackTime + decayTime) * 1000;
-    this._sustainTimer = setTimeout(() => {
-      if (this._gateOpen) this._inSustainPhase = true;
-    }, sustainDelay);
   }
 
   /**
@@ -107,8 +87,6 @@ export class EnvelopeModule {
     param.setTargetAtTime(0, now, releaseTime / 3);
 
     this._gateOpen = false;
-    this._inSustainPhase = false;
-    clearTimeout(this._sustainTimer);
   }
 
   /**
@@ -122,8 +100,6 @@ export class EnvelopeModule {
     param.setValueAtTime(1.0, now);
 
     this._gateOpen = true;
-    this._inSustainPhase = true; // KB RLS is always at sustain level (1.0)
-    clearTimeout(this._sustainTimer);
   }
 
   isActive() {

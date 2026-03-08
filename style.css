@@ -1197,6 +1197,9 @@ body {
   border-radius: 4px;
   border: 1px solid #4a4a50;
   white-space: nowrap;
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   z-index: 1000;
   pointer-events: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
@@ -1246,4 +1249,25 @@ body {
   .panel {
     min-width: 120px;
   }
+}
+
+/* Toast notification */
+.synth-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #222;
+  color: #eee;
+  padding: 6px 16px;
+  border-radius: 4px;
+  font: 12px/1.4 'IBM Plex Mono', monospace;
+  letter-spacing: 0.5px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 9999;
+}
+.synth-toast.visible {
+  opacity: 1;
 }
