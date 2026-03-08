@@ -192,7 +192,6 @@ body {
 }
 .knob-row-wide {
   justify-content: space-between;
-  margin-top: auto;
 }
 
 .panel-modulation {

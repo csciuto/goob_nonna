@@ -12,28 +12,26 @@ export class PanelModulation {
 
     this.jacks = {};
 
-    // Row 1: RATE IN (left), WAVE OUT (right) — wide spread
+    // Row 1: RATE IN (left), WAVE OUT (right)
     this.jacks.lfoRateIn = new Jack({ id: PATCH_POINTS.LFO_RATE_IN, type: 'input', label: 'RATE IN', onClick: onJackClick });
     this.jacks.lfoWaveOut = new Jack({ id: PATCH_POINTS.LFO_WAVE_OUT, type: 'output', label: 'WAVE OUT', onClick: onJackClick });
     this.jacks.lfoRateIn.getElement().dataset.tooltip = 'CV input to modulate LFO speed';
     this.jacks.lfoWaveOut.getElement().dataset.tooltip = 'Selected LFO waveform output';
-    this.jacks.lfoWaveOut.getElement().classList.add('jack-output-label');
 
     const jackRow1 = document.createElement('div');
-    jackRow1.className = 'jack-row jack-row-top filter-jacks-wide';
+    jackRow1.className = 'jack-row jack-row-top';
     jackRow1.appendChild(this.jacks.lfoRateIn.getElement());
     jackRow1.appendChild(this.jacks.lfoWaveOut.getElement());
     this.element.appendChild(jackRow1);
 
-    // Row 2: SYNC IN, S/H OUT — narrower (V shape)
+    // Row 2: SYNC IN (left), S/H OUT (right)
     this.jacks.lfoSyncIn = new Jack({ id: PATCH_POINTS.LFO_SYNC_IN, type: 'input', label: 'SYNC IN', onClick: onJackClick });
     this.jacks.lfoShOut = new Jack({ id: PATCH_POINTS.LFO_SH_OUT, type: 'output', label: 'S/H OUT', onClick: onJackClick });
     this.jacks.lfoSyncIn.getElement().dataset.tooltip = 'Trigger input to reset LFO phase';
     this.jacks.lfoShOut.getElement().dataset.tooltip = 'LFO sample & hold output — random stepped values';
-    this.jacks.lfoShOut.getElement().classList.add('jack-output-label');
 
     const jackRow2 = document.createElement('div');
-    jackRow2.className = 'jack-row jack-row-top filter-jacks-narrow';
+    jackRow2.className = 'jack-row jack-row-top';
     jackRow2.appendChild(this.jacks.lfoSyncIn.getElement());
     jackRow2.appendChild(this.jacks.lfoShOut.getElement());
     this.element.appendChild(jackRow2);
@@ -64,7 +62,7 @@ export class PanelModulation {
     this.element.appendChild(row4);
 
     // Row 5: PW AMT, WAVEFORM
-    this.pwAmt = new Knob({ label: 'PULSE WIDTH AMT', min: 0, max: 10, value: 0 });
+    this.pwAmt = new Knob({ label: 'PW AMT', min: 0, max: 10, value: 0 });
     this.pwAmt.getElement().classList.add('mod-pw');
     this.pwAmt.getElement().dataset.tooltip = 'How much the LFO modulates pulse width via mod wheel';
 

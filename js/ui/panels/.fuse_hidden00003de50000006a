@@ -76,13 +76,13 @@ export class PanelFilter {
     this.element.appendChild(this.kbTrack.getElement());
 
     // Bottom row: ENV AMT + RESONANCE knobs
-    this.envAmt = new Knob({ label: 'ENVELOPE AMT', min: -5, max: 5, value: 0, step: 0.1, bipolar: true });
-    this.resonance = new Knob({ label: 'RESONANCE', min: 0, max: 4, value: 0, step: 0.1 });
+    this.envAmt = new Knob({ label: 'EG AMT', min: -5, max: 5, value: 0, step: 0.1, bipolar: true });
+    this.resonance = new Knob({ label: 'RES', min: 0, max: 4, value: 0, step: 0.1 });
     this.envAmt.getElement().dataset.tooltip = 'How much the envelope opens/closes the filter per note';
     this.resonance.getElement().dataset.tooltip = 'Boosts frequencies at the cutoff — self-oscillates at max';
 
     const bottomRow = document.createElement('div');
-    bottomRow.className = 'knob-row knob-row-wide';
+    bottomRow.className = 'knob-row';
     bottomRow.appendChild(this.envAmt.getElement());
     bottomRow.appendChild(this.resonance.getElement());
     this.element.appendChild(bottomRow);

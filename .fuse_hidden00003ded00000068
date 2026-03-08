@@ -190,10 +190,6 @@ body {
   justify-content: center;
   align-items: flex-start;
 }
-.knob-row-wide {
-  justify-content: space-between;
-  margin-top: auto;
-}
 
 .panel-modulation {
   background: #2a2a2e;
@@ -303,11 +299,10 @@ body {
 
 .sync-freq-row {
   grid-column: 1 / -1;
-  justify-self: center;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0;
-  width: 70%;
 }
 
 .sync-line {
@@ -414,9 +409,8 @@ body {
 .filter-jacks-narrow {
   justify-content: center !important;
   gap: 16px !important;
-  width: 80%;
+  width: 60%;
   margin: -4px auto 0;
-  flex-wrap: nowrap !important;
 }
 
 /* Big cutoff knob */

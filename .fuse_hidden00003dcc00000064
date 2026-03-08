@@ -190,10 +190,6 @@ body {
   justify-content: center;
   align-items: flex-start;
 }
-.knob-row-wide {
-  justify-content: space-between;
-  margin-top: auto;
-}
 
 .panel-modulation {
   background: #2a2a2e;
@@ -303,11 +299,10 @@ body {
 
 .sync-freq-row {
   grid-column: 1 / -1;
-  justify-self: center;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0;
-  width: 70%;
 }
 
 .sync-line {
@@ -407,19 +402,22 @@ body {
 }
 
 .filter-jacks-wide {
-  justify-content: space-between !important;
-  width: 100%;
+  justify-content: space-between;
+  padding: 0 4px;
 }
 
 .filter-jacks-narrow {
-  justify-content: center !important;
-  gap: 16px !important;
-  width: 80%;
-  margin: -4px auto 0;
-  flex-wrap: nowrap !important;
+  justify-content: center;
+  gap: 20px;
 }
 
 /* Big cutoff knob */
+.cutoff-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .filter-cutoff-knob .knob {
   width: 56px;
   height: 56px;
@@ -427,6 +425,19 @@ body {
 
 .filter-cutoff-knob .knob-pointer {
   height: 22px;
+}
+
+.cutoff-freq-labels {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 2px;
+}
+
+.cutoff-freq-labels span {
+  font-size: 7px;
+  font-weight: bold;
+  color: #1a2a1e;
 }
 
 .filter-connect-line {

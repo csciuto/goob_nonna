@@ -133,7 +133,6 @@ export const PATCH_POINTS = {
   FILTER_IN: 'filter-in',
   FILTER_OUT: 'filter-out',
   CUTOFF_IN: 'cutoff-in',
-  ENV_AMT_IN: 'env-amt-in',
   RESONANCE_IN: 'resonance-in',
 
   // Envelope

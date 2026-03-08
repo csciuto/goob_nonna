@@ -192,7 +192,6 @@ body {
 }
 .knob-row-wide {
   justify-content: space-between;
-  margin-top: auto;
 }
 
 .panel-modulation {
@@ -303,11 +302,11 @@ body {
 
 .sync-freq-row {
   grid-column: 1 / -1;
-  justify-self: center;
+  justify-self: stretch;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0;
-  width: 70%;
 }
 
 .sync-line {

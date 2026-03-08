@@ -57,19 +57,15 @@ export class PanelOscillators {
     grid.appendChild(jackPair2);
 
     // --- Row 4: OCTAVE switches ---
-    // OSC 1: 32' 16' 8' 4' (lower range)
-    const osc1Feet = [32, 16, 8, 4];
     this.osc1Octave = new SwitchControl({
       label: 'OCT',
-      positions: osc1Feet.map(f => ({ value: f, label: `${f}'` })),
+      positions: OCTAVE_FEET.map(f => ({ value: f, label: `${f}'` })),
       selectedIndex: 2,
     });
-    // OSC 2: 16' 8' 4' 2' (higher range)
-    const osc2Feet = [16, 8, 4, 2];
     this.osc2Octave = new SwitchControl({
       label: 'OCT',
-      positions: osc2Feet.map(f => ({ value: f, label: `${f}'` })),
-      selectedIndex: 1,
+      positions: OCTAVE_FEET.map(f => ({ value: f, label: `${f}'` })),
+      selectedIndex: 2,
     });
     this.osc1Octave.getElement().dataset.tooltip = 'Shifts oscillator 1 pitch by octaves — 8\' is normal';
     this.osc2Octave.getElement().dataset.tooltip = 'Shifts oscillator 2 pitch by octaves';

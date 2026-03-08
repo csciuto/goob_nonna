@@ -36,26 +36,22 @@ export class PanelFilter {
     jackRow2.appendChild(this.jacks.cutoffIn.getElement());
     this.element.appendChild(jackRow2);
 
-    // Big CUTOFF knob — value displays as frequency
+    // Big CUTOFF knob with frequency labels
     this.cutoff = new Knob({ label: 'CUTOFF', min: 0, max: 10, value: 7, step: 0.1 });
     this.cutoff.getElement().dataset.tooltip = 'Controls which frequencies pass through — sweep this first';
     this.cutoff.getElement().classList.add('filter-cutoff-knob');
 
-    // Override value display to show frequency
-    const origUpdate = this.cutoff._updateVisual.bind(this.cutoff);
-    this.cutoff._updateVisual = () => {
-      origUpdate();
-      const norm = this.cutoff.value / 10;
-      const freq = 20 * Math.pow(1000, norm);
-      if (freq >= 1000) {
-        this.cutoff._valueEl.textContent = `${(freq / 1000).toFixed(1)} kHz`;
-      } else {
-        this.cutoff._valueEl.textContent = `${Math.round(freq)} Hz`;
-      }
-    };
-    this.cutoff._updateVisual();
+    // Frequency reference labels around the knob
+    const cutoffWrapper = document.createElement('div');
+    cutoffWrapper.className = 'cutoff-wrapper';
+    cutoffWrapper.appendChild(this.cutoff.getElement());
 
-    this.element.appendChild(this.cutoff.getElement());
+    const freqLabels = document.createElement('div');
+    freqLabels.className = 'cutoff-freq-labels';
+    freqLabels.innerHTML = '<span class="freq-min">20 Hz</span><span class="freq-10">200</span><span class="freq-2">2k</span><span class="freq-max">20 kHz</span>';
+    cutoffWrapper.appendChild(freqLabels);
+
+    this.element.appendChild(cutoffWrapper);
 
     // Connecting line to KB TRACK
     const connectLine = document.createElement('div');
@@ -76,13 +72,13 @@ export class PanelFilter {
     this.element.appendChild(this.kbTrack.getElement());
 
     // Bottom row: ENV AMT + RESONANCE knobs
-    this.envAmt = new Knob({ label: 'ENVELOPE AMT', min: -5, max: 5, value: 0, step: 0.1, bipolar: true });
-    this.resonance = new Knob({ label: 'RESONANCE', min: 0, max: 4, value: 0, step: 0.1 });
+    this.envAmt = new Knob({ label: 'EG AMT', min: -5, max: 5, value: 0, step: 0.1, bipolar: true });
+    this.resonance = new Knob({ label: 'RES', min: 0, max: 4, value: 0, step: 0.1 });
     this.envAmt.getElement().dataset.tooltip = 'How much the envelope opens/closes the filter per note';
     this.resonance.getElement().dataset.tooltip = 'Boosts frequencies at the cutoff — self-oscillates at max';
 
     const bottomRow = document.createElement('div');
-    bottomRow.className = 'knob-row knob-row-wide';
+    bottomRow.className = 'knob-row';
     bottomRow.appendChild(this.envAmt.getElement());
     bottomRow.appendChild(this.resonance.getElement());
     this.element.appendChild(bottomRow);

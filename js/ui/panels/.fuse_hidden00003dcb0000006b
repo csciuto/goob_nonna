@@ -64,7 +64,7 @@ export class PanelModulation {
     this.element.appendChild(row4);
 
     // Row 5: PW AMT, WAVEFORM
-    this.pwAmt = new Knob({ label: 'PULSE WIDTH AMT', min: 0, max: 10, value: 0 });
+    this.pwAmt = new Knob({ label: 'PW AMT', min: 0, max: 10, value: 0 });
     this.pwAmt.getElement().classList.add('mod-pw');
     this.pwAmt.getElement().dataset.tooltip = 'How much the LFO modulates pulse width via mod wheel';
 
