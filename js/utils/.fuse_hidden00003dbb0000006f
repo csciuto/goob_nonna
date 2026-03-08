@@ -1,0 +1,191 @@
+/**
+ * Keyboard range: F2 (MIDI 41) to C5 (MIDI 72) = 32 notes
+ */
+export const KEYBOARD_START_NOTE = 41; // F2
+export const KEYBOARD_END_NOTE = 72;   // C5
+export const KEYBOARD_NUM_NOTES = KEYBOARD_END_NOTE - KEYBOARD_START_NOTE + 1; // 32
+
+/**
+ * Note names for display
+ */
+export const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+/**
+ * Oscillator waveform types
+ */
+export const WAVEFORMS = {
+  SAW: 'sawtooth',
+  TRIANGLE: 'triangle',
+  SQUARE: 'square',
+  NARROW_PULSE: 'narrow-pulse', // Custom PeriodicWave
+};
+
+/**
+ * Oscillator octave/footage settings
+ */
+export const OCTAVE_FEET = [32, 16, 8, 4, 2];
+
+/**
+ * LFO waveform types
+ */
+export const LFO_WAVEFORMS = {
+  SINE: 'sine',
+  TRIANGLE: 'triangle',
+  SQUARE: 'square',
+  SAWTOOTH: 'sawtooth',
+  RAMP: 'ramp',
+  SAMPLE_HOLD: 'sample-hold',
+};
+
+/**
+ * VCA modes
+ */
+export const VCA_MODES = {
+  ENV: 'env',
+  KB_RELEASE: 'kb-release',
+  DRONE: 'drone',
+};
+
+/**
+ * Keyboard tracking amounts for filter
+ */
+export const KB_TRACK = {
+  OFF: 0,
+  HALF: 0.5,
+  FULL: 1,
+};
+
+/**
+ * Arpeggiator modes
+ */
+export const ARP_MODES = {
+  ORDER: 'order',
+  FORWARD: 'forward',
+  BACKWARD: 'backward',
+  FORWARD_BACKWARD: 'forward-backward',
+  RANDOM: 'random',
+};
+
+/**
+ * Arpeggiator octave range
+ */
+export const ARP_OCTAVE_RANGE = [1, 2, 3];
+
+/**
+ * Filter frequency range
+ */
+export const FILTER_FREQ_MIN = 20;
+export const FILTER_FREQ_MAX = 20000;
+
+/**
+ * LFO rate range
+ */
+export const LFO_RATE_MIN = 0.1;
+export const LFO_RATE_MAX = 50;
+
+/**
+ * Pitch wheel range in semitones
+ */
+export const PITCH_WHEEL_RANGE = 2;
+
+/**
+ * Reverb mix range
+ */
+export const REVERB_MIX_MIN = 0;
+export const REVERB_MIX_MAX = 1;
+
+/**
+ * Patch cable colors (cycle through these)
+ */
+export const CABLE_COLORS = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#e67e22', '#9b59b6'];
+
+/**
+ * Jack types
+ */
+export const JACK_TYPE = {
+  OUTPUT: 'output',
+  INPUT: 'input',
+};
+
+/**
+ * All patch point IDs
+ */
+export const PATCH_POINTS = {
+  // Keyboard outputs
+  KB_PITCH_CV: 'kb-pitch-cv',
+  KB_GATE: 'kb-gate',
+  KB_VEL: 'kb-vel',
+
+  // Oscillator outputs
+  OSC1_WAVE_OUT: 'osc1-wave-out',
+  OSC2_WAVE_OUT: 'osc2-wave-out',
+
+  // Noise output
+  NOISE_OUT: 'noise-out',
+
+  // Mixer
+  MIXER_OSC1_IN: 'mixer-osc1-in',
+  MIXER_OSC2_IN: 'mixer-osc2-in',
+  MIXER_NOISE_IN: 'mixer-noise-in',
+  MIXER_OUT: 'mixer-out',
+
+  // Filter
+  FILTER_IN: 'filter-in',
+  FILTER_OUT: 'filter-out',
+  CUTOFF_IN: 'cutoff-in',
+  ENV_AMT_IN: 'env-amt-in',
+  RESONANCE_IN: 'resonance-in',
+
+  // Envelope
+  ENV_GATE_IN: 'env-gate-in',
+  ENV_OUT: 'env-out',
+
+  // VCA
+  VCA_IN: 'vca-in',
+  VCA_CV_IN: 'vca-cv-in',
+  VCA_OUT: 'vca-out',
+
+  // Reverb
+  REVERB_IN: 'reverb-in',
+
+  // Volume
+  VOLUME_IN: 'volume-in',
+
+  // LFO outputs
+  LFO_TRI_OUT: 'lfo-tri-out',
+  LFO_SQ_OUT: 'lfo-sq-out',
+  LFO_SAW_OUT: 'lfo-saw-out',
+  LFO_SH_OUT: 'lfo-sh-out',
+
+  // LFO inputs
+  LFO_WAVE_OUT: 'lfo-wave-out',
+  LFO_RATE_IN: 'lfo-rate-in',
+  LFO_SYNC_IN: 'lfo-sync-in',
+
+  // OSC inputs
+  OSC1_PITCH_IN: 'osc1-pitch-in',
+  OSC2_PITCH_IN: 'osc2-pitch-in',
+  OSC1_PWM_IN: 'osc1-pwm-in',
+  OSC2_PWM_IN: 'osc2-pwm-in',
+  OSC2_LIN_FM_IN: 'osc2-lin-fm-in',
+  SYNC_IN: 'sync-in',
+
+  // Arp/Seq
+  ARP_SEQ_CV_OUT: 'arp-seq-cv-out',
+  ARP_SEQ_GATE_OUT: 'arp-seq-gate-out',
+  ARP_SEQ_IN: 'arp-seq-in',
+  CLOCK_OUT: 'clock-out',
+  CLOCK_IN: 'clock-in',
+  ON_OFF_IN: 'on-off-in',
+  RESET_IN: 'reset-in',
+
+  // Utilities
+  HPF_IN: 'hpf-in',
+  HPF_OUT: 'hpf-out',
+  ATTEN_IN: 'atten-in',
+  ATTEN_OUT: 'atten-out',
+  MULT_1: 'mult-1',
+  MULT_2: 'mult-2',
+  MULT_3: 'mult-3',
+  MULT_4: 'mult-4',
+};
