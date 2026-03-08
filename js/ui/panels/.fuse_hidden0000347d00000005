@@ -14,10 +14,6 @@ export class PanelMixer {
     this.osc2Level = new Knob({ label: 'OSC 2', min: 0, max: 10, value: 0, onChange: null });
     this.noiseLevel = new Knob({ label: 'NOISE', min: 0, max: 10, value: 0, onChange: null });
 
-    this.osc1Level.getElement().dataset.tooltip = 'Volume level of oscillator 1 in the mix';
-    this.osc2Level.getElement().dataset.tooltip = 'Volume level of oscillator 2 in the mix';
-    this.noiseLevel.getElement().dataset.tooltip = 'Volume level of white noise in the mix';
-
     this.element.appendChild(this.osc1Level.getElement());
     this.element.appendChild(this.osc2Level.getElement());
     this.element.appendChild(this.noiseLevel.getElement());
@@ -28,11 +24,6 @@ export class PanelMixer {
     this.jacks.mixerNoiseIn = new Jack({ id: PATCH_POINTS.MIXER_NOISE_IN, type: 'input', label: 'NOISE IN', onClick: onJackClick });
     this.jacks.mixerOut = new Jack({ id: PATCH_POINTS.MIXER_OUT, type: 'output', label: 'MIX OUT', onClick: onJackClick });
     this.jacks.noiseOut = new Jack({ id: PATCH_POINTS.NOISE_OUT, type: 'output', label: 'NOISE OUT', onClick: onJackClick });
-    this.jacks.mixerOsc1In.getElement().dataset.tooltip = 'Audio input for mixer channel 1 — normalled to OSC1';
-    this.jacks.mixerOsc2In.getElement().dataset.tooltip = 'Audio input for mixer channel 2 — normalled to OSC2';
-    this.jacks.mixerNoiseIn.getElement().dataset.tooltip = 'Audio input for mixer channel 3 — normalled to noise';
-    this.jacks.mixerOut.getElement().dataset.tooltip = 'Combined audio output from all mixer channels';
-    this.jacks.noiseOut.getElement().dataset.tooltip = 'White noise source output';
 
     const jackRow = document.createElement('div');
     jackRow.className = 'jack-row';

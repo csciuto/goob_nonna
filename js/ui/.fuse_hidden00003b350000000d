@@ -32,7 +32,7 @@ export class Layout {
     // Header
     const header = document.createElement('div');
     header.className = 'synth-header';
-    header.innerHTML = '<h1>GOOB NONNA</h1><div class="header-controls"><span class="shift-hint">Hold Shift for tooltips</span><a href="docs/getting-started.html" class="guide-link">Guide</a><div class="preset-selector"><select id="preset-select"><option value="">-- Select Preset --</option></select></div></div>';
+    header.innerHTML = '<h1>GOOB NONNA</h1><div class="header-controls"><a href="docs/getting-started.html" class="guide-link">Guide</a><div class="preset-selector"><select id="preset-select"><option value="">-- Select Preset --</option></select></div></div>';
     container.appendChild(header);
 
     // Main panel area (relative positioned for SVG overlay)
@@ -57,9 +57,6 @@ export class Layout {
     const kbPitchJack = new Jack({ id: PATCH_POINTS.KB_PITCH_CV, type: 'output', label: 'PITCH CV', onClick: onJackClick });
     const kbGateJack = new Jack({ id: PATCH_POINTS.KB_GATE, type: 'output', label: 'GATE', onClick: onJackClick });
     const kbVelJack = new Jack({ id: PATCH_POINTS.KB_VEL, type: 'output', label: 'VEL', onClick: onJackClick });
-    kbPitchJack.getElement().dataset.tooltip = '1V/oct pitch CV from the keyboard';
-    kbGateJack.getElement().dataset.tooltip = 'Gate signal — on while a key is held';
-    kbVelJack.getElement().dataset.tooltip = 'Velocity output from key press';
     const kbJackRow = document.createElement('div');
     kbJackRow.className = 'jack-row';
     kbJackRow.appendChild(kbPitchJack.getElement());
@@ -81,16 +78,15 @@ export class Layout {
     const panelRow = document.createElement('div');
     panelRow.className = 'panel-row';
 
-    // Match real Grandmother order: ARP/SEQ → MODULATION → OSCILLATORS → MIXER → UTILITIES → FILTER → ENVELOPE → OUTPUT
-    panelRow.appendChild(this.panels.arpSeq.getElement());
-    panelRow.appendChild(this.panels.modulation.getElement());
     panelRow.appendChild(kbJackPanel);
     panelRow.appendChild(this.panels.oscillators.getElement());
     panelRow.appendChild(this.panels.mixer.getElement());
-    panelRow.appendChild(this.panels.utilities.getElement());
     panelRow.appendChild(this.panels.filter.getElement());
     panelRow.appendChild(this.panels.envelope.getElement());
     panelRow.appendChild(this.panels.output.getElement());
+    panelRow.appendChild(this.panels.modulation.getElement());
+    panelRow.appendChild(this.panels.utilities.getElement());
+    panelRow.appendChild(this.panels.arpSeq.getElement());
 
     panelArea.appendChild(panelRow);
 
@@ -115,14 +111,6 @@ export class Layout {
 
     keyboardArea.appendChild(this.keyboard.getElement());
     container.appendChild(keyboardArea);
-
-    // Shift key toggles tooltip mode + keyboard label mode
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Shift') document.body.classList.add('shift-held');
-    });
-    document.addEventListener('keyup', (e) => {
-      if (e.key === 'Shift') document.body.classList.remove('shift-held');
-    });
 
     // Handle window resize to update cable positions
     window.addEventListener('resize', () => {

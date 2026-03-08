@@ -3,7 +3,6 @@ import { test, expect } from '@playwright/test';
 test.describe('Goob Nonna Synth', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    // Wait for UI to build
     await page.waitForSelector('.keyboard');
   });
 
@@ -19,22 +18,18 @@ test.describe('Goob Nonna Synth', () => {
     test('renders all module panels', async ({ page }) => {
       await expect(page.locator('.panel-kb-jacks')).toBeVisible();
       await expect(page.locator('.panel-oscillators')).toBeVisible();
-      await expect(page.locator('.panel')).toHaveCount(await page.locator('.panel').count());
-      // At minimum: kb-jacks, oscillators, mixer, filter, envelope, output, modulation, utilities, arp-seq
       const panelCount = await page.locator('.panel').count();
       expect(panelCount).toBeGreaterThanOrEqual(8);
     });
 
     test('renders keyboard with 32 keys', async ({ page }) => {
-      const keys = page.locator('.key');
-      await expect(keys).toHaveCount(32);
+      await expect(page.locator('.key')).toHaveCount(32);
     });
 
     test('renders pitch and mod wheels in keyboard area', async ({ page }) => {
       const wheelsSection = page.locator('.keyboard-wheels');
       await expect(wheelsSection).toBeVisible();
-      const wheels = wheelsSection.locator('.wheel-container');
-      await expect(wheels).toHaveCount(2);
+      await expect(wheelsSection.locator('.wheel-container')).toHaveCount(2);
     });
 
     test('renders preset selector', async ({ page }) => {
@@ -79,7 +74,6 @@ test.describe('Goob Nonna Synth', () => {
       await first.dispatchEvent('mousedown');
       await expect(first).toHaveClass(/active/);
 
-      // Mouseup then click second key
       await page.dispatchEvent('body', 'mouseup');
       await second.dispatchEvent('mousedown');
       await expect(second).toHaveClass(/active/);
@@ -90,8 +84,7 @@ test.describe('Goob Nonna Synth', () => {
   test.describe('Keyboard - QWERTY', () => {
     test('pressing Z activates a key', async ({ page }) => {
       await page.keyboard.down('z');
-      const activeKeys = page.locator('.key.active');
-      await expect(activeKeys).toHaveCount(1);
+      await expect(page.locator('.key.active')).toHaveCount(1);
       await page.keyboard.up('z');
     });
 
@@ -118,53 +111,64 @@ test.describe('Goob Nonna Synth', () => {
       const firstNote = await page.locator('.key.active').getAttribute('data-note');
       await page.keyboard.down('x');
       await page.keyboard.up('x');
-      // Should fall back to Z's note
       const fallbackNote = await page.locator('.key.active').getAttribute('data-note');
       expect(fallbackNote).toEqual(firstNote);
       await page.keyboard.up('z');
     });
 
     test('upper row keys work (Q)', async ({ page }) => {
-      await page.keyboard.press('q');
-      // Should have activated and deactivated a key
+      await page.keyboard.down('q');
+      await expect(page.locator('.key.active')).toHaveCount(1);
+      await page.keyboard.up('q');
     });
   });
 
   test.describe('Keyboard Labels', () => {
     test('shows QWERTY shortcut labels by default', async ({ page }) => {
-      // First white key at base octave should show 'Z'
       const labels = page.locator('.key-label');
       const firstLabel = labels.first();
       const text = await firstLabel.textContent();
-      // Should be a QWERTY character, not a note name like C3
       expect(text).not.toMatch(/^[A-G][#b]?\d$/);
     });
 
-    test('Tab toggles to note names', async ({ page }) => {
-      await page.keyboard.press('Tab');
-      // After toggle, labels should show note names
+    test('Shift shows note names while held', async ({ page }) => {
+      await page.keyboard.down('Shift');
       const labels = page.locator('.white-key .key-label');
       const firstLabel = labels.first();
       const text = await firstLabel.textContent();
-      // Note names look like F2, G2, A2, etc.
       expect(text).toMatch(/^[A-G][#b]?\d$/);
+      await page.keyboard.up('Shift');
     });
 
-    test('Tab toggles back to shortcuts', async ({ page }) => {
-      await page.keyboard.press('Tab');
-      await page.keyboard.press('Tab');
+    test('releasing Shift reverts to shortcuts', async ({ page }) => {
+      await page.keyboard.down('Shift');
+      await page.keyboard.up('Shift');
       const labels = page.locator('.white-key .key-label');
       const firstLabel = labels.first();
       const text = await firstLabel.textContent();
       expect(text).not.toMatch(/^[A-G][#b]?\d$/);
+    });
+  });
+
+  test.describe('Tooltips', () => {
+    test('controls have data-tooltip attributes', async ({ page }) => {
+      const tooltipElements = page.locator('[data-tooltip]');
+      const count = await tooltipElements.count();
+      expect(count).toBeGreaterThan(20);
+    });
+
+    test('Shift adds shift-held class to body', async ({ page }) => {
+      await page.keyboard.down('Shift');
+      await expect(page.locator('body')).toHaveClass(/shift-held/);
+      await page.keyboard.up('Shift');
+      await expect(page.locator('body')).not.toHaveClass(/shift-held/);
     });
   });
 
   test.describe('Knobs', () => {
     test('knobs are present and interactive', async ({ page }) => {
       const knobs = page.locator('.knob');
-      const count = await knobs.count();
-      expect(count).toBeGreaterThan(0);
+      expect(await knobs.count()).toBeGreaterThan(0);
     });
   });
 
@@ -187,10 +191,8 @@ test.describe('Goob Nonna Synth', () => {
     });
 
     test('output and input jacks are present', async ({ page }) => {
-      const outputs = page.locator('.jack-output');
-      const inputs = page.locator('.jack-input');
-      expect(await outputs.count()).toBeGreaterThan(0);
-      expect(await inputs.count()).toBeGreaterThan(0);
+      expect(await page.locator('.jack-output').count()).toBeGreaterThan(0);
+      expect(await page.locator('.jack-input').count()).toBeGreaterThan(0);
     });
   });
 

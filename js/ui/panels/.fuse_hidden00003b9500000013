@@ -31,13 +31,7 @@ export class PanelOutput {
 
     this.element.appendChild(this.volume.getElement());
     this.element.appendChild(this.vcaMode.getElement());
-
-    // Spring Reverb sub-section
-    const reverbSection = document.createElement('div');
-    reverbSection.className = 'panel-section reverb-section';
-    reverbSection.innerHTML = '<h4>SPRING REVERB</h4>';
-    reverbSection.appendChild(this.reverbMix.getElement());
-    this.element.appendChild(reverbSection);
+    this.element.appendChild(this.reverbMix.getElement());
 
     // Jacks
     this.jacks.vcaIn = new Jack({ id: PATCH_POINTS.VCA_IN, type: 'input', label: 'VCA IN', onClick: onJackClick });

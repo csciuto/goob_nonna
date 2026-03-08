@@ -32,7 +32,7 @@ export class Layout {
     // Header
     const header = document.createElement('div');
     header.className = 'synth-header';
-    header.innerHTML = '<h1>GOOB NONNA</h1><div class="header-controls"><span class="shift-hint">Hold Shift for tooltips</span><a href="docs/getting-started.html" class="guide-link">Guide</a><div class="preset-selector"><select id="preset-select"><option value="">-- Select Preset --</option></select></div></div>';
+    header.innerHTML = '<h1>GOOB NONNA</h1><div class="header-controls"><a href="docs/getting-started.html" class="guide-link">Guide</a><div class="preset-selector"><select id="preset-select"><option value="">-- Select Preset --</option></select></div><button id="reset-btn" class="header-btn">Reset</button></div>';
     container.appendChild(header);
 
     // Main panel area (relative positioned for SVG overlay)
@@ -81,16 +81,15 @@ export class Layout {
     const panelRow = document.createElement('div');
     panelRow.className = 'panel-row';
 
-    // Match real Grandmother order: ARP/SEQ → MODULATION → OSCILLATORS → MIXER → UTILITIES → FILTER → ENVELOPE → OUTPUT
-    panelRow.appendChild(this.panels.arpSeq.getElement());
-    panelRow.appendChild(this.panels.modulation.getElement());
     panelRow.appendChild(kbJackPanel);
     panelRow.appendChild(this.panels.oscillators.getElement());
     panelRow.appendChild(this.panels.mixer.getElement());
-    panelRow.appendChild(this.panels.utilities.getElement());
     panelRow.appendChild(this.panels.filter.getElement());
     panelRow.appendChild(this.panels.envelope.getElement());
     panelRow.appendChild(this.panels.output.getElement());
+    panelRow.appendChild(this.panels.modulation.getElement());
+    panelRow.appendChild(this.panels.utilities.getElement());
+    panelRow.appendChild(this.panels.arpSeq.getElement());
 
     panelArea.appendChild(panelRow);
 

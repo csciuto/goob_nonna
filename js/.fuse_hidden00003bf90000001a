@@ -49,6 +49,12 @@ function buildUI() {
 
   loadPresetSelector();
 
+  // Reset button — reload the page
+  const resetBtn = document.getElementById('reset-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => location.reload());
+  }
+
   console.log('Goob Nonna UI ready');
 }
 

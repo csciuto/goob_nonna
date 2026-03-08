@@ -139,9 +139,10 @@ export class Keyboard {
       if (e.repeat) return;
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
 
-      // Shift shows note names while held
-      if (e.key === 'Shift') {
-        this._showNotes = true;
+      // Tab toggles label mode
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        this._showNotes = !this._showNotes;
         this._updateLabels();
         return;
       }
@@ -171,11 +172,6 @@ export class Keyboard {
     });
 
     document.addEventListener('keyup', (e) => {
-      if (e.key === 'Shift') {
-        this._showNotes = false;
-        this._updateLabels();
-        return;
-      }
       const key = e.key.toLowerCase();
       if (!this._heldKeys.has(key)) return;
       this._heldKeys.delete(key);

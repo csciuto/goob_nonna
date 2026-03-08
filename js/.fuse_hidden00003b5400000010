@@ -80,16 +80,6 @@ async function loadPresetSelector() {
       if (!presetName) return;
       const preset = PRESETS.find(p => p.name === presetName);
       if (preset) applyPreset(preset);
-      // Blur so keyboard input goes back to the synth
-      select.blur();
-    });
-
-    // Prevent select from capturing keyboard when focused
-    select.addEventListener('keydown', (e) => {
-      // Allow Enter/Space for normal select interaction, block everything else
-      if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') {
-        select.blur();
-      }
     });
   } catch (err) {
     console.warn('Presets not yet available:', err);

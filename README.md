@@ -44,7 +44,8 @@ Funky Robot, Showdown Guitar, Dynasty Plucks, Haunted Cave, Ultra Sub Bass, Cave
 - **Multi-position switches** for waveform/mode selection
 - **Vertical sliders** for ADSR
 - **Pitch wheel** (spring-return) and **Mod wheel** (stays in position)
-- Flat CSS visuals, dark theme, desktop-first (1280px minimum)
+- **Shift+hover tooltips** on every control and patch point
+- Flat CSS visuals, charcoal case with cream panels and colorful module accents, desktop-first (1280px minimum)
 
 ## Architecture
 
@@ -137,13 +138,15 @@ npx playwright test
 1. **Play notes** — click the keyboard or use your computer keyboard
 2. **QWERTY mapping** — bottom row `Z S X D C V G B H N J M` and top row `Q 2 W 3 E R 5 T 6 Y 7 U` (two octaves, chromatic)
 3. **Octave shift** — `-` / `=` keys move the QWERTY range down/up
-4. **Tab** — toggle key labels between QWERTY shortcuts and note names
-5. **Drag knobs vertically** to adjust parameters (up = increase, down = decrease)
-6. **Click switches** to change waveforms, modes, etc.
-7. **Patch cables**: Click an output jack, then click an input jack to connect. Click a cable to disconnect.
-8. **Pitch wheel**: Drag vertically, springs back to center
-9. **Mod wheel**: Drag vertically, stays in position. Controls LFO modulation depth.
-10. **Presets**: Select from the dropdown menu to load a factory preset
+4. **Hold Shift** — shows note names on keys; release to go back to shortcuts
+5. **Shift + hover** — hold Shift and hover over any control or patch jack to see a tooltip explaining what it does
+6. **Drag knobs vertically** to adjust parameters (up = increase, down = decrease)
+7. **Click switches** to change waveforms, modes, etc.
+8. **Patch cables**: Click an output jack, then click an input jack to connect. Click a cable to disconnect.
+9. **Pitch wheel**: Drag vertically, springs back to center
+10. **Mod wheel**: Drag vertically, stays in position. Controls LFO modulation depth.
+11. **Presets**: Select from the dropdown menu to load a factory preset
+12. **Reset**: Click the Reset button to return everything to defaults
 
 ## Signal Flow (Default)
 

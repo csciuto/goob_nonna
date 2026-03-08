@@ -25,11 +25,6 @@ export class PanelFilter {
       selectedIndex: 2,
     });
 
-    this.cutoff.getElement().dataset.tooltip = 'Controls which frequencies pass through — sweep this first';
-    this.resonance.getElement().dataset.tooltip = 'Boosts frequencies at the cutoff — self-oscillates at max';
-    this.envAmt.getElement().dataset.tooltip = 'How much the envelope opens/closes the filter per note';
-    this.kbTrack.getElement().dataset.tooltip = 'Filter follows keyboard pitch — higher notes sound brighter';
-
     this.element.appendChild(this.cutoff.getElement());
     this.element.appendChild(this.resonance.getElement());
     this.element.appendChild(this.envAmt.getElement());
@@ -40,10 +35,6 @@ export class PanelFilter {
     this.jacks.filterOut = new Jack({ id: PATCH_POINTS.FILTER_OUT, type: 'output', label: 'FILTER OUT', onClick: onJackClick });
     this.jacks.cutoffIn = new Jack({ id: PATCH_POINTS.CUTOFF_IN, type: 'input', label: 'CUTOFF IN', onClick: onJackClick });
     this.jacks.resonanceIn = new Jack({ id: PATCH_POINTS.RESONANCE_IN, type: 'input', label: 'RES IN', onClick: onJackClick });
-    this.jacks.filterIn.getElement().dataset.tooltip = 'Audio input to the filter — normalled to mixer output';
-    this.jacks.filterOut.getElement().dataset.tooltip = 'Filtered audio output';
-    this.jacks.cutoffIn.getElement().dataset.tooltip = 'CV input to modulate filter cutoff frequency';
-    this.jacks.resonanceIn.getElement().dataset.tooltip = 'CV input to modulate filter resonance';
 
     const jackRow = document.createElement('div');
     jackRow.className = 'jack-row';

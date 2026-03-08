@@ -29,12 +29,6 @@ export class PanelModulation {
     this.cutoffAmt = new Knob({ label: 'CUTOFF AMT', min: 0, max: 10, value: 0 });
     this.pwAmt = new Knob({ label: 'PW AMT', min: 0, max: 10, value: 0 });
 
-    this.lfoRate.getElement().dataset.tooltip = 'Speed of the low-frequency oscillator';
-    this.lfoWaveform.getElement().dataset.tooltip = 'Shape of the LFO waveform';
-    this.pitchAmt.getElement().dataset.tooltip = 'How much the LFO wobbles pitch (vibrato) via mod wheel';
-    this.cutoffAmt.getElement().dataset.tooltip = 'How much the LFO wobbles the filter (wah) via mod wheel';
-    this.pwAmt.getElement().dataset.tooltip = 'How much the LFO modulates pulse width via mod wheel';
-
     this.element.appendChild(this.lfoRate.getElement());
     this.element.appendChild(this.lfoWaveform.getElement());
     this.element.appendChild(this.pitchAmt.getElement());
@@ -47,11 +41,6 @@ export class PanelModulation {
     this.jacks.lfoSawOut = new Jack({ id: PATCH_POINTS.LFO_SAW_OUT, type: 'output', label: 'SAW OUT', onClick: onJackClick });
     this.jacks.lfoShOut = new Jack({ id: PATCH_POINTS.LFO_SH_OUT, type: 'output', label: 'S/H OUT', onClick: onJackClick });
     this.jacks.lfoRateIn = new Jack({ id: PATCH_POINTS.LFO_RATE_IN, type: 'input', label: 'RATE IN', onClick: onJackClick });
-    this.jacks.lfoTriOut.getElement().dataset.tooltip = 'LFO triangle wave output — smooth modulation';
-    this.jacks.lfoSqOut.getElement().dataset.tooltip = 'LFO square wave output — on/off switching';
-    this.jacks.lfoSawOut.getElement().dataset.tooltip = 'LFO sawtooth wave output — ramp modulation';
-    this.jacks.lfoShOut.getElement().dataset.tooltip = 'LFO sample & hold output — random stepped values';
-    this.jacks.lfoRateIn.getElement().dataset.tooltip = 'CV input to modulate LFO speed';
 
     const jackRow = document.createElement('div');
     jackRow.className = 'jack-row';

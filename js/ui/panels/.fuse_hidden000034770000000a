@@ -19,10 +19,6 @@ export class PanelUtilities {
     this.jacks.mult2 = new Jack({ id: PATCH_POINTS.MULT_2, type: 'output', label: '2', onClick: onJackClick });
     this.jacks.mult3 = new Jack({ id: PATCH_POINTS.MULT_3, type: 'input', label: '3', onClick: onJackClick });
     this.jacks.mult4 = new Jack({ id: PATCH_POINTS.MULT_4, type: 'input', label: '4', onClick: onJackClick });
-    this.jacks.mult1.getElement().dataset.tooltip = 'Mult — all 4 jacks are connected, splits one signal into copies';
-    this.jacks.mult2.getElement().dataset.tooltip = 'Mult — all 4 jacks are connected';
-    this.jacks.mult3.getElement().dataset.tooltip = 'Mult — all 4 jacks are connected';
-    this.jacks.mult4.getElement().dataset.tooltip = 'Mult — all 4 jacks are connected';
 
     const multJacks = document.createElement('div');
     multJacks.className = 'jack-row';
@@ -38,13 +34,10 @@ export class PanelUtilities {
     hpfSection.innerHTML = '<h4>HPF</h4>';
 
     this.hpfCutoff = new Knob({ label: 'CUTOFF', min: 0, max: 10, value: 5 });
-    this.hpfCutoff.getElement().dataset.tooltip = 'Cutoff frequency for the high-pass filter';
     hpfSection.appendChild(this.hpfCutoff.getElement());
 
     this.jacks.hpfIn = new Jack({ id: PATCH_POINTS.HPF_IN, type: 'input', label: 'IN', onClick: onJackClick });
     this.jacks.hpfOut = new Jack({ id: PATCH_POINTS.HPF_OUT, type: 'output', label: 'OUT', onClick: onJackClick });
-    this.jacks.hpfIn.getElement().dataset.tooltip = 'Audio input to the high-pass filter';
-    this.jacks.hpfOut.getElement().dataset.tooltip = 'Filtered audio output from the high-pass filter';
 
     const hpfJacks = document.createElement('div');
     hpfJacks.className = 'jack-row';
@@ -58,13 +51,10 @@ export class PanelUtilities {
     attenSection.innerHTML = '<h4>ATTEN</h4>';
 
     this.attenAmount = new Knob({ label: 'AMOUNT', min: -10, max: 10, value: 10, bipolar: true });
-    this.attenAmount.getElement().dataset.tooltip = 'Scales or inverts a signal passing through';
     attenSection.appendChild(this.attenAmount.getElement());
 
     this.jacks.attenIn = new Jack({ id: PATCH_POINTS.ATTEN_IN, type: 'input', label: 'IN', onClick: onJackClick });
     this.jacks.attenOut = new Jack({ id: PATCH_POINTS.ATTEN_OUT, type: 'output', label: 'OUT', onClick: onJackClick });
-    this.jacks.attenIn.getElement().dataset.tooltip = 'Signal input to the attenuator — normalled to DC';
-    this.jacks.attenOut.getElement().dataset.tooltip = 'Scaled signal output from the attenuator';
 
     const attenJacks = document.createElement('div');
     attenJacks.className = 'jack-row';

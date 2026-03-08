@@ -5,20 +5,6 @@ import { WAVEFORMS, VCA_MODES, KB_TRACK, LFO_WAVEFORMS, PATCH_POINTS } from './u
  */
 export const PRESETS = [
   {
-    name: 'Default',
-    settings: {
-      osc1Waveform: WAVEFORMS.SAW, osc1Octave: 8, osc1Detune: 0,
-      osc2Waveform: WAVEFORMS.SAW, osc2Octave: 8, osc2Detune: 0,
-      osc1Level: 8, osc2Level: 0, noiseLevel: 0,
-      cutoff: 7, resonance: 0, envAmt: 0, kbTrack: KB_TRACK.FULL,
-      attack: 0.5, decay: 2, sustain: 7, release: 3,
-      vcaMode: VCA_MODES.ENV, volume: 7, reverbMix: 3,
-      lfoRate: 5, lfoWaveform: LFO_WAVEFORMS.TRIANGLE,
-      pitchAmt: 0, cutoffAmt: 0, pwAmt: 0,
-    },
-    patches: [],
-  },
-  {
     name: 'Funky Robot',
     settings: {
       osc1Waveform: WAVEFORMS.SAW, osc1Octave: 8, osc1Detune: 0,

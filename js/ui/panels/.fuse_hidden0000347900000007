@@ -18,11 +18,6 @@ export class PanelEnvelope {
     this.sustain = new Slider({ label: 'S', min: 0, max: 10, value: 7 });
     this.release = new Slider({ label: 'R', min: 0, max: 10, value: 3 });
 
-    this.attack.getElement().dataset.tooltip = 'Attack — how fast the sound reaches full volume';
-    this.decay.getElement().dataset.tooltip = 'Decay — how fast it drops to the sustain level';
-    this.sustain.getElement().dataset.tooltip = 'Sustain — level held while the key is pressed';
-    this.release.getElement().dataset.tooltip = 'Release — how long the sound fades after letting go';
-
     slidersRow.appendChild(this.attack.getElement());
     slidersRow.appendChild(this.decay.getElement());
     slidersRow.appendChild(this.sustain.getElement());
@@ -33,8 +28,6 @@ export class PanelEnvelope {
     // Jacks
     this.jacks.envGateIn = new Jack({ id: PATCH_POINTS.ENV_GATE_IN, type: 'input', label: 'GATE IN', onClick: onJackClick });
     this.jacks.envOut = new Jack({ id: PATCH_POINTS.ENV_OUT, type: 'output', label: 'ENV OUT', onClick: onJackClick });
-    this.jacks.envGateIn.getElement().dataset.tooltip = 'Gate input — triggers the envelope on note-on';
-    this.jacks.envOut.getElement().dataset.tooltip = 'Envelope CV output — patch to modulate other parameters';
 
     const jackRow = document.createElement('div');
     jackRow.className = 'jack-row';

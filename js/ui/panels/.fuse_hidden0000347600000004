@@ -44,10 +44,6 @@ export class PanelOscillators {
       bipolar: true,
     });
 
-    this.osc1Waveform.getElement().dataset.tooltip = 'Selects the raw waveform shape for oscillator 1';
-    this.osc1Octave.getElement().dataset.tooltip = 'Shifts oscillator 1 pitch by octaves — 8\' is normal';
-    this.osc1Freq.getElement().dataset.tooltip = 'Fine-tunes oscillator 1 pitch in semitones';
-
     osc1Section.appendChild(this.osc1Waveform.getElement());
     osc1Section.appendChild(this.osc1Octave.getElement());
     osc1Section.appendChild(this.osc1Freq.getElement());
@@ -56,9 +52,6 @@ export class PanelOscillators {
     this.jacks.osc1WaveOut = new Jack({ id: PATCH_POINTS.OSC1_WAVE_OUT, type: 'output', label: 'WAVE OUT', onClick: onJackClick });
     this.jacks.osc1PitchIn = new Jack({ id: PATCH_POINTS.OSC1_PITCH_IN, type: 'input', label: 'PITCH IN', onClick: onJackClick });
     this.jacks.osc1PwmIn = new Jack({ id: PATCH_POINTS.OSC1_PWM_IN, type: 'input', label: 'PWM IN', onClick: onJackClick });
-    this.jacks.osc1WaveOut.getElement().dataset.tooltip = 'Raw audio output from oscillator 1';
-    this.jacks.osc1PitchIn.getElement().dataset.tooltip = 'CV input to control oscillator 1 pitch';
-    this.jacks.osc1PwmIn.getElement().dataset.tooltip = 'Modulates the pulse width of oscillator 1';
 
     const osc1Jacks = document.createElement('div');
     osc1Jacks.className = 'jack-row';
@@ -107,11 +100,6 @@ export class PanelOscillators {
       selectedIndex: 0,
     });
 
-    this.osc2Waveform.getElement().dataset.tooltip = 'Selects the raw waveform shape for oscillator 2';
-    this.osc2Octave.getElement().dataset.tooltip = 'Shifts oscillator 2 pitch by octaves';
-    this.osc2Freq.getElement().dataset.tooltip = 'Fine-tunes oscillator 2 — detune slightly from OSC1 for thickness';
-    this.osc2Sync.getElement().dataset.tooltip = 'Hard-syncs OSC2 to OSC1 for harmonic timbres';
-
     osc2Section.appendChild(this.osc2Waveform.getElement());
     osc2Section.appendChild(this.osc2Octave.getElement());
     osc2Section.appendChild(this.osc2Freq.getElement());
@@ -122,10 +110,6 @@ export class PanelOscillators {
     this.jacks.osc2PitchIn = new Jack({ id: PATCH_POINTS.OSC2_PITCH_IN, type: 'input', label: 'PITCH IN', onClick: onJackClick });
     this.jacks.osc2PwmIn = new Jack({ id: PATCH_POINTS.OSC2_PWM_IN, type: 'input', label: 'PWM IN', onClick: onJackClick });
     this.jacks.syncIn = new Jack({ id: PATCH_POINTS.SYNC_IN, type: 'input', label: 'SYNC IN', onClick: onJackClick });
-    this.jacks.osc2WaveOut.getElement().dataset.tooltip = 'Raw audio output from oscillator 2';
-    this.jacks.osc2PitchIn.getElement().dataset.tooltip = 'CV input to control oscillator 2 pitch';
-    this.jacks.osc2PwmIn.getElement().dataset.tooltip = 'Modulates the pulse width of oscillator 2';
-    this.jacks.syncIn.getElement().dataset.tooltip = 'Trigger input for hard sync';
 
     const osc2Jacks = document.createElement('div');
     osc2Jacks.className = 'jack-row';
