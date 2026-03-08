@@ -441,19 +441,102 @@ body {
 }
 .panel-envelope h3 { color: #fff; border-bottom-color: #4a4a50; }
 .panel-envelope .slider-label { color: #fff; }
+.panel-envelope .knob-label { color: #fff; }
+.panel-envelope .knob-value { color: #fff; }
 .panel-envelope .jack-label { color: #fff; }
+.panel-envelope .jack-output-label .jack-label {
+  color: #222;
+  background: #fff;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.env-adsr {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  align-items: stretch;
+}
+
+.env-knob-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 1;
+}
+
+.env-sustain-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.sustain-with-grads {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  align-items: stretch;
+}
+
+.sustain-tall .slider-track {
+  height: 100%;
+}
+
+.sustain-tall {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sustain-grads {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.sustain-grad {
+  width: 6px;
+  height: 1px;
+  background: #555;
+}
+
+.sustain-grad-major {
+  width: 10px;
+  background: #888;
+}
 
 .panel-output {
   background: #2a2a2e;
 }
 .panel-output h3 { color: #fff; border-bottom-color: #4a4a50; }
 .panel-output .knob-label { color: #fff; }
+.panel-output .knob-value { color: #fff; }
 .panel-output .switch-label { color: #fff; }
 .panel-output .jack-label { color: #fff; }
 
-/* Spring Reverb sub-section in output panel */
-.panel-output .reverb-section h4 { color: #e04040; }
-.panel-output .reverb-section { border-top: 1px solid #4a4a50; }
+/* Spring Reverb sub-section — red box with black text */
+.reverb-section {
+  background: #c04040;
+  border-radius: 4px;
+  padding: 8px;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.reverb-section h4 {
+  color: #1a1a1e;
+  font-size: 10px;
+  font-weight: bold;
+  text-align: center;
+  margin: 0;
+}
+.reverb-section .knob-label { color: #1a1a1e !important; }
+.reverb-section .knob-value { color: #1a1a1e !important; }
 
 .panel-controller {
   flex: 0 0 80px;

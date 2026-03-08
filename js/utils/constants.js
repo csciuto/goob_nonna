@@ -139,6 +139,7 @@ export const PATCH_POINTS = {
   // Envelope
   ENV_GATE_IN: 'env-gate-in',
   ENV_OUT: 'env-out',
+  ENV_NEG_OUT: 'env-neg-out',
 
   // VCA
   VCA_IN: 'vca-in',
