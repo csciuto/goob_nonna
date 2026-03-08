@@ -12,7 +12,6 @@ import { Keyboard } from './keyboard.js';
 import { PatchCableRenderer } from './patch-cables.js';
 import { Knob } from './components/knob.js';
 import { Button } from './components/button.js';
-import { SwitchControl } from './components/switch-control.js';
 
 /**
  * Layout - Assembles all panels, keyboard, and patch cable system.
@@ -80,7 +79,7 @@ export class Layout {
     // Title strip between panels and keyboard (like real Grandmother)
     const titleStrip = document.createElement('div');
     titleStrip.className = 'synth-title-strip';
-    titleStrip.innerHTML = '<div class="title-left"><span class="title-goob">GOOB</span><span class="title-nonna">NONNA</span><span class="title-subtitle">SEMI-MODULAR ANALOG SYNTHESIZER</span></div><div class="title-right"><div class="preset-selector"><select id="preset-select"><option value="">-- Select Preset --</option></select></div><button class="kebab-btn" id="kebab-btn" title="More">&#8942;</button></div>';
+    titleStrip.innerHTML = '<div class="title-left"><span class="title-goob">GOOB</span><span class="title-nonna">NONNA</span><span class="title-subtitle">SEMI-MODULAR ANALOG SYNTHESIZER</span></div><div class="title-right"><span class="shift-hint">Hold Shift for tooltips</span><div class="preset-selector"><select id="preset-select"><option value="">-- Select Preset --</option></select></div><button class="kebab-btn" id="kebab-btn" title="More">&#8942;</button></div>';
 
     // Back panel popover
     const backPopover = document.createElement('div');
@@ -93,33 +92,7 @@ export class Layout {
     guideLink.textContent = 'Guide';
     backPopover.appendChild(guideLink);
 
-    // Key label toggle: none / key / note
-    this._keyLabelSwitch = new SwitchControl({
-      label: 'KEYS',
-      positions: [
-        { value: 'none', label: 'OFF' },
-        { value: 'key', label: 'KEY' },
-        { value: 'note', label: 'NOTE' },
-      ],
-      selectedIndex: 1,
-    });
-    this._keyLabelSwitch.onChange = (v) => {
-      if (this.keyboard) this.keyboard.setLabelMode(v);
-    };
-    this._keyLabelSwitch.getElement().classList.add('popover-switch');
-    backPopover.appendChild(this._keyLabelSwitch.getElement());
-
-    // Back panel toggle
-    const backPanelBtn = document.createElement('button');
-    backPanelBtn.className = 'popover-btn back-panel-btn';
-    backPanelBtn.textContent = 'Back Panel';
-    const backPanelContent = this.panels.back.getElement();
-    backPanelContent.classList.add('hidden');
-    backPanelBtn.addEventListener('click', () => {
-      backPanelContent.classList.toggle('hidden');
-    });
-    backPopover.appendChild(backPanelBtn);
-    backPopover.appendChild(backPanelContent);
+    backPopover.appendChild(this.panels.back.getElement());
 
     const versionLabel = document.createElement('div');
     versionLabel.className = 'version-label';
@@ -191,6 +164,14 @@ export class Layout {
     keyboardArea.appendChild(leftControls);
     keyboardArea.appendChild(this.keyboard.getElement());
     container.appendChild(keyboardArea);
+
+    // Shift key toggles tooltip mode + keyboard label mode
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Shift') document.body.classList.add('shift-held');
+    });
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'Shift') document.body.classList.remove('shift-held');
+    });
 
     // Handle window resize to update cable positions
     window.addEventListener('resize', () => {

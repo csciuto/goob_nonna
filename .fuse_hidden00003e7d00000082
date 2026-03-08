@@ -24,31 +24,10 @@ body {
 }
 
 /* Controls in title strip */
-.popover-btn {
-  display: block;
-  width: 100%;
-  background: none;
-  border: 1px solid #4a4a50;
-  border-radius: 3px;
-  color: #ccc;
-  font-size: 12px;
-  padding: 6px 10px;
-  cursor: pointer;
-  text-align: center;
-  margin-bottom: 6px;
-}
-
-.popover-btn:hover {
-  background: #3a3a40;
-  color: #fff;
-}
-
-.popover-switch {
-  margin-bottom: 6px;
-}
-
-.popover-switch .switch-label {
-  color: #ccc;
+.shift-hint {
+  color: #888;
+  font-size: 11px;
+  font-style: italic;
 }
 
 .guide-link {
@@ -104,14 +83,6 @@ body {
   border-radius: 4px;
   padding: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-  min-width: 200px;
-}
-
-.back-popover .guide-link {
-  display: block;
-  text-align: center;
-  margin-bottom: 8px;
-  padding: 6px 10px;
 }
 
 .back-popover.hidden {
@@ -226,7 +197,6 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  margin-top: 8px;
 }
 
 .knob-row {
@@ -503,7 +473,7 @@ body {
   flex: 1 1 120px;
   background: #2a2a2e;
 }
-.panel-envelope h3 { color: #fff; border-bottom-color: #4a4a50; margin-bottom: 10px; }
+.panel-envelope h3 { color: #fff; border-bottom-color: #4a4a50; }
 .panel-envelope .slider-label { color: #fff; }
 .panel-envelope .knob-label { color: #fff; }
 .panel-envelope .knob-value { color: #fff; }
@@ -542,7 +512,6 @@ body {
   flex: 1;
   display: flex;
   align-items: stretch;
-  margin: 14px 0;
 }
 
 .sustain-tall {
@@ -552,36 +521,13 @@ body {
 }
 
 .sustain-tall .slider-track {
-  width: 44px;
-  height: calc(100% - 20px);
-  margin: 10px auto;
-  background: transparent;
-  border-radius: 3px;
-  overflow: visible;
-}
-
-.sustain-tall .slider-fill {
-  display: none;
+  width: 32px;
+  height: 100%;
 }
 
 .sustain-tall .slider-thumb {
   left: -4px;
-  width: 52px;
-  height: 22px;
-  background: #111;
-  border: none;
-  border-radius: 3px;
-}
-
-.sustain-tall .slider-thumb::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 5px;
-  right: 5px;
-  height: 2px;
-  background: #fff;
-  transform: translateY(-50%);
+  width: 40px;
 }
 
 .sustain-grads {
@@ -1176,12 +1122,12 @@ body {
   font-size: 9px;
 }
 
-/* Hover tooltip system */
-[data-tooltip] {
+/* Shift-held tooltip system */
+body.shift-held [data-tooltip] {
   position: relative;
 }
 
-[data-tooltip]:hover::after {
+body.shift-held [data-tooltip]:hover::after {
   content: attr(data-tooltip);
   position: absolute;
   bottom: 100%;
@@ -1201,12 +1147,6 @@ body {
   pointer-events: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   margin-bottom: 4px;
-  animation: tooltip-fade-in 0.3s ease 0.4s both;
-}
-
-@keyframes tooltip-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 /* Patch Cable Overlay */

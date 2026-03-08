@@ -7,7 +7,6 @@ export class Slider {
     this.min = min;
     this.max = max;
     this.value = value;
-    this.defaultValue = value;
     this.onChange = onChange;
     this.label = label;
 
@@ -44,12 +43,6 @@ export class Slider {
     this._track = track;
     this._thumb = thumb;
     this._fill = fill;
-
-    // Double-click to reset to default
-    track.addEventListener('dblclick', (e) => {
-      e.preventDefault();
-      this.setValue(this.defaultValue);
-    });
 
     // Interaction
     track.addEventListener('mousedown', (e) => this._onMouseDown(e));

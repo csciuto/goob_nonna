@@ -53,7 +53,7 @@ export class Keyboard {
     this._labels = new Map(); // midiNote → label element
     this._heldKeys = new Set(); // currently held QWERTY keys
     this._baseOctave = 48; // C3 — default QWERTY base
-    this._labelMode = 'key'; // 'none' | 'key' | 'note'
+    this._showNotes = false; // false = shortcuts, true = note names
 
     this.element = this._create();
     this._bindQwerty();
@@ -124,22 +124,13 @@ export class Keyboard {
     return container;
   }
 
-  setLabelMode(mode) {
-    this._labelMode = mode;
-    this._updateLabels();
-  }
-
   _updateLabels() {
     for (let note = KEYBOARD_START_NOTE; note <= KEYBOARD_END_NOTE; note++) {
       const label = this._labels.get(note);
       if (!label) continue;
-      if (this._labelMode === 'none') {
-        label.textContent = '';
-      } else if (this._labelMode === 'note') {
-        label.textContent = this._getNoteName(note);
-      } else {
-        label.textContent = this._getShortcutLabel(note);
-      }
+      label.textContent = this._showNotes
+        ? this._getNoteName(note)
+        : this._getShortcutLabel(note);
     }
   }
 
@@ -148,17 +139,24 @@ export class Keyboard {
       if (e.repeat) return;
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
 
+      // Shift shows note names while held
+      if (e.key === 'Shift') {
+        this._showNotes = true;
+        this._updateLabels();
+        return;
+      }
+
       const key = e.key.toLowerCase();
 
       // Octave shift
       if (key === '-' || key === '_') {
         this._baseOctave = Math.max(KEYBOARD_START_NOTE, this._baseOctave - 12);
-        if (this._labelMode === 'key') this._updateLabels();
+        if (!this._showNotes) this._updateLabels();
         return;
       }
       if (key === '=' || key === '+') {
         this._baseOctave = Math.min(KEYBOARD_END_NOTE - 12, this._baseOctave + 12);
-        if (this._labelMode === 'key') this._updateLabels();
+        if (!this._showNotes) this._updateLabels();
         return;
       }
 
@@ -173,6 +171,11 @@ export class Keyboard {
     });
 
     document.addEventListener('keyup', (e) => {
+      if (e.key === 'Shift') {
+        this._showNotes = false;
+        this._updateLabels();
+        return;
+      }
       const key = e.key.toLowerCase();
       if (!this._heldKeys.has(key)) return;
       this._heldKeys.delete(key);
