@@ -1,0 +1,98 @@
+/**
+ * Vertical slider component (for ADSR envelope).
+ * Drag up/down to change value.
+ */
+export class Slider {
+  constructor({ label = '', min = 0, max = 10, value = 5, onChange = null }) {
+    this.min = min;
+    this.max = max;
+    this.value = value;
+    this.onChange = onChange;
+    this.label = label;
+
+    this._dragging = false;
+    this._trackHeight = 100; // px
+
+    this.element = this._create();
+    this._updateVisual();
+  }
+
+  _create() {
+    const container = document.createElement('div');
+    container.className = 'slider-container';
+
+    const labelEl = document.createElement('div');
+    labelEl.className = 'slider-label';
+    labelEl.textContent = this.label;
+
+    const track = document.createElement('div');
+    track.className = 'slider-track';
+
+    const thumb = document.createElement('div');
+    thumb.className = 'slider-thumb';
+
+    const fill = document.createElement('div');
+    fill.className = 'slider-fill';
+
+    track.appendChild(fill);
+    track.appendChild(thumb);
+
+    container.appendChild(labelEl);
+    container.appendChild(track);
+
+    this._track = track;
+    this._thumb = thumb;
+    this._fill = fill;
+
+    // Interaction
+    track.addEventListener('mousedown', (e) => this._onMouseDown(e));
+    document.addEventListener('mousemove', (e) => this._onMouseMove(e));
+    document.addEventListener('mouseup', () => this._onMouseUp());
+    track.addEventListener('selectstart', (e) => e.preventDefault());
+
+    return container;
+  }
+
+  _onMouseDown(e) {
+    this._dragging = true;
+    this._updateFromMouse(e);
+    e.preventDefault();
+  }
+
+  _onMouseMove(e) {
+    if (!this._dragging) return;
+    this._updateFromMouse(e);
+  }
+
+  _onMouseUp() {
+    this._dragging = false;
+  }
+
+  _updateFromMouse(e) {
+    const rect = this._track.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const normalized = 1 - Math.max(0, Math.min(1, y / rect.height));
+    const newValue = this.min + normalized * (this.max - this.min);
+    this.setValue(newValue);
+  }
+
+  setValue(newValue) {
+    newValue = Math.max(this.min, Math.min(this.max, newValue));
+    if (Math.abs(newValue - this.value) > 0.01) {
+      this.value = newValue;
+      this._updateVisual();
+      if (this.onChange) this.onChange(this.value);
+    }
+  }
+
+  _updateVisual() {
+    const normalized = (this.value - this.min) / (this.max - this.min);
+    const percent = normalized * 100;
+    this._thumb.style.bottom = `${percent}%`;
+    this._fill.style.height = `${percent}%`;
+  }
+
+  getElement() {
+    return this.element;
+  }
+}

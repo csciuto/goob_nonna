@@ -1,0 +1,56 @@
+import { Knob } from '../components/knob.js';
+import { SwitchControl } from '../components/switch-control.js';
+import { Jack } from '../components/jack.js';
+import { PATCH_POINTS, KB_TRACK } from '../../utils/constants.js';
+
+export class PanelFilter {
+  constructor({ onJackClick }) {
+    this.element = document.createElement('div');
+    this.element.className = 'panel panel-filter';
+    this.element.innerHTML = '<h3>FILTER</h3>';
+
+    this.jacks = {};
+
+    this.cutoff = new Knob({ label: 'CUTOFF', min: 0, max: 10, value: 7, step: 0.1 });
+    this.resonance = new Knob({ label: 'RES', min: 0, max: 4, value: 0, step: 0.1 });
+    this.envAmt = new Knob({ label: 'ENV AMT', min: -5, max: 5, value: 0, step: 0.1, bipolar: true });
+
+    this.kbTrack = new SwitchControl({
+      label: 'KB TRACK',
+      positions: [
+        { value: KB_TRACK.OFF, label: '0' },
+        { value: KB_TRACK.HALF, label: '1/2' },
+        { value: KB_TRACK.FULL, label: '1:1' },
+      ],
+      selectedIndex: 2,
+    });
+
+    this.element.appendChild(this.cutoff.getElement());
+    this.element.appendChild(this.resonance.getElement());
+    this.element.appendChild(this.envAmt.getElement());
+    this.element.appendChild(this.kbTrack.getElement());
+
+    // Jacks
+    this.jacks.filterIn = new Jack({ id: PATCH_POINTS.FILTER_IN, type: 'input', label: 'FILTER IN', onClick: onJackClick });
+    this.jacks.filterOut = new Jack({ id: PATCH_POINTS.FILTER_OUT, type: 'output', label: 'FILTER OUT', onClick: onJackClick });
+    this.jacks.cutoffIn = new Jack({ id: PATCH_POINTS.CUTOFF_IN, type: 'input', label: 'CUTOFF IN', onClick: onJackClick });
+    this.jacks.resonanceIn = new Jack({ id: PATCH_POINTS.RESONANCE_IN, type: 'input', label: 'RES IN', onClick: onJackClick });
+
+    const jackRow = document.createElement('div');
+    jackRow.className = 'jack-row';
+    jackRow.appendChild(this.jacks.filterIn.getElement());
+    jackRow.appendChild(this.jacks.filterOut.getElement());
+    jackRow.appendChild(this.jacks.cutoffIn.getElement());
+    jackRow.appendChild(this.jacks.resonanceIn.getElement());
+    this.element.appendChild(jackRow);
+  }
+
+  wire(engine) {
+    this.cutoff.onChange = (v) => engine.setFilterCutoff(v / 10);
+    this.resonance.onChange = (v) => engine.setFilterResonance(v);
+    this.envAmt.onChange = (v) => engine.setFilterEnvAmount(v / 5);
+    this.kbTrack.onChange = (v) => engine.setFilterKbTrack(v);
+  }
+
+  getElement() { return this.element; }
+}

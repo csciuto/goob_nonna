@@ -1,0 +1,101 @@
+/**
+ * Pitch/Mod wheel component.
+ * Vertical drag to change value.
+ * Pitch wheel: spring-returns to center (-1 to +1)
+ * Mod wheel: stays where positioned (0 to 1)
+ */
+export class Wheel {
+  /**
+   * @param {object} options
+   * @param {string} options.label - Display label
+   * @param {boolean} options.springReturn - If true, returns to center on release
+   * @param {number} options.min - Minimum value
+   * @param {number} options.max - Maximum value
+   * @param {number} options.value - Initial value
+   * @param {function} options.onChange - Callback(value)
+   */
+  constructor({ label = '', springReturn = false, min = 0, max = 1, value = 0, onChange = null }) {
+    this.label = label;
+    this.springReturn = springReturn;
+    this.min = min;
+    this.max = max;
+    this.value = value;
+    this.centerValue = (min + max) / 2;
+    this.onChange = onChange;
+
+    this._dragging = false;
+
+    this.element = this._create();
+    this._updateVisual();
+  }
+
+  _create() {
+    const container = document.createElement('div');
+    container.className = 'wheel-container';
+
+    const labelEl = document.createElement('div');
+    labelEl.className = 'wheel-label';
+    labelEl.textContent = this.label;
+
+    const track = document.createElement('div');
+    track.className = 'wheel-track';
+
+    const thumb = document.createElement('div');
+    thumb.className = 'wheel-thumb';
+
+    track.appendChild(thumb);
+    container.appendChild(labelEl);
+    container.appendChild(track);
+
+    this._track = track;
+    this._thumb = thumb;
+
+    track.addEventListener('mousedown', (e) => this._onMouseDown(e));
+    document.addEventListener('mousemove', (e) => this._onMouseMove(e));
+    document.addEventListener('mouseup', () => this._onMouseUp());
+    track.addEventListener('selectstart', (e) => e.preventDefault());
+
+    return container;
+  }
+
+  _onMouseDown(e) {
+    this._dragging = true;
+    this._updateFromMouse(e);
+    e.preventDefault();
+  }
+
+  _onMouseMove(e) {
+    if (!this._dragging) return;
+    this._updateFromMouse(e);
+  }
+
+  _onMouseUp() {
+    if (this._dragging) {
+      this._dragging = false;
+      if (this.springReturn) {
+        this.value = this.centerValue;
+        this._updateVisual();
+        if (this.onChange) this.onChange(this.value);
+      }
+    }
+  }
+
+  _updateFromMouse(e) {
+    const rect = this._track.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const normalized = 1 - Math.max(0, Math.min(1, y / rect.height));
+    this.value = this.min + normalized * (this.max - this.min);
+    this._updateVisual();
+    if (this.onChange) this.onChange(this.value);
+  }
+
+  _updateVisual() {
+    const normalized = (this.value - this.min) / (this.max - this.min);
+    const percent = normalized * 100;
+    this._thumb.style.bottom = `${percent}%`;
+  }
+
+  getElement() {
+    return this.element;
+  }
+}

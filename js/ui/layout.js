@@ -1,0 +1,150 @@
+import { PanelController } from './panels/panel-controller.js';
+import { PanelOscillators } from './panels/panel-oscillators.js';
+import { PanelMixer } from './panels/panel-mixer.js';
+import { PanelFilter } from './panels/panel-filter.js';
+import { PanelEnvelope } from './panels/panel-envelope.js';
+import { PanelOutput } from './panels/panel-output.js';
+import { PanelModulation } from './panels/panel-modulation.js';
+import { PanelUtilities } from './panels/panel-utilities.js';
+import { PanelArpSeq } from './panels/panel-arp-seq.js';
+import { Keyboard } from './keyboard.js';
+import { PatchCableRenderer } from './patch-cables.js';
+import { Jack } from './components/jack.js';
+import { PATCH_POINTS } from '../utils/constants.js';
+
+/**
+ * Layout - Assembles all panels, keyboard, and patch cable system.
+ */
+export class Layout {
+  constructor() {
+    this.panels = {};
+    this.keyboard = null;
+    this.patchCables = null;
+    this._jackElements = new Map(); // jackId → DOM element
+  }
+
+  /**
+   * Build the complete UI.
+   * @param {HTMLElement} container - Root container element
+   * @returns {object} All UI references for wiring
+   */
+  build(container) {
+    // Header
+    const header = document.createElement('div');
+    header.className = 'synth-header';
+    header.innerHTML = '<h1>GOOB NONNA</h1><div class="header-controls"><a href="docs/getting-started.html" class="guide-link">Guide</a><div class="preset-selector"><select id="preset-select"><option value="">-- Select Preset --</option></select></div></div>';
+    container.appendChild(header);
+
+    // Main panel area (relative positioned for SVG overlay)
+    const panelArea = document.createElement('div');
+    panelArea.className = 'panel-area';
+    container.appendChild(panelArea);
+
+    const onJackClick = (id, type, element) => {
+      this._jackElements.set(id, element);
+      if (this.patchCables) {
+        this.patchCables.handleJackClick(id, type, element);
+      }
+    };
+
+    // Create all panels
+    this.panels.controller = new PanelController();
+
+    // Keyboard outputs panel (KB jacks)
+    const kbJackPanel = document.createElement('div');
+    kbJackPanel.className = 'panel panel-kb-jacks';
+    kbJackPanel.innerHTML = '<h3>KEYBOARD</h3>';
+    const kbPitchJack = new Jack({ id: PATCH_POINTS.KB_PITCH_CV, type: 'output', label: 'PITCH CV', onClick: onJackClick });
+    const kbGateJack = new Jack({ id: PATCH_POINTS.KB_GATE, type: 'output', label: 'GATE', onClick: onJackClick });
+    const kbVelJack = new Jack({ id: PATCH_POINTS.KB_VEL, type: 'output', label: 'VEL', onClick: onJackClick });
+    const kbJackRow = document.createElement('div');
+    kbJackRow.className = 'jack-row';
+    kbJackRow.appendChild(kbPitchJack.getElement());
+    kbJackRow.appendChild(kbGateJack.getElement());
+    kbJackRow.appendChild(kbVelJack.getElement());
+    kbJackPanel.appendChild(kbJackRow);
+    this._kbJacks = { kbPitchJack, kbGateJack, kbVelJack };
+
+    this.panels.oscillators = new PanelOscillators({ onJackClick });
+    this.panels.mixer = new PanelMixer({ onJackClick });
+    this.panels.filter = new PanelFilter({ onJackClick });
+    this.panels.envelope = new PanelEnvelope({ onJackClick });
+    this.panels.output = new PanelOutput({ onJackClick });
+    this.panels.modulation = new PanelModulation({ onJackClick });
+    this.panels.utilities = new PanelUtilities({ onJackClick });
+    this.panels.arpSeq = new PanelArpSeq({ onJackClick });
+
+    // Assemble panels left-to-right
+    const panelRow = document.createElement('div');
+    panelRow.className = 'panel-row';
+
+    panelRow.appendChild(this.panels.controller.getElement());
+    panelRow.appendChild(kbJackPanel);
+    panelRow.appendChild(this.panels.oscillators.getElement());
+    panelRow.appendChild(this.panels.mixer.getElement());
+    panelRow.appendChild(this.panels.filter.getElement());
+    panelRow.appendChild(this.panels.envelope.getElement());
+    panelRow.appendChild(this.panels.output.getElement());
+    panelRow.appendChild(this.panels.modulation.getElement());
+    panelRow.appendChild(this.panels.utilities.getElement());
+    panelRow.appendChild(this.panels.arpSeq.getElement());
+
+    panelArea.appendChild(panelRow);
+
+    // Patch cable SVG overlay
+    this.patchCables = new PatchCableRenderer({
+      container: panelArea,
+      onConnect: null, // Will be set by main.js
+      onDisconnect: null,
+    });
+
+    // Keyboard
+    this.keyboard = new Keyboard({});
+    const keyboardArea = document.createElement('div');
+    keyboardArea.className = 'keyboard-area';
+    keyboardArea.appendChild(this.keyboard.getElement());
+    container.appendChild(keyboardArea);
+
+    // Handle window resize to update cable positions
+    window.addEventListener('resize', () => {
+      if (this.patchCables) {
+        this.patchCables.updatePositions();
+      }
+    });
+
+    // Store jack elements from all panels
+    this._collectJackElements();
+
+    return this;
+  }
+
+  _collectJackElements() {
+    // Collect all jack DOM elements for cable rendering
+    for (const panel of Object.values(this.panels)) {
+      if (panel.jacks) {
+        for (const jack of Object.values(panel.jacks)) {
+          this._jackElements.set(jack.id, jack._jack);
+        }
+      }
+    }
+    // KB jacks
+    if (this._kbJacks) {
+      for (const jack of Object.values(this._kbJacks)) {
+        this._jackElements.set(jack.id, jack._jack);
+      }
+    }
+  }
+
+  getJackElement(jackId) {
+    return this._jackElements.get(jackId);
+  }
+
+  /**
+   * Wire all UI controls to the audio engine.
+   */
+  wireToEngine(engine) {
+    for (const panel of Object.values(this.panels)) {
+      if (panel.wire) panel.wire(engine);
+    }
+  }
+}

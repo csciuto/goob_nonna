@@ -1,0 +1,54 @@
+import { Knob } from '../components/knob.js';
+import { SwitchControl } from '../components/switch-control.js';
+import { Jack } from '../components/jack.js';
+import { PATCH_POINTS, VCA_MODES } from '../../utils/constants.js';
+
+export class PanelOutput {
+  constructor({ onJackClick }) {
+    this.element = document.createElement('div');
+    this.element.className = 'panel panel-output';
+    this.element.innerHTML = '<h3>OUTPUT</h3>';
+
+    this.jacks = {};
+
+    this.volume = new Knob({ label: 'VOLUME', min: 0, max: 10, value: 7 });
+
+    this.vcaMode = new SwitchControl({
+      label: 'VCA MODE',
+      positions: [
+        { value: VCA_MODES.ENV, label: 'ENV' },
+        { value: VCA_MODES.KB_RELEASE, label: 'KB RLS' },
+        { value: VCA_MODES.DRONE, label: 'DRONE' },
+      ],
+      selectedIndex: 0,
+    });
+
+    this.reverbMix = new Knob({ label: 'REVERB', min: 0, max: 10, value: 3 });
+
+    this.element.appendChild(this.volume.getElement());
+    this.element.appendChild(this.vcaMode.getElement());
+    this.element.appendChild(this.reverbMix.getElement());
+
+    // Jacks
+    this.jacks.vcaIn = new Jack({ id: PATCH_POINTS.VCA_IN, type: 'input', label: 'VCA IN', onClick: onJackClick });
+    this.jacks.vcaCvIn = new Jack({ id: PATCH_POINTS.VCA_CV_IN, type: 'input', label: 'VCA CV', onClick: onJackClick });
+    this.jacks.vcaOut = new Jack({ id: PATCH_POINTS.VCA_OUT, type: 'output', label: 'VCA OUT', onClick: onJackClick });
+    this.jacks.reverbIn = new Jack({ id: PATCH_POINTS.REVERB_IN, type: 'input', label: 'REV IN', onClick: onJackClick });
+
+    const jackRow = document.createElement('div');
+    jackRow.className = 'jack-row';
+    jackRow.appendChild(this.jacks.vcaIn.getElement());
+    jackRow.appendChild(this.jacks.vcaCvIn.getElement());
+    jackRow.appendChild(this.jacks.vcaOut.getElement());
+    jackRow.appendChild(this.jacks.reverbIn.getElement());
+    this.element.appendChild(jackRow);
+  }
+
+  wire(engine) {
+    this.volume.onChange = (v) => engine.setOutputLevel(v);
+    this.vcaMode.onChange = (v) => engine.setVCAMode(v);
+    this.reverbMix.onChange = (v) => engine.setReverbMix(v);
+  }
+
+  getElement() { return this.element; }
+}

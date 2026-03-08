@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started — Goob Nonna</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a1a;
+      color: #d8d0c0;
+      font-family: 'Courier New', monospace;
+      line-height: 1.7;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+    a { color: #c8a060; }
+    a:hover { color: #e0c080; }
+    h1 {
+      font-size: 28px;
+      letter-spacing: 4px;
+      color: #e0d8c8;
+      border-bottom: 2px solid #3a3530;
+      padding-bottom: 12px;
+      margin-bottom: 8px;
+    }
+    .back-link { margin-bottom: 30px; display: block; font-size: 13px; }
+    h2 {
+      font-size: 18px;
+      color: #c8a060;
+      margin-top: 36px;
+      margin-bottom: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    h3 {
+      font-size: 15px;
+      color: #e0d8c8;
+      margin-top: 24px;
+      margin-bottom: 8px;
+    }
+    p { margin-bottom: 14px; }
+    hr {
+      border: none;
+      border-top: 1px solid #3a3530;
+      margin: 32px 0;
+    }
+    .signal-chain {
+      background: #2a2520;
+      border: 1px solid #3a3530;
+      border-radius: 4px;
+      padding: 16px 20px;
+      font-size: 15px;
+      letter-spacing: 1px;
+      text-align: center;
+      margin: 16px 0;
+      color: #c8a060;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 13px;
+    }
+    th {
+      text-align: left;
+      color: #c8a060;
+      border-bottom: 1px solid #3a3530;
+      padding: 6px 10px;
+    }
+    td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #2a2520;
+    }
+    .env-diagram {
+      background: #2a2520;
+      border: 1px solid #3a3530;
+      border-radius: 4px;
+      padding: 12px 20px;
+      font-size: 14px;
+      line-height: 1.4;
+      margin: 14px 0;
+      white-space: pre;
+    }
+    ul, ol { margin: 10px 0 14px 24px; }
+    li { margin-bottom: 6px; }
+    strong { color: #e0d8c8; }
+    .recipe { margin: 10px 0 10px 16px; font-size: 13px; }
+    .recipe li { margin-bottom: 2px; }
+    .patch-idea {
+      background: #2a2520;
+      border-left: 3px solid #c8a060;
+      padding: 8px 14px;
+      margin: 8px 0;
+      font-size: 13px;
+    }
+    .patch-idea strong { color: #c8a060; }
+    .step-list li { margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+<a href="../index.html" class="back-link">&larr; Back to Synth</a>
+
+<h1>Getting Started</h1>
+<p>You don't need to know anything about synthesizers to start making sounds. This guide gives you enough to experiment — the best way to learn is to twist knobs and listen.</p>
+
+<h2>The Big Idea</h2>
+
+<p>A synthesizer generates a sound, shapes it, and controls when you hear it. Goob Nonna does this in a chain:</p>
+
+<div class="signal-chain">Oscillators &rarr; Mixer &rarr; Filter &rarr; Amplifier &rarr; Reverb &rarr; Speakers</div>
+
+<p>Each link in the chain does one job. That's it. Everything else is just controlling <em>how</em> each link does its job.</p>
+
+<hr>
+
+<h2>The Modules</h2>
+
+<h3>Oscillators: Where Sound Begins</h3>
+
+<p>Oscillators produce raw tones. You have two (OSC 1 and OSC 2), and each can produce four waveforms. The waveform you pick is your starting material — everything downstream sculpts it.</p>
+
+<table>
+  <tr><th>Waveform</th><th>Character</th><th>Good For</th></tr>
+  <tr><td><strong>Sawtooth</strong></td><td>Bright, buzzy, rich in harmonics</td><td>Basses, leads, brass, strings — the workhorse</td></tr>
+  <tr><td><strong>Square</strong></td><td>Hollow, woody, odd harmonics only</td><td>Clarinets, retro leads, sub basses</td></tr>
+  <tr><td><strong>Triangle</strong></td><td>Soft, pure, almost sinusoidal</td><td>Flutes, sub basses, gentle pads</td></tr>
+  <tr><td><strong>Narrow Pulse</strong></td><td>Thin, nasal, reedy</td><td>Oboe-like tones, plucky sounds</td></tr>
+</table>
+
+<p><strong>Octave</strong> (the footage setting: 32', 16', 8', 4', 2') shifts pitch by whole octaves. 8' is "normal." Lower numbers = higher pitch.</p>
+
+<p><strong>Frequency</strong> detunes the oscillator by semitones. Set OSC 2 slightly off from OSC 1 (try &plusmn;0.1 to &plusmn;0.3) to get a thick, chorused sound. This is one of the simplest and most satisfying things you can do.</p>
+
+<h3>Mixer: Blending Sources</h3>
+
+<p>Three volume knobs — one per source (OSC 1, OSC 2, Noise). Turn them up to hear them, down to mute them. Noise is useful for adding breath, texture, or making percussion.</p>
+
+<h3>Filter: Sculpting the Tone</h3>
+
+<p>The filter removes frequencies from the sound. Think of it as a tone control with superpowers.</p>
+
+<ul>
+  <li><strong>Cutoff</strong> — the most important knob on the synth. Sweep it and listen. It controls which frequencies pass through. Low = dark and muffled. High = bright and open.</li>
+  <li><strong>Resonance</strong> — boosts frequencies right at the cutoff point. Low values add subtle emphasis. High values create a sharp, whistling peak. At maximum, the filter self-oscillates and becomes its own sound source.</li>
+  <li><strong>ENV AMT</strong> — how much the envelope (see below) moves the cutoff. Positive values open the filter on each note, then close it. Negative values do the reverse. This is how you get that classic "wah" on each keypress.</li>
+  <li><strong>KB TRACK</strong> — makes the filter cutoff follow the keyboard. At 1:1, higher notes sound brighter (like a real instrument). At 0, every note has the same brightness regardless of pitch.</li>
+</ul>
+
+<h3>Envelope: Shaping Notes Over Time</h3>
+
+<p>The envelope controls <em>how a note evolves</em> from the moment you press a key to after you release it. Four sliders:</p>
+
+<div class="env-diagram">    /\
+   /  \___________
+  /    \          \
+ /      \          \
+A   D    S          R</div>
+
+<ul>
+  <li><strong>Attack</strong> — how fast the sound reaches full volume (0 = instant snap, high = slow swell)</li>
+  <li><strong>Decay</strong> — how fast it drops from the peak to the sustain level</li>
+  <li><strong>Sustain</strong> — the level held while you keep the key pressed (this is a <em>level</em>, not a time)</li>
+  <li><strong>Release</strong> — how long the sound fades after you let go</li>
+</ul>
+
+<p><strong>Quick recipes:</strong></p>
+<ul class="recipe">
+  <li>Pluck/percussion: fast A, fast D, zero S, short R</li>
+  <li>Pad/strings: slow A, medium D, high S, long R</li>
+  <li>Organ: zero A, zero D, full S, zero R</li>
+</ul>
+
+<p>The envelope also modulates the filter (via ENV AMT), which is where most of the expressive character comes from.</p>
+
+<h3>VCA: The Volume Gate</h3>
+
+<p>The VCA controls <em>whether you hear anything</em>. Three modes:</p>
+
+<ul>
+  <li><strong>ENV</strong> — the envelope controls volume. This is what you want 95% of the time.</li>
+  <li><strong>KB RLS</strong> — instant attack, but uses the envelope's release time when you let go. Good for organ-like sounds with a fade-out.</li>
+  <li><strong>DRONE</strong> — always on. Sound plays continuously. Useful with the sequencer or for ambient textures.</li>
+</ul>
+
+<h3>LFO: Automatic Movement</h3>
+
+<p>The LFO (Low Frequency Oscillator) is too slow to hear as a tone — instead it wobbles other things. The <strong>Mod Wheel</strong> controls how much it affects:</p>
+
+<ul>
+  <li><strong>PITCH AMT</strong> — vibrato (wobbling pitch). A little goes a long way.</li>
+  <li><strong>CUTOFF AMT</strong> — wah-wah effect (wobbling the filter). Classic.</li>
+  <li><strong>PW AMT</strong> — pulse width modulation (wobbling the shape of pulse waves). Gives a swirling, animated quality.</li>
+</ul>
+
+<p>Try different LFO waveforms: Triangle for smooth wobble, Square for trills, S/H (Sample &amp; Hold) for random robotic steps.</p>
+
+<h3>Reverb</h3>
+
+<p>One knob: MIX. Turn it up for space, down for dry. Simple.</p>
+
+<hr>
+
+<h2>Interesting Default Interactions</h2>
+
+<p>These things happen automatically without patching any cables:</p>
+
+<ol>
+  <li><strong>Envelope &rarr; Filter + VCA</strong> — Every keypress opens the filter <em>and</em> controls volume simultaneously. This is why the synth sounds musical out of the box. Crank ENV AMT to hear the filter sweep.</li>
+  <li><strong>Two detuned oscillators</strong> — Turn up OSC 2's level, set both to sawtooth, and detune OSC 2 slightly. Instant thick analog sound. This is the foundation of countless classic synth patches.</li>
+  <li><strong>Resonance + Envelope</strong> — High resonance + moderate ENV AMT creates an aggressive, squelchy attack on each note. The "acid" sound.</li>
+  <li><strong>LFO + Mod Wheel</strong> — The mod wheel scales <em>all three</em> LFO destinations at once. So you can set up pitch vibrato, filter wobble, and PWM, then bring them all in gradually with the wheel.</li>
+  <li><strong>Keyboard Tracking + Filter</strong> — With KB TRACK at 1:1, the filter opens as you play higher notes. Without it, high notes sound dull. This is subtle but crucial for playable sounds.</li>
+</ol>
+
+<hr>
+
+<h2>Patching: The Modular Part</h2>
+
+<p>The jacks on the panel let you rewire the synth. There are two types:</p>
+
+<ul>
+  <li><strong>Outputs</strong> (red-tinted rings) — sources of signal</li>
+  <li><strong>Inputs</strong> (blue-tinted rings) — destinations that accept signal</li>
+</ul>
+
+<p><strong>To patch:</strong> Click an output jack, then click an input jack. A cable appears. Click the cable to remove it.</p>
+
+<p><strong>The key concept:</strong> When you plug into an input, you <em>replace</em> whatever was connected there by default. Pull the cable out, and the default connection comes back. This means you can't break anything permanently — just unplug.</p>
+
+<h3>Patch Ideas to Try</h3>
+
+<div class="patch-idea"><strong>LFO S/H OUT &rarr; CUTOFF IN</strong> — Random filter cutoff on every LFO cycle. Instant robot.</div>
+<div class="patch-idea"><strong>NOISE OUT &rarr; FILTER IN</strong> — Replace the oscillators with noise through the filter. Wind, percussion, ocean.</div>
+<div class="patch-idea"><strong>ENV OUT &rarr; OSC PITCH IN</strong> — Envelope controls pitch. Notes swoop up or down on each keypress.</div>
+<div class="patch-idea"><strong>LFO TRI OUT &rarr; OSC PITCH IN</strong> — Continuous pitch wobble independent of the mod wheel.</div>
+<div class="patch-idea"><strong>KB VEL OUT &rarr; CUTOFF IN</strong> — Velocity-sensitive filter (harder playing = brighter).</div>
+
+<h3>The Utility Modules</h3>
+
+<ul>
+  <li><strong>Mult</strong> — Splits one signal into multiple copies. Patch something into one jack, get copies from the others.</li>
+  <li><strong>Attenuator</strong> — Scales a signal down (or inverts it). Useful when an LFO is too strong for a destination.</li>
+  <li><strong>HPF</strong> — High-pass filter. Removes low frequencies. Patch audio through it to thin things out.</li>
+</ul>
+
+<hr>
+
+<h2>First Experiment</h2>
+
+<ol class="step-list">
+  <li>Click the overlay to start</li>
+  <li>Click some keyboard keys — you should hear a sawtooth tone</li>
+  <li>Sweep the <strong>CUTOFF</strong> knob slowly from high to low and back</li>
+  <li>Turn up <strong>RESONANCE</strong> to about 2-3 and sweep cutoff again</li>
+  <li>Set <strong>ENV AMT</strong> to about 3, attack to 0, decay to about 3, sustain to 0 — now each note has a filter sweep</li>
+  <li>Turn up OSC 2 level, detune it slightly — notice the thickening</li>
+  <li>Push the <strong>MOD WHEEL</strong> up with some <strong>CUTOFF AMT</strong> — hear the wobble</li>
+  <li>Try a preset from the dropdown to hear what's possible</li>
+</ol>
+
+<p>From here, just experiment. Every knob does something audible. You can't damage anything.</p>
+
+</body>
+</html>
