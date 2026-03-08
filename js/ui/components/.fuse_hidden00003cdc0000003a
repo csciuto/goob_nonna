@@ -101,8 +101,6 @@ export class Knob {
   setValue(newValue) {
     // Quantize to step
     newValue = Math.round(newValue / this.step) * this.step;
-    // Avoid floating point drift for integer steps
-    if (this.step >= 1) newValue = Math.round(newValue);
     newValue = Math.max(this.min, Math.min(this.max, newValue));
 
     if (newValue !== this.value) {

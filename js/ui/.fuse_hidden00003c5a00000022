@@ -30,6 +30,12 @@ export class Layout {
    * @returns {object} All UI references for wiring
    */
   build(container) {
+    // Header
+    const header = document.createElement('div');
+    header.className = 'synth-header';
+    header.innerHTML = '<div class="header-controls"><span class="shift-hint">Hold Shift for tooltips</span><a href="docs/getting-started.html" class="guide-link">Guide</a><div class="preset-selector"><select id="preset-select"><option value="">-- Select Preset --</option></select></div></div>';
+    container.appendChild(header);
+
     // Main panel area (relative positioned for SVG overlay)
     const panelArea = document.createElement('div');
     panelArea.className = 'panel-area';
@@ -66,6 +72,7 @@ export class Layout {
     panelRow.appendChild(this.panels.filter.getElement());
     panelRow.appendChild(this.panels.envelope.getElement());
     panelRow.appendChild(this.panels.output.getElement());
+    panelRow.appendChild(this.panels.back.getElement());
 
     panelArea.appendChild(panelRow);
 
@@ -79,31 +86,7 @@ export class Layout {
     // Title strip between panels and keyboard (like real Grandmother)
     const titleStrip = document.createElement('div');
     titleStrip.className = 'synth-title-strip';
-    titleStrip.innerHTML = '<div class="title-left"><span class="title-goob">GOOB</span><span class="title-nonna">NONNA</span><span class="title-subtitle">SEMI-MODULAR ANALOG SYNTHESIZER</span></div><div class="title-right"><span class="shift-hint">Hold Shift for tooltips</span><div class="preset-selector"><select id="preset-select"><option value="">-- Select Preset --</option></select></div><button class="kebab-btn" id="kebab-btn" title="More">&#8942;</button></div>';
-
-    // Back panel popover
-    const backPopover = document.createElement('div');
-    backPopover.className = 'back-popover hidden';
-    backPopover.id = 'back-popover';
-
-    const guideLink = document.createElement('a');
-    guideLink.href = 'docs/getting-started.html';
-    guideLink.className = 'guide-link';
-    guideLink.textContent = 'Guide';
-    backPopover.appendChild(guideLink);
-
-    backPopover.appendChild(this.panels.back.getElement());
-    titleStrip.querySelector('.title-right').appendChild(backPopover);
-
-    // Kebab menu toggle
-    titleStrip.querySelector('#kebab-btn').addEventListener('click', () => {
-      backPopover.classList.toggle('hidden');
-    });
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.kebab-btn') && !e.target.closest('.back-popover')) {
-        backPopover.classList.add('hidden');
-      }
-    });
+    titleStrip.innerHTML = '<span class="title-goob">GOOB</span><span class="title-nonna">NONNA</span><span class="title-subtitle">SEMI-MODULAR ANALOG SYNTHESIZER</span>';
     container.appendChild(titleStrip);
 
     // Keyboard area with controls alongside

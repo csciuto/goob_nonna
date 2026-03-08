@@ -14,10 +14,7 @@ export class Knob {
    * @param {function} options.onChange - Callback(value)
    * @param {boolean} options.bipolar - If true, center is zero
    */
-  /**
-   * @param {Array<string>} options.valueLabels - If provided, display these labels instead of numbers (indexed by integer value starting from min)
-   */
-  constructor({ label = '', min = 0, max = 10, value = 5, step = 0.1, onChange = null, bipolar = false, valueLabels = null }) {
+  constructor({ label = '', min = 0, max = 10, value = 5, step = 0.1, onChange = null, bipolar = false }) {
     this.min = min;
     this.max = max;
     this.value = value;
@@ -25,7 +22,6 @@ export class Knob {
     this.onChange = onChange;
     this.bipolar = bipolar;
     this.label = label;
-    this.valueLabels = valueLabels;
 
     this._dragging = false;
     this._lastY = 0;
@@ -101,8 +97,6 @@ export class Knob {
   setValue(newValue) {
     // Quantize to step
     newValue = Math.round(newValue / this.step) * this.step;
-    // Avoid floating point drift for integer steps
-    if (this.step >= 1) newValue = Math.round(newValue);
     newValue = Math.max(this.min, Math.min(this.max, newValue));
 
     if (newValue !== this.value) {
@@ -117,12 +111,7 @@ export class Knob {
     const normalized = (this.value - this.min) / (this.max - this.min);
     const angle = -135 + normalized * 270;
     this._knobBody.style.transform = `rotate(${angle}deg)`;
-    if (this.valueLabels) {
-      const idx = Math.round(this.value - this.min);
-      this._valueEl.textContent = this.valueLabels[idx] || '';
-    } else {
-      this._valueEl.textContent = this.value.toFixed(1);
-    }
+    this._valueEl.textContent = this.value.toFixed(1);
   }
 
   getElement() {

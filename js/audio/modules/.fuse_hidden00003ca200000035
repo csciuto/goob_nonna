@@ -107,10 +107,6 @@ export class LFOModule {
     try { this._shSource.disconnect(this.output); } catch (e) {}
 
     switch (waveform) {
-      case LFO_WAVEFORMS.SINE:
-        this.oscillator.type = 'sine';
-        this.oscillator.connect(this.output);
-        break;
       case LFO_WAVEFORMS.TRIANGLE:
         this.oscillator.type = 'triangle';
         this.oscillator.connect(this.output);

@@ -62,12 +62,6 @@ export class LFOModule {
     this.rateInput = this.ctx.createGain();
     this.rateInput.gain.value = 0;
 
-    // Analyser for LED blinking
-    this._analyser = this.ctx.createAnalyser();
-    this._analyser.fftSize = 256;
-    this.output.connect(this._analyser);
-    this._analyserData = new Float32Array(this._analyser.fftSize);
-
     this.oscillator.start();
   }
 
@@ -107,10 +101,6 @@ export class LFOModule {
     try { this._shSource.disconnect(this.output); } catch (e) {}
 
     switch (waveform) {
-      case LFO_WAVEFORMS.SINE:
-        this.oscillator.type = 'sine';
-        this.oscillator.connect(this.output);
-        break;
       case LFO_WAVEFORMS.TRIANGLE:
         this.oscillator.type = 'triangle';
         this.oscillator.connect(this.output);
@@ -135,11 +125,6 @@ export class LFOModule {
         this._shSource.connect(this.output);
         break;
     }
-  }
-
-  getCurrentValue() {
-    this._analyser.getFloatTimeDomainData(this._analyserData);
-    return this._analyserData[0];
   }
 
   destroy() {

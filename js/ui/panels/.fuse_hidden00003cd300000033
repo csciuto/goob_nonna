@@ -50,8 +50,6 @@ export class PanelModulation {
     // Row 4: PITCH AMT, CUTOFF AMT
     this.pitchAmt = new Knob({ label: 'PITCH AMT', min: 0, max: 10, value: 0 });
     this.cutoffAmt = new Knob({ label: 'CUTOFF AMT', min: 0, max: 10, value: 0 });
-    this.pitchAmt.getElement().classList.add('mod-pitch');
-    this.cutoffAmt.getElement().classList.add('mod-cutoff');
     this.pitchAmt.getElement().dataset.tooltip = 'How much the LFO wobbles pitch (vibrato) via mod wheel';
     this.cutoffAmt.getElement().dataset.tooltip = 'How much the LFO wobbles the filter (wah) via mod wheel';
 
@@ -63,23 +61,26 @@ export class PanelModulation {
 
     // Row 5: PW AMT, WAVEFORM
     this.pwAmt = new Knob({ label: 'PW AMT', min: 0, max: 10, value: 0 });
-    this.pwAmt.getElement().classList.add('mod-pw');
     this.pwAmt.getElement().dataset.tooltip = 'How much the LFO modulates pulse width via mod wheel';
 
     this.lfoWaveform = new SwitchControl({
-      label: 'WAVE',
+      label: 'WAVEFORM',
       positions: [
-        { value: LFO_WAVEFORMS.SINE, label: '∿' },
-        { value: LFO_WAVEFORMS.SAWTOOTH, label: '⊿' },
-        { value: LFO_WAVEFORMS.RAMP, label: '⊾' },
-        { value: LFO_WAVEFORMS.SQUARE, label: '⊓' },
+        { value: LFO_WAVEFORMS.TRIANGLE, label: 'TRI' },
+        { value: LFO_WAVEFORMS.SQUARE, label: 'SQR' },
+        { value: LFO_WAVEFORMS.SAWTOOTH, label: 'SAW' },
+        { value: LFO_WAVEFORMS.RAMP, label: 'RAMP' },
+        { value: LFO_WAVEFORMS.SAMPLE_HOLD, label: 'S/H' },
       ],
       selectedIndex: 0,
     });
     this.lfoWaveform.getElement().dataset.tooltip = 'Shape of the LFO waveform';
 
-    this.element.appendChild(this.pwAmt.getElement());
-    this.element.appendChild(this.lfoWaveform.getElement());
+    const row5 = document.createElement('div');
+    row5.className = 'knob-row';
+    row5.appendChild(this.pwAmt.getElement());
+    row5.appendChild(this.lfoWaveform.getElement());
+    this.element.appendChild(row5);
   }
 
   wire(engine) {

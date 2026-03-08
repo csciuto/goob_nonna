@@ -143,7 +143,6 @@ export class AudioEngine {
     bus.register(PP.LFO_SQ_OUT, { type: OUT, node: this.lfo.sqOutput, label: 'LFO SQ', module: 'lfo' });
     bus.register(PP.LFO_SAW_OUT, { type: OUT, node: this.lfo.sawOutput, label: 'LFO SAW', module: 'lfo' });
     bus.register(PP.LFO_SH_OUT, { type: OUT, node: this.lfo.shOutput, label: 'LFO S/H', module: 'lfo' });
-    bus.register(PP.LFO_WAVE_OUT, { type: OUT, node: this.lfo.output, label: 'LFO WAVE', module: 'lfo' });
     bus.register(PP.LFO_RATE_IN, { type: IN, node: this.lfo.rateInput, label: 'LFO RATE', module: 'lfo' });
 
     // Utilities
@@ -284,7 +283,6 @@ export class AudioEngine {
   // LFO controls
   setLFORate(value) { this.lfo.setRate(value); }
   setLFOWaveform(waveform) { this.lfo.setWaveform(waveform); }
-  getLFOValue() { return this.lfo.getCurrentValue(); }
 
   // Modulation amounts
   setPitchAmount(normalized) {

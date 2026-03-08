@@ -18,21 +18,19 @@ export class PanelOscillators {
     osc1Section.className = 'panel-section';
     osc1Section.innerHTML = '<h3>OSC 1</h3>';
 
-    this.osc1Waveform = new SwitchControl({
-      label: 'WAVE',
-      positions: [
-        { value: WAVEFORMS.TRIANGLE, label: '△' },
-        { value: WAVEFORMS.SAW, label: '⊿' },
-        { value: WAVEFORMS.SQUARE, label: '⊓' },
-        { value: WAVEFORMS.NARROW_PULSE, label: '⊔' },
-      ],
-      selectedIndex: 1,
+    const OSC_WAVE_LIST = [WAVEFORMS.TRIANGLE, WAVEFORMS.SAW, WAVEFORMS.SQUARE, WAVEFORMS.NARROW_PULSE];
+    this._oscWaveList = OSC_WAVE_LIST;
+
+    this.osc1Waveform = new Knob({
+      label: 'WAVEFORM',
+      min: 0, max: 3, value: 1, step: 1,
+      valueLabels: ['TRI', 'SAW', 'SQR', 'PLS'],
     });
 
-    this.osc1Octave = new SwitchControl({
-      label: 'OCT',
-      positions: OCTAVE_FEET.map(f => ({ value: f, label: `${f}'` })),
-      selectedIndex: 2,
+    this.osc1Octave = new Knob({
+      label: 'OCTAVE',
+      min: 0, max: OCTAVE_FEET.length - 1, value: 2, step: 1,
+      valueLabels: OCTAVE_FEET.map(f => `${f}'`),
     });
 
     this.osc1Freq = new Knob({
@@ -72,21 +70,16 @@ export class PanelOscillators {
     osc2Section.className = 'panel-section';
     osc2Section.innerHTML = '<h3>OSC 2</h3>';
 
-    this.osc2Waveform = new SwitchControl({
-      label: 'WAVE',
-      positions: [
-        { value: WAVEFORMS.TRIANGLE, label: '△' },
-        { value: WAVEFORMS.SAW, label: '⊿' },
-        { value: WAVEFORMS.SQUARE, label: '⊓' },
-        { value: WAVEFORMS.NARROW_PULSE, label: '⊔' },
-      ],
-      selectedIndex: 1,
+    this.osc2Waveform = new Knob({
+      label: 'WAVEFORM',
+      min: 0, max: 3, value: 1, step: 1,
+      valueLabels: ['TRI', 'SAW', 'SQR', 'PLS'],
     });
 
-    this.osc2Octave = new SwitchControl({
-      label: 'OCT',
-      positions: OCTAVE_FEET.map(f => ({ value: f, label: `${f}'` })),
-      selectedIndex: 2,
+    this.osc2Octave = new Knob({
+      label: 'OCTAVE',
+      min: 0, max: OCTAVE_FEET.length - 1, value: 2, step: 1,
+      valueLabels: OCTAVE_FEET.map(f => `${f}'`),
     });
 
     this.osc2Freq = new Knob({
@@ -140,12 +133,12 @@ export class PanelOscillators {
   }
 
   wire(engine) {
-    this.osc1Waveform.onChange = (v) => engine.setOsc1Waveform(v);
-    this.osc1Octave.onChange = (v) => engine.setOsc1Octave(v);
+    this.osc1Waveform.onChange = (v) => engine.setOsc1Waveform(this._oscWaveList[v]);
+    this.osc1Octave.onChange = (v) => engine.setOsc1Octave(OCTAVE_FEET[v]);
     this.osc1Freq.onChange = (v) => engine.setOsc1Detune(v);
 
-    this.osc2Waveform.onChange = (v) => engine.setOsc2Waveform(v);
-    this.osc2Octave.onChange = (v) => engine.setOsc2Octave(v);
+    this.osc2Waveform.onChange = (v) => engine.setOsc2Waveform(this._oscWaveList[v]);
+    this.osc2Octave.onChange = (v) => engine.setOsc2Octave(OCTAVE_FEET[v]);
     this.osc2Freq.onChange = (v) => engine.setOsc2Detune(v);
     this.osc2Sync.onChange = (v) => engine.setOsc2Sync(v);
   }

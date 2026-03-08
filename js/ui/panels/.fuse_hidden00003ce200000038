@@ -1,5 +1,4 @@
 import { Knob } from '../components/knob.js';
-import { SwitchControl } from '../components/switch-control.js';
 import { LED } from '../components/led.js';
 import { Jack } from '../components/jack.js';
 import { PATCH_POINTS, LFO_WAVEFORMS } from '../../utils/constants.js';
@@ -50,8 +49,6 @@ export class PanelModulation {
     // Row 4: PITCH AMT, CUTOFF AMT
     this.pitchAmt = new Knob({ label: 'PITCH AMT', min: 0, max: 10, value: 0 });
     this.cutoffAmt = new Knob({ label: 'CUTOFF AMT', min: 0, max: 10, value: 0 });
-    this.pitchAmt.getElement().classList.add('mod-pitch');
-    this.cutoffAmt.getElement().classList.add('mod-cutoff');
     this.pitchAmt.getElement().dataset.tooltip = 'How much the LFO wobbles pitch (vibrato) via mod wheel';
     this.cutoffAmt.getElement().dataset.tooltip = 'How much the LFO wobbles the filter (wah) via mod wheel';
 
@@ -63,28 +60,30 @@ export class PanelModulation {
 
     // Row 5: PW AMT, WAVEFORM
     this.pwAmt = new Knob({ label: 'PW AMT', min: 0, max: 10, value: 0 });
-    this.pwAmt.getElement().classList.add('mod-pw');
     this.pwAmt.getElement().dataset.tooltip = 'How much the LFO modulates pulse width via mod wheel';
 
-    this.lfoWaveform = new SwitchControl({
-      label: 'WAVE',
-      positions: [
-        { value: LFO_WAVEFORMS.SINE, label: '∿' },
-        { value: LFO_WAVEFORMS.SAWTOOTH, label: '⊿' },
-        { value: LFO_WAVEFORMS.RAMP, label: '⊾' },
-        { value: LFO_WAVEFORMS.SQUARE, label: '⊓' },
-      ],
-      selectedIndex: 0,
+    const LFO_WAVE_LIST = [LFO_WAVEFORMS.SINE, LFO_WAVEFORMS.SAWTOOTH, LFO_WAVEFORMS.RAMP, LFO_WAVEFORMS.SQUARE];
+    this._lfoWaveList = LFO_WAVE_LIST;
+    this.lfoWaveform = new Knob({
+      label: 'WAVEFORM',
+      min: 0,
+      max: LFO_WAVE_LIST.length - 1,
+      value: 0,
+      step: 1,
+      valueLabels: ['SIN', 'SAW', 'RAMP', 'SQR'],
     });
     this.lfoWaveform.getElement().dataset.tooltip = 'Shape of the LFO waveform';
 
-    this.element.appendChild(this.pwAmt.getElement());
-    this.element.appendChild(this.lfoWaveform.getElement());
+    const row5 = document.createElement('div');
+    row5.className = 'knob-row';
+    row5.appendChild(this.pwAmt.getElement());
+    row5.appendChild(this.lfoWaveform.getElement());
+    this.element.appendChild(row5);
   }
 
   wire(engine) {
     this.lfoRate.onChange = (v) => engine.setLFORate(v);
-    this.lfoWaveform.onChange = (v) => engine.setLFOWaveform(v);
+    this.lfoWaveform.onChange = (v) => engine.setLFOWaveform(this._lfoWaveList[v]);
     this.pitchAmt.onChange = (v) => engine.setPitchAmount(v / 10);
     this.cutoffAmt.onChange = (v) => engine.setCutoffAmount(v / 10);
     this.pwAmt.onChange = (v) => engine.setPWAmount(v / 10);

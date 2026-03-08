@@ -198,18 +198,8 @@ body {
 .panel-modulation h4 { color: #fff; font-weight: bold; }
 .panel-modulation .knob-label { color: #fff; }
 .panel-modulation .switch-label { color: #fff; }
-.panel-modulation .knob-value { color: #fff; }
 .panel-modulation .jack-label { color: #fff; }
 .panel-modulation .jack-row { border-top-color: #4a4a50; }
-.panel-modulation .mod-pitch .knob-label { color: #78b8d0; }
-.panel-modulation .mod-cutoff .knob-label { color: #7bc87b; }
-.panel-modulation .mod-pw .knob-label {
-  color: #222;
-  background: #fff;
-  padding: 1px 4px;
-  border-radius: 2px;
-  display: inline-block;
-}
 
 .panel-oscillators {
   flex: 0 0 200px;
@@ -351,7 +341,7 @@ body {
 }
 
 .switch-option {
-  font-size: 11px;
+  font-size: 9px;
   padding: 3px 5px;
   color: #bbb;
   cursor: pointer;

@@ -11,19 +11,31 @@ test.describe('Goob Nonna Synth', () => {
       await expect(page.locator('#start-overlay')).toHaveCount(0);
     });
 
-    test('renders synth header', async ({ page }) => {
-      await expect(page.locator('.synth-header h1')).toHaveText('GOOB NONNA');
+    test('renders synth title strip', async ({ page }) => {
+      await expect(page.locator('.synth-title-strip')).toBeVisible();
     });
 
     test('renders all module panels', async ({ page }) => {
-      await expect(page.locator('.panel-kb-jacks')).toBeVisible();
+      await expect(page.locator('.panel-arp-seq')).toBeVisible();
       await expect(page.locator('.panel-oscillators')).toBeVisible();
       const panelCount = await page.locator('.panel').count();
-      expect(panelCount).toBeGreaterThanOrEqual(8);
+      expect(panelCount).toBeGreaterThanOrEqual(7);
     });
 
     test('renders keyboard with 32 keys', async ({ page }) => {
       await expect(page.locator('.key')).toHaveCount(32);
+    });
+
+    test('renders black and white keys with correct sizing', async ({ page }) => {
+      const blackKeys = page.locator('.black-key');
+      const whiteKeys = page.locator('.white-key');
+      expect(await blackKeys.count()).toBeGreaterThan(0);
+      expect(await whiteKeys.count()).toBeGreaterThan(0);
+      const blackBox = await blackKeys.first().boundingBox();
+      const whiteBox = await whiteKeys.first().boundingBox();
+      expect(blackBox.height).toBeGreaterThan(50);
+      expect(blackBox.width).toBeGreaterThan(10);
+      expect(whiteBox.height).toBeGreaterThan(blackBox.height);
     });
 
     test('renders pitch and mod wheels in keyboard area', async ({ page }) => {
@@ -36,7 +48,8 @@ test.describe('Goob Nonna Synth', () => {
       await expect(page.locator('#preset-select')).toBeVisible();
     });
 
-    test('renders guide link', async ({ page }) => {
+    test('guide link exists in kebab menu', async ({ page }) => {
+      await page.locator('#kebab-btn').click();
       const link = page.locator('.guide-link');
       await expect(link).toBeVisible();
       await expect(link).toHaveAttribute('href', 'docs/getting-started.html');

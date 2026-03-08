@@ -23,7 +23,30 @@ body {
   padding: 10px;
 }
 
-/* Controls in title strip */
+/* Header */
+.synth-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: #2a2a2e;
+  border-bottom: 2px solid #3a3a40;
+  margin-bottom: 5px;
+}
+
+.synth-header h1 {
+  font-size: 26px;
+  letter-spacing: 6px;
+  color: #e8e4dc;
+  font-weight: bold;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 .shift-hint {
   color: #888;
   font-size: 11px;
@@ -33,9 +56,9 @@ body {
 .guide-link {
   color: #c49a40;
   text-decoration: none;
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 1px;
-  padding: 3px 8px;
+  padding: 5px 10px;
   border: 1px solid #4a4a50;
   border-radius: 3px;
   transition: background 0.1s;
@@ -47,63 +70,32 @@ body {
 }
 
 .preset-selector select {
-  background: #1c1c1e;
+  background: #2a2a2e;
   color: #e8e4dc;
   border: 1px solid #4a4a50;
-  padding: 3px 8px;
+  padding: 5px 10px;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
   cursor: pointer;
 }
 
-.kebab-btn {
-  background: none;
+.header-btn {
+  background: #3a3a40;
+  color: #e8e4dc;
   border: 1px solid #4a4a50;
-  color: #888;
-  font-size: 16px;
-  padding: 2px 6px;
+  padding: 5px 12px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 1px;
   cursor: pointer;
   border-radius: 3px;
-  line-height: 1;
+  transition: background 0.1s;
 }
 
-.kebab-btn:hover {
-  color: #fff;
-  background: #3a3a40;
-}
-
-.back-popover {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  z-index: 200;
-  background: #222;
-  border: 1px solid #4a4a50;
-  border-radius: 4px;
-  padding: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-}
-
-.back-popover.hidden {
-  display: none;
-}
-
-.back-popover .panel-back {
-  background: transparent;
-  border: none;
-  padding: 0;
-  flex: none;
-}
-
-.back-popover .panel-back h3 {
-  color: #999;
-  border-bottom-color: #4a4a50;
-  font-size: 10px;
-}
-
-.back-popover .jack-label {
-  color: #ccc;
+.header-btn:hover {
+  background: #4a4a50;
 }
 
 /* Panel Area */
@@ -170,26 +162,6 @@ body {
 .panel-arp-seq .knob-value { color: #2a2520; }
 .panel-arp-seq .switch-label { color: #2a2520; }
 .panel-arp-seq .button-label { color: #2a2520; }
-.panel-arp-seq .jack-label { color: #2a2520; }
-.jack-row.jack-row-top {
-  border-top: none;
-  margin-top: 0;
-  padding-top: 0;
-}
-
-.rate-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.knob-row {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  align-items: flex-start;
-}
 
 .panel-modulation {
   background: #2a2a2e;
@@ -198,17 +170,10 @@ body {
 .panel-modulation h4 { color: #fff; font-weight: bold; }
 .panel-modulation .knob-label { color: #fff; }
 .panel-modulation .switch-label { color: #fff; }
-.panel-modulation .knob-value { color: #fff; }
 .panel-modulation .jack-label { color: #fff; }
-.panel-modulation .jack-row { border-top-color: #4a4a50; }
-.panel-modulation .mod-pitch .knob-label { color: #78b8d0; }
-.panel-modulation .mod-cutoff .knob-label { color: #7bc87b; }
-.panel-modulation .mod-pw .knob-label {
-  color: #222;
-  background: #fff;
-  padding: 1px 4px;
-  border-radius: 2px;
-  display: inline-block;
+
+.panel-kb-jacks {
+  flex: 0 0 80px;
 }
 
 .panel-oscillators {
@@ -320,7 +285,7 @@ body {
 }
 
 .knob-value {
-  font-size: 11px;
+  font-size: 9px;
   color: #2a2520;
   text-align: center;
   font-weight: bold;
@@ -351,7 +316,7 @@ body {
 }
 
 .switch-option {
-  font-size: 11px;
+  font-size: 9px;
   padding: 3px 5px;
   color: #bbb;
   cursor: pointer;
@@ -581,97 +546,15 @@ body {
   pointer-events: none;
 }
 
-/* Title strip between panels and keyboard */
-.synth-title-strip {
-  background: #1c1c1e;
-  padding: 4px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.title-left {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-}
-
-.title-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  position: relative;
-}
-
-.title-goob {
-  font-size: 20px;
-  font-weight: bold;
-  color: #78b8d0;
-  letter-spacing: 3px;
-}
-
-.title-nonna {
-  font-size: 20px;
-  font-weight: bold;
-  color: #fff;
-  letter-spacing: 3px;
-}
-
-.title-subtitle {
-  font-size: 9px;
-  color: #888;
-  letter-spacing: 2px;
-  margin-left: 10px;
-  text-transform: uppercase;
-}
-
-/* Keyboard Area — controls sit alongside keyboard */
+/* Keyboard Area — wheels sit alongside keyboard */
 .keyboard-area {
-  padding: 6px;
+  margin-top: 5px;
+  padding: 8px;
   background: #2a2a2e;
   border: 2px solid #3a3a40;
-  border-top: none;
   display: flex;
   align-items: stretch;
-  gap: 8px;
-}
-
-.keyboard-left-controls {
-  display: flex;
-  align-items: center;
   gap: 12px;
-  padding: 4px 6px;
-  flex-shrink: 0;
-}
-
-.kb-buttons-section {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.triple-button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-}
-
-.triple-label {
-  font-size: 8px;
-  font-weight: bold;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-
-.triple-label-above {
-  color: #c49a40;
-}
-
-.triple-label-below {
-  color: #78b8d0;
 }
 
 .keyboard-wheels {
@@ -685,7 +568,8 @@ body {
 .keyboard {
   display: flex;
   position: relative;
-  height: 200px;
+  height: 120px;
+  justify-content: center;
   flex: 1;
 }
 
@@ -693,12 +577,11 @@ body {
   position: relative;
   cursor: pointer;
   transition: background 0.05s;
-  flex: 1;
 }
 
 .white-key {
-  min-width: 0;
-  height: 200px;
+  width: 36px;
+  height: 120px;
   background: #f5f2eb;
   border: 1px solid #999;
   border-radius: 0 0 3px 3px;
@@ -718,14 +601,13 @@ body {
 }
 
 .black-key {
-  width: 28px;
-  height: 125px;
+  width: 22px;
+  height: 75px;
   background: #1a1a1a;
   border: 1px solid #111;
   border-radius: 0 0 2px 2px;
-  margin-left: -14px;
-  margin-right: -14px;
-  flex: 0 0 auto;
+  margin-left: -11px;
+  margin-right: -11px;
   z-index: 2;
   display: flex;
   align-items: flex-end;

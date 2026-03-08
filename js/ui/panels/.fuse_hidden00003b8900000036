@@ -21,18 +21,18 @@ export class PanelOscillators {
     this.osc1Waveform = new SwitchControl({
       label: 'WAVE',
       positions: [
-        { value: WAVEFORMS.TRIANGLE, label: '△' },
-        { value: WAVEFORMS.SAW, label: '⊿' },
-        { value: WAVEFORMS.SQUARE, label: '⊓' },
-        { value: WAVEFORMS.NARROW_PULSE, label: '⊔' },
+        { value: WAVEFORMS.SAW, label: 'SAW' },
+        { value: WAVEFORMS.TRIANGLE, label: 'TRI' },
+        { value: WAVEFORMS.SQUARE, label: 'SQR' },
+        { value: WAVEFORMS.NARROW_PULSE, label: 'PULSE' },
       ],
-      selectedIndex: 1,
+      selectedIndex: 0,
     });
 
     this.osc1Octave = new SwitchControl({
-      label: 'OCT',
+      label: 'OCTAVE',
       positions: OCTAVE_FEET.map(f => ({ value: f, label: `${f}'` })),
-      selectedIndex: 2,
+      selectedIndex: 2, // 8'
     });
 
     this.osc1Freq = new Knob({
@@ -75,18 +75,18 @@ export class PanelOscillators {
     this.osc2Waveform = new SwitchControl({
       label: 'WAVE',
       positions: [
-        { value: WAVEFORMS.TRIANGLE, label: '△' },
-        { value: WAVEFORMS.SAW, label: '⊿' },
-        { value: WAVEFORMS.SQUARE, label: '⊓' },
-        { value: WAVEFORMS.NARROW_PULSE, label: '⊔' },
+        { value: WAVEFORMS.SAW, label: 'SAW' },
+        { value: WAVEFORMS.TRIANGLE, label: 'TRI' },
+        { value: WAVEFORMS.SQUARE, label: 'SQR' },
+        { value: WAVEFORMS.NARROW_PULSE, label: 'PULSE' },
       ],
-      selectedIndex: 1,
+      selectedIndex: 0,
     });
 
     this.osc2Octave = new SwitchControl({
-      label: 'OCT',
+      label: 'OCTAVE',
       positions: OCTAVE_FEET.map(f => ({ value: f, label: `${f}'` })),
-      selectedIndex: 2,
+      selectedIndex: 2, // 8'
     });
 
     this.osc2Freq = new Knob({

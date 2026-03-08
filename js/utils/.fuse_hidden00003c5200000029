@@ -29,7 +29,6 @@ export const OCTAVE_FEET = [32, 16, 8, 4, 2];
  * LFO waveform types
  */
 export const LFO_WAVEFORMS = {
-  SINE: 'sine',
   TRIANGLE: 'triangle',
   SQUARE: 'square',
   SAWTOOTH: 'sawtooth',
@@ -157,7 +156,6 @@ export const PATCH_POINTS = {
   LFO_SH_OUT: 'lfo-sh-out',
 
   // LFO inputs
-  LFO_WAVE_OUT: 'lfo-wave-out',
   LFO_RATE_IN: 'lfo-rate-in',
   LFO_SYNC_IN: 'lfo-sync-in',
 
