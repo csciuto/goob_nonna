@@ -1140,13 +1140,13 @@ body {
 }
 
 .black-key {
-  width: 28px;
+  width: var(--bk-width, 28px);
   height: 160px;
   background: #1a1a1a;
   border: 1px solid #111;
   border-radius: 0 0 2px 2px;
-  margin-left: -14px;
-  margin-right: -14px;
+  margin-left: calc(var(--bk-width, 28px) / -2);
+  margin-right: calc(var(--bk-width, 28px) / -2);
   flex: 0 0 auto;
   z-index: 2;
   display: flex;

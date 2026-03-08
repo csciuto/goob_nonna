@@ -85,6 +85,9 @@ export class Keyboard {
 
     container.addEventListener('contextmenu', (e) => e.preventDefault());
 
+    const ro = new ResizeObserver(() => this._resizeBlackKeys());
+    ro.observe(container);
+
     for (let note = KEYBOARD_START_NOTE; note <= KEYBOARD_END_NOTE; note++) {
       const isBlack = this._isBlackKey(note);
       const key = document.createElement('div');
@@ -161,6 +164,14 @@ export class Keyboard {
         label.textContent = this._getShortcutLabel(note);
       }
     }
+  }
+
+  _resizeBlackKeys() {
+    const firstWhite = [...this._keys.values()].find(el => el.classList.contains('white-key'));
+    if (!firstWhite) return;
+    const wkWidth = firstWhite.getBoundingClientRect().width;
+    if (wkWidth === 0) return;
+    this.element.style.setProperty('--bk-width', `${wkWidth * 0.6}px`);
   }
 
   _bindQwerty() {
