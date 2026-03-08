@@ -107,10 +107,6 @@ export class PatchCableRenderer {
       const color = this._pending.color;
       this.cancelPending();
 
-      // Remove existing cable on either jack (one cable per jack)
-      this._removeExistingCables(sourceId);
-      this._removeExistingCables(destId);
-
       if (this.onConnect) {
         this.onConnect(sourceId, destId, color);
       }
@@ -131,29 +127,19 @@ export class PatchCableRenderer {
     path.setAttribute('stroke', color);
     path.setAttribute('stroke-width', '4');
     path.setAttribute('stroke-linecap', 'round');
+    path.style.pointerEvents = 'stroke';
+    path.style.cursor = 'pointer';
     path.dataset.patchId = patchId;
 
-    // Invisible wider hit area for easier clicking
-    const hitArea = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    hitArea.setAttribute('d', this._cablePath(sourcePos, destPos));
-    hitArea.setAttribute('fill', 'none');
-    hitArea.setAttribute('stroke', 'transparent');
-    hitArea.setAttribute('stroke-width', '14');
-    hitArea.style.pointerEvents = 'stroke';
-    hitArea.style.cursor = 'pointer';
-    hitArea.dataset.patchId = patchId;
-
-    // Click hit area to disconnect
-    hitArea.addEventListener('click', (e) => {
-      e.stopPropagation();
+    // Click to disconnect
+    path.addEventListener('click', () => {
       if (this.onDisconnect) {
         this.onDisconnect(patchId);
       }
     });
 
     this.svg.appendChild(path);
-    this.svg.appendChild(hitArea);
-    this._cables.set(patchId, { path, hitArea, sourceElement, destElement });
+    this._cables.set(patchId, { path, sourceElement, destElement });
   }
 
   /**
@@ -163,7 +149,6 @@ export class PatchCableRenderer {
     const cable = this._cables.get(patchId);
     if (cable) {
       cable.path.remove();
-      if (cable.hitArea) cable.hitArea.remove();
       this._cables.delete(patchId);
     }
   }
@@ -184,34 +169,7 @@ export class PatchCableRenderer {
     for (const cable of this._cables.values()) {
       const sourcePos = this._getJackCenter(cable.sourceElement);
       const destPos = this._getJackCenter(cable.destElement);
-      const d = this._cablePath(sourcePos, destPos);
-      cable.path.setAttribute('d', d);
-      if (cable.hitArea) cable.hitArea.setAttribute('d', d);
-    }
-  }
-
-  /**
-   * Remove all cables connected to a jack (for right-click removal).
-   */
-  removeJackCables(jackId) {
-    for (const [patchId] of this._cables) {
-      if (patchId.startsWith(jackId + '->') || patchId.endsWith('->' + jackId)) {
-        if (this.onDisconnect) this.onDisconnect(patchId);
-        return;
-      }
-    }
-  }
-
-  /**
-   * Remove any existing cables connected to a jack (one cable per jack rule).
-   */
-  _removeExistingCables(jackId) {
-    for (const [patchId] of this._cables) {
-      // patchId format: "sourceId->destId"
-      if (patchId.startsWith(jackId + '->') || patchId.endsWith('->' + jackId)) {
-        if (this.onDisconnect) this.onDisconnect(patchId);
-        return; // Only one can exist per jack
-      }
+      cable.path.setAttribute('d', this._cablePath(sourcePos, destPos));
     }
   }
 

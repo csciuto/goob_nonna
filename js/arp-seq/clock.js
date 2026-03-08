@@ -10,10 +10,11 @@ export class Clock {
     this._callback = null;
     this._intervalId = null;
     this._tapTimes = [];
+    this._tapOverride = false; // true when tap tempo has taken over
   }
 
   setBPM(bpm) {
-    this._bpm = Math.max(30, Math.min(300, bpm));
+    this._bpm = Math.max(20, Math.min(280, bpm));
     if (this._running) {
       this.stop();
       this.start(this._callback);
@@ -22,12 +23,12 @@ export class Clock {
 
   /**
    * Set rate from knob value (0-10).
-   * Maps to roughly 30-300 BPM range (as note divisions).
+   * Maps to 20-280 BPM.
+   * Ignored if tap tempo has overridden.
    */
   setRate(knobValue) {
-    // Map 0-10 to ~1-30 Hz step rate
-    const rate = 0.5 + (knobValue / 10) * 29.5;
-    this._bpm = rate * 60; // Convert Hz to BPM equivalent
+    if (this._tapOverride) return;
+    this._bpm = 20 + (knobValue / 10) * 260;
     if (this._running) {
       this.stop();
       this.start(this._callback);
@@ -73,22 +74,34 @@ export class Clock {
    */
   tap() {
     const now = performance.now();
+
+    // Reset if last tap was more than 2 seconds ago
+    if (this._tapTimes.length > 0 && now - this._tapTimes[this._tapTimes.length - 1] > 2000) {
+      this._tapTimes = [];
+    }
+
     this._tapTimes.push(now);
 
-    // Keep last 4 taps
-    if (this._tapTimes.length > 4) {
+    // Keep last 5 taps
+    if (this._tapTimes.length > 5) {
       this._tapTimes.shift();
     }
 
-    if (this._tapTimes.length >= 2) {
-      // Calculate average interval
+    // Need at least 3 taps to override
+    if (this._tapTimes.length >= 3) {
       let totalInterval = 0;
       for (let i = 1; i < this._tapTimes.length; i++) {
         totalInterval += this._tapTimes[i] - this._tapTimes[i - 1];
       }
       const avgInterval = totalInterval / (this._tapTimes.length - 1);
+      this._tapOverride = true;
       this.setBPM(60000 / avgInterval);
     }
+  }
+
+  /** Clear tap override so knob controls rate again. */
+  clearTapOverride() {
+    this._tapOverride = false;
   }
 
   destroy() {

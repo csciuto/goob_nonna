@@ -31,17 +31,9 @@ export class PanelArpSeq {
     kbJackRow2.appendChild(this.jacks.kbVel.getElement());
     this.element.appendChild(kbJackRow2);
 
-    // RATE knob + LED — display BPM (20-280)
+    // RATE knob + LED
     this.rate = new Knob({ label: 'RATE', min: 0, max: 10, value: 5 });
-    this.rate.getElement().dataset.tooltip = 'Clock speed for arpeggiator and sequencer (20-280 BPM)';
-    // Override value display to show BPM
-    const origRateUpdate = this.rate._updateVisual.bind(this.rate);
-    this.rate._updateVisual = () => {
-      origRateUpdate();
-      const bpm = Math.round(20 + (this.rate.value / 10) * 260);
-      this.rate._valueEl.textContent = `${bpm}`;
-    };
-    this.rate._updateVisual();
+    this.rate.getElement().dataset.tooltip = 'Clock speed for arpeggiator and sequencer';
     this.led = new LED();
 
     const rateSection = document.createElement('div');

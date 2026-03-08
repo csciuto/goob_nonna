@@ -20,16 +20,13 @@ function buildUI() {
   layout = new Layout();
   layout.build(container);
 
-  // Wire keyboard — audio engine starts lazily on first interaction
+  // Wire keyboard — audio engine starts lazily on first note
   layout.keyboard.onNoteOn = (note, vel) => {
     initAudio().then(() => engine.noteOn(note, vel));
   };
   layout.keyboard.onNoteOff = (note) => {
     if (engine) engine.noteOff(note);
   };
-
-  // Initialize audio on any click in the synth (so arp buttons work without playing a note first)
-  document.getElementById('synth').addEventListener('click', () => initAudio(), { once: true });
 
   // Wire patch cables
   layout.patchCables.onConnect = (sourceId, destId, color) => {

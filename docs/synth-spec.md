@@ -10,8 +10,8 @@ Modulation: LFO → (via mod wheel) → OSC pitch, Filter cutoff, PWM
 ## Modules
 
 ### Oscillators (OSC 1 & OSC 2)
-- OSC 1: Waveforms (Saw, Triangle, Square, Narrow Pulse), Octave (32', 16', 8', 4', 2'), Frequency (-7 to +7 semitones fine tune)
-- OSC 2: Same waveforms, same octave range, Frequency (wider detune range), SYNC switch (off/on - hard sync OSC2 to OSC1)
+- OSC 1: Waveforms (Saw, Triangle, Square, Narrow Pulse), Octave (32', 16', 8', 4'), Frequency (-7 to +7 semitones fine tune)
+- OSC 2: Same waveforms, Octave (16', 8', 4', 2'), Frequency (wider detune range), SYNC button (hard sync OSC2 to OSC1)
 - Both receive 1V/oct pitch CV from keyboard by default
 
 ### Mixer
@@ -79,23 +79,50 @@ Modulation: LFO → (via mod wheel) → OSC pitch, Filter cutoff, PWM
 
 ## Arpeggiator / Sequencer
 
+### Controls (ARP/SEQ panel)
+- **RATE knob**: 20-280 BPM. LED flashes at current rate.
+- **MODE switch**: ARP / SEQ / REC
+- **DIRECTION switch**: ORDR / FWD-BKWD / RNDM (applies to both arp and seq)
+- **OCT/SEQ switch**: In ARP mode = 1/2/3 octave range. In SEQ/REC mode = sequence slot 1/2/3.
+- **Patch points**: KB OUT (pitch CV), GATE OUT, KB VEL OUT
+
 ### Arpeggiator
-- Modes: ORDER (as played), FWD (low→high), BWD (high→low), FWD-BWD, RANDOM
-- Range: 1, 2, or 3 octaves
-- Rate: controlled by clock (RATE knob or TAP tempo)
-- HOLD: Latches current notes
+- Press PLAY to activate, then hold notes on keyboard
+- Notes play one at a time in a repeating rhythmic pattern
+- DIRECTION controls order: ORDR (as played), FWD/BKWD (forward then reverse), RNDM (random)
+- OCT range: 1 = notes as played, 2 = pattern + 1 octave up, 3 = pattern + 1 and 2 octaves up
+
+### HOLD
+- Arp/seq continues playing after lifting fingers from keyboard
+- While keys are still held, new notes played are ADDED to the pattern
+- After ALL fingers are lifted, playing new notes starts a NEW pattern
 
 ### Sequencer
 - 256 steps max, 3 sequence slots
-- Record: Press REC, play notes, press REC to stop
-- Playback: Press PLAY
-- Features: Tie, Rest, Accent per step
-- Glide: Portamento between notes
+- **Recording**: Set MODE→REC, select slot with OCT/SEQ (1/2/3), play notes on keyboard. First note erases existing sequence data for that slot.
+- **Playback**: Set MODE→SEQ, press PLAY, press a note to set transposition base
+- **Editing**: While seq is playing in SEQ mode, switch to REC — edits overwrite current step in real time. Switch back to SEQ to stop editing.
+- WARNING: If MODE=REC and seq is stopped, pressing a note erases the sequence.
+
+### Dual-Function Buttons (Left-Hand Controller)
+Normal (ARP/SEQ mode):
+- **PLAY** (green): Start/stop arpeggiator or sequencer
+- **HOLD** (blue): Latch arp/seq notes
+- **TAP** (yellow): Tap tempo (3+ taps to set rate, overrides RATE knob). Hold TAP ~1s to exit tap tempo.
+
+REC mode (below labels):
+- **TIE**: Ties two steps together (legato). Same note tied = held continuously.
+- **REST**: Inserts a silent step.
+- **ACCENT**: Adds accent envelope to step. Output at KB VEL OUT jack.
+
+Alt functions (above labels, via SHIFT button):
+- **< KB**: Shift keyboard down one octave
+- **KB >**: Shift keyboard up one octave
 
 ### Clock
-- Rate: 0.5 - 30 Hz (BPM display)
-- TAP tempo button
-- Internal/External sync
+- Rate: 20-280 BPM
+- TAP tempo: at least 3 taps to override knob. Hold TAP ~1s to exit and return control to knob.
+- When synced to external clock/MIDI, RATE knob selects musical subdivisions
 
 ## Patch Points (41 total)
 

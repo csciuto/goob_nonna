@@ -10,7 +10,6 @@ import { HighPassFilterModule } from './modules/high-pass-filter.js';
 import { AttenuatorModule } from './modules/attenuator.js';
 import { SignalBus } from './routing/signal-bus.js';
 import { PatchManager } from './routing/patch-manager.js';
-import { ArpSeqController } from '../arp-seq/arp-seq-controller.js';
 import { PATCH_POINTS, JACK_TYPE, VCA_MODES, PITCH_WHEEL_RANGE } from '../utils/constants.js';
 import { midiToFrequency } from '../utils/math.js';
 
@@ -76,11 +75,6 @@ export class AudioEngine {
 
     // Connect final output to destination
     this.reverb.output.connect(this.ctx.destination);
-
-    // Arp/Seq controller
-    this.arpSeq = new ArpSeqController(this.ctx);
-    this.arpSeq.onNoteOn = (note, vel) => this.noteOn(note, vel);
-    this.arpSeq.onNoteOff = (note) => this.noteOff(note);
   }
 
   _createModules() {
@@ -329,9 +323,6 @@ export class AudioEngine {
   // Glide
   setGlide(value) { this._glide = value; }
 
-  // Arp/Seq
-  getArpSeq() { return this.arpSeq; }
-
   // Patch cable management (delegates to PatchManager)
   createPatch(sourceId, destId, color) {
     return this.patchManager.connect(sourceId, destId, color);
@@ -358,7 +349,6 @@ export class AudioEngine {
     this.reverb.destroy();
     this.hpf.destroy();
     this.attenuator.destroy();
-    this.arpSeq.destroy();
     this._kbPitchSource.stop();
     this._kbGateSource.stop();
     this._kbVelSource.stop();

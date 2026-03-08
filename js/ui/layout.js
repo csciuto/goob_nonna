@@ -109,17 +109,7 @@ export class Layout {
     this._keyLabelSwitch.getElement().classList.add('popover-switch');
     backPopover.appendChild(this._keyLabelSwitch.getElement());
 
-    // Back panel toggle
-    const backPanelBtn = document.createElement('button');
-    backPanelBtn.className = 'popover-btn back-panel-btn';
-    backPanelBtn.textContent = 'Back Panel';
-    const backPanelContent = this.panels.back.getElement();
-    backPanelContent.classList.add('hidden');
-    backPanelBtn.addEventListener('click', () => {
-      backPanelContent.classList.toggle('hidden');
-    });
-    backPopover.appendChild(backPanelBtn);
-    backPopover.appendChild(backPanelContent);
+    backPopover.appendChild(this.panels.back.getElement());
 
     const versionLabel = document.createElement('div');
     versionLabel.className = 'version-label';
@@ -224,11 +214,14 @@ export class Layout {
   }
 
   _collectJackElements() {
-    // Collect all jack DOM elements for cable rendering
+    // Collect all jack DOM elements and wire right-click removal
     for (const panel of Object.values(this.panels)) {
       if (panel.jacks) {
         for (const jack of Object.values(panel.jacks)) {
           this._jackElements.set(jack.id, jack._jack);
+          jack.onRightClick = (id) => {
+            if (this.patchCables) this.patchCables.removeJackCables(id);
+          };
         }
       }
     }
@@ -245,7 +238,66 @@ export class Layout {
     for (const panel of Object.values(this.panels)) {
       if (panel.wire) panel.wire(engine);
     }
-    // Wire glide knob (moved from arp/seq panel)
+    // Wire glide knob
     this.glideKnob.onChange = (v) => engine.setGlide(v);
+
+    // Wire arp/seq controls
+    const arpSeq = engine.getArpSeq();
+
+    // Arp/seq panel controls
+    this.panels.arpSeq.mode.onChange = (v) => arpSeq.setMode(v);
+    this.panels.arpSeq.direction.onChange = (v) => arpSeq.setDirection(v);
+    this.panels.arpSeq.octSeq.onChange = (v) => arpSeq.setOctSeq(v);
+    this.panels.arpSeq.rate.onChange = (v) => arpSeq.setRate(v);
+
+    // LED blink on arp/seq step
+    arpSeq.onStep = () => {
+      this.panels.arpSeq.led.setOn(true);
+      setTimeout(() => this.panels.arpSeq.led.setOn(false), 50);
+    };
+
+    // Octave shift wired to keyboard
+    arpSeq.onOctaveShift = (dir) => {
+      this.keyboard._baseOctave = Math.max(41, Math.min(72, this.keyboard._baseOctave + dir * 12));
+      if (this.keyboard._labelMode === 'key') this.keyboard._updateLabels();
+    };
+
+    // Wire buttons
+    this.playBtn.onChange = (active) => {
+      arpSeq.pressPlay();
+      // Sync button state with arp/seq state
+      if (!arpSeq.isPlaying() && active) this.playBtn.setActive(false);
+      if (arpSeq.isPlaying() && !active) this.playBtn.setActive(true);
+    };
+
+    this.holdBtn.onChange = (active) => {
+      arpSeq.pressHold();
+      const holding = arpSeq.isHolding();
+      if (active !== holding) this.holdBtn.setActive(holding);
+    };
+
+    this.tapBtn.onPress = () => {
+      arpSeq.pressTap();
+    };
+    this.tapBtn.onRelease = () => {
+      arpSeq.releaseTap();
+    };
+
+    // Feed keyboard notes into arp/seq OR engine depending on mode
+    const origNoteOn = this.keyboard.onNoteOn;
+    const origNoteOff = this.keyboard.onNoteOff;
+    this.keyboard.onNoteOn = (note, vel) => {
+      arpSeq.noteOn(note, vel);
+      // When arp/seq is playing, don't send notes directly to engine
+      if (!arpSeq.isPlaying()) {
+        if (origNoteOn) origNoteOn(note, vel);
+      }
+    };
+    this.keyboard.onNoteOff = (note) => {
+      arpSeq.noteOff(note);
+      if (!arpSeq.isPlaying()) {
+        if (origNoteOff) origNoteOff(note);
+      }
+    };
   }
 }

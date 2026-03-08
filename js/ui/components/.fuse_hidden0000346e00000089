@@ -48,12 +48,6 @@ export class Jack {
       if (this.onClick) this.onClick(this.id, this.type, this._jack);
     });
 
-    // Right-click to remove cable
-    jack.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      if (this.onRightClick) this.onRightClick(this.id);
-    });
-
     return container;
   }
 
