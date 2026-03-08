@@ -14,10 +14,10 @@ export class PanelUtilities {
     const multSection = document.createElement('div');
     multSection.className = 'mult-section';
 
-    this.jacks.mult1 = new Jack({ id: PATCH_POINTS.MULT_1, type: 'input', label: '', onClick: onJackClick });
-    this.jacks.mult2 = new Jack({ id: PATCH_POINTS.MULT_2, type: 'input', label: '', onClick: onJackClick });
-    this.jacks.mult3 = new Jack({ id: PATCH_POINTS.MULT_3, type: 'input', label: '', onClick: onJackClick });
-    this.jacks.mult4 = new Jack({ id: PATCH_POINTS.MULT_4, type: 'input', label: '', onClick: onJackClick });
+    this.jacks.mult1 = new Jack({ id: PATCH_POINTS.MULT_1, type: 'output', label: 'MULT', onClick: onJackClick });
+    this.jacks.mult2 = new Jack({ id: PATCH_POINTS.MULT_2, type: 'output', label: 'MULT', onClick: onJackClick });
+    this.jacks.mult3 = new Jack({ id: PATCH_POINTS.MULT_3, type: 'input', label: 'MULT', onClick: onJackClick });
+    this.jacks.mult4 = new Jack({ id: PATCH_POINTS.MULT_4, type: 'input', label: 'MULT', onClick: onJackClick });
     this.jacks.mult1.getElement().dataset.tooltip = 'Mult — all 4 jacks are connected, splits one signal into copies';
     this.jacks.mult2.getElement().dataset.tooltip = 'Mult — all 4 jacks are connected';
     this.jacks.mult3.getElement().dataset.tooltip = 'Mult — all 4 jacks are connected';
@@ -37,12 +37,6 @@ export class PanelUtilities {
     multGrid.appendChild(multLines);
 
     multSection.appendChild(multGrid);
-
-    const multLabel = document.createElement('div');
-    multLabel.className = 'mult-label';
-    multLabel.textContent = 'MULT';
-    multSection.appendChild(multLabel);
-
     this.element.appendChild(multSection);
 
     // HPF: knob then input/output jacks
@@ -61,11 +55,6 @@ export class PanelUtilities {
     hpfJacks.appendChild(this.jacks.hpfIn.getElement());
     hpfJacks.appendChild(this.jacks.hpfOut.getElement());
     this.element.appendChild(hpfJacks);
-
-    // Divider between HPF and attenuator
-    const divider = document.createElement('div');
-    divider.className = 'util-divider';
-    this.element.appendChild(divider);
 
     // Attenuator: knob then input/output jacks
     this.attenAmount = new Knob({ label: 'ATTEN', min: -10, max: 10, value: 10, bipolar: true });

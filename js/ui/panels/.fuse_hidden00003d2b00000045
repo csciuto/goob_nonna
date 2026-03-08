@@ -33,25 +33,33 @@ export class PanelOscillators {
     grid.appendChild(this.jacks.osc1WaveOut.getElement());
     grid.appendChild(this.jacks.osc2WaveOut.getElement());
 
-    // --- Row 2: PITCH IN + PWM IN (osc1) | PITCH IN + LIN FM (osc2) ---
+    // --- Row 2: PITCH IN jacks ---
     this.jacks.osc1PitchIn = new Jack({ id: PATCH_POINTS.OSC1_PITCH_IN, type: 'input', label: 'PITCH IN', onClick: onJackClick });
-    this.jacks.osc1PwmIn = new Jack({ id: PATCH_POINTS.OSC1_PWM_IN, type: 'input', label: 'PWM IN', onClick: onJackClick });
     this.jacks.osc2PitchIn = new Jack({ id: PATCH_POINTS.OSC2_PITCH_IN, type: 'input', label: 'PITCH IN', onClick: onJackClick });
-    this.jacks.osc2LinFmIn = new Jack({ id: PATCH_POINTS.OSC2_LIN_FM_IN, type: 'input', label: 'LIN FM IN', onClick: onJackClick });
     this.jacks.osc1PitchIn.getElement().dataset.tooltip = 'CV input to control oscillator 1 pitch';
-    this.jacks.osc1PwmIn.getElement().dataset.tooltip = 'Modulates the pulse width of oscillator 1';
     this.jacks.osc2PitchIn.getElement().dataset.tooltip = 'CV input to control oscillator 2 pitch';
-    this.jacks.osc2LinFmIn.getElement().dataset.tooltip = 'Linear FM input for oscillator 2';
+    grid.appendChild(this.jacks.osc1PitchIn.getElement());
+    grid.appendChild(this.jacks.osc2PitchIn.getElement());
+
+    // --- Row 3: PWM IN + LIN FM IN (osc1) | PWM IN + SYNC IN (osc2) ---
+    this.jacks.osc1PwmIn = new Jack({ id: PATCH_POINTS.OSC1_PWM_IN, type: 'input', label: 'PWM IN', onClick: onJackClick });
+    this.jacks.osc1LinFmIn = new Jack({ id: PATCH_POINTS.OSC1_LIN_FM_IN, type: 'input', label: 'LIN FM', onClick: onJackClick });
+    this.jacks.osc2PwmIn = new Jack({ id: PATCH_POINTS.OSC2_PWM_IN, type: 'input', label: 'PWM IN', onClick: onJackClick });
+    this.jacks.syncIn = new Jack({ id: PATCH_POINTS.SYNC_IN, type: 'input', label: 'SYNC IN', onClick: onJackClick });
+    this.jacks.osc1PwmIn.getElement().dataset.tooltip = 'Modulates the pulse width of oscillator 1';
+    this.jacks.osc1LinFmIn.getElement().dataset.tooltip = 'Linear FM input for oscillator 1';
+    this.jacks.osc2PwmIn.getElement().dataset.tooltip = 'Modulates the pulse width of oscillator 2';
+    this.jacks.syncIn.getElement().dataset.tooltip = 'Trigger input for hard sync of OSC2 to OSC1';
 
     const jackPair1 = document.createElement('div');
     jackPair1.className = 'jack-pair';
-    jackPair1.appendChild(this.jacks.osc1PitchIn.getElement());
     jackPair1.appendChild(this.jacks.osc1PwmIn.getElement());
+    jackPair1.appendChild(this.jacks.osc1LinFmIn.getElement());
 
     const jackPair2 = document.createElement('div');
     jackPair2.className = 'jack-pair';
-    jackPair2.appendChild(this.jacks.osc2PitchIn.getElement());
-    jackPair2.appendChild(this.jacks.osc2LinFmIn.getElement());
+    jackPair2.appendChild(this.jacks.osc2PwmIn.getElement());
+    jackPair2.appendChild(this.jacks.syncIn.getElement());
 
     grid.appendChild(jackPair1);
     grid.appendChild(jackPair2);
@@ -98,16 +106,8 @@ export class PanelOscillators {
       bipolar: true,
     });
     this.osc2Freq.getElement().dataset.tooltip = 'Fine-tunes oscillator 2 — detune slightly from OSC1 for thickness';
-
-    // Sync-Freq row spans both columns with a connecting line
-    const syncFreqRow = document.createElement('div');
-    syncFreqRow.className = 'sync-freq-row';
-    syncFreqRow.appendChild(syncCell);
-    const syncLine = document.createElement('div');
-    syncLine.className = 'sync-line';
-    syncFreqRow.appendChild(syncLine);
-    syncFreqRow.appendChild(this.osc2Freq.getElement());
-    grid.appendChild(syncFreqRow);
+    grid.appendChild(syncCell);
+    grid.appendChild(this.osc2Freq.getElement());
 
     // --- Row 6: WAVEFORM switches ---
     this.osc1Waveform = new SwitchControl({

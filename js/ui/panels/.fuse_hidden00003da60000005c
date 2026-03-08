@@ -62,11 +62,6 @@ export class PanelUtilities {
     hpfJacks.appendChild(this.jacks.hpfOut.getElement());
     this.element.appendChild(hpfJacks);
 
-    // Divider between HPF and attenuator
-    const divider = document.createElement('div');
-    divider.className = 'util-divider';
-    this.element.appendChild(divider);
-
     // Attenuator: knob then input/output jacks
     this.attenAmount = new Knob({ label: 'ATTEN', min: -10, max: 10, value: 10, bipolar: true });
     this.attenAmount.getElement().dataset.tooltip = 'Scales or inverts a signal passing through';

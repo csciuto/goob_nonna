@@ -98,16 +98,8 @@ export class PanelOscillators {
       bipolar: true,
     });
     this.osc2Freq.getElement().dataset.tooltip = 'Fine-tunes oscillator 2 — detune slightly from OSC1 for thickness';
-
-    // Sync-Freq row spans both columns with a connecting line
-    const syncFreqRow = document.createElement('div');
-    syncFreqRow.className = 'sync-freq-row';
-    syncFreqRow.appendChild(syncCell);
-    const syncLine = document.createElement('div');
-    syncLine.className = 'sync-line';
-    syncFreqRow.appendChild(syncLine);
-    syncFreqRow.appendChild(this.osc2Freq.getElement());
-    grid.appendChild(syncFreqRow);
+    grid.appendChild(syncCell);
+    grid.appendChild(this.osc2Freq.getElement());
 
     // --- Row 6: WAVEFORM switches ---
     this.osc1Waveform = new SwitchControl({

@@ -166,7 +166,7 @@ export const PATCH_POINTS = {
   OSC2_PITCH_IN: 'osc2-pitch-in',
   OSC1_PWM_IN: 'osc1-pwm-in',
   OSC2_PWM_IN: 'osc2-pwm-in',
-  OSC2_LIN_FM_IN: 'osc2-lin-fm-in',
+  OSC1_LIN_FM_IN: 'osc1-lin-fm-in',
   SYNC_IN: 'sync-in',
 
   // Arp/Seq

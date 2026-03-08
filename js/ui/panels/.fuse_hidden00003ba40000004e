@@ -25,7 +25,6 @@ export class PanelController {
       value: 0,
     });
 
-    this.pitchWheel.getElement().classList.add('wheel-pitch');
     this.pitchWheel.getElement().dataset.tooltip = 'Bends pitch up or down — springs back to center';
     this.modWheel.getElement().dataset.tooltip = 'Controls LFO modulation depth — stays where you set it';
 

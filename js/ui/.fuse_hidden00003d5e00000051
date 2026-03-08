@@ -111,19 +111,15 @@ export class Layout {
     const keyboardArea = document.createElement('div');
     keyboardArea.className = 'keyboard-area';
 
-    // Left controls: top row (glide + buttons), bottom row (wheels)
+    // Left controls: glide, buttons, wheels
     const leftControls = document.createElement('div');
     leftControls.className = 'keyboard-left-controls';
-
-    // Top row: glide knob + buttons
-    const topRow = document.createElement('div');
-    topRow.className = 'keyboard-top-row';
 
     // Glide knob (blue label)
     this.glideKnob = new Knob({ label: 'GLIDE', min: 0, max: 10, value: 0 });
     this.glideKnob.getElement().classList.add('glide-knob');
     this.glideKnob.getElement().dataset.tooltip = 'Portamento time between notes';
-    topRow.appendChild(this.glideKnob.getElement());
+    leftControls.appendChild(this.glideKnob.getElement());
 
     // Triple-label buttons: PLAY, HOLD, TAP
     const buttonsSection = document.createElement('div');
@@ -146,10 +142,9 @@ export class Layout {
     buttonsSection.appendChild(this._makeTripleButton(this.holdBtn, 'SHIFT', 'REST'));
     buttonsSection.appendChild(this._makeTripleButton(this.tapBtn, 'KB >', 'ACCENT'));
 
-    topRow.appendChild(buttonsSection);
-    leftControls.appendChild(topRow);
+    leftControls.appendChild(buttonsSection);
 
-    // Bottom row: wheels
+    // Wheels
     const wheelsSection = document.createElement('div');
     wheelsSection.className = 'keyboard-wheels';
     wheelsSection.appendChild(this.panels.controller.pitchWheel.getElement());

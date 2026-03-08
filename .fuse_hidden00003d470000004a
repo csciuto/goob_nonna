@@ -131,7 +131,7 @@ body {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .panel h3 {
@@ -225,7 +225,7 @@ body {
 .osc-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px 16px;
+  gap: 6px 12px;
   align-items: start;
   padding: 4px;
   position: relative;
@@ -248,7 +248,7 @@ body {
 
 .jack-pair {
   display: flex;
-  gap: 14px;
+  gap: 6px;
   justify-content: center;
 }
 
@@ -281,21 +281,6 @@ body {
   box-shadow: 0 0 12px rgba(232, 130, 12, 0.6);
 }
 
-.sync-freq-row {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-}
-
-.sync-line {
-  flex: 1;
-  height: 2px;
-  background: #1a2a38;
-  margin: 0 4px;
-}
-
 .panel-mixer {
   background: #2a2a2e;
 }
@@ -315,60 +300,9 @@ body {
   background: #2a2a2e;
 }
 .panel-utilities h3 { color: #fff; border-bottom-color: #4a4a50; }
+.panel-utilities h4 { color: #fff; font-weight: bold; }
 .panel-utilities .knob-label { color: #fff; }
-.panel-utilities .knob-value { color: #fff; }
 .panel-utilities .jack-label { color: #fff; }
-.panel-utilities .jack-output-label .jack-label {
-  color: #222;
-  background: #fff;
-  padding: 1px 4px;
-  border-radius: 2px;
-}
-
-.mult-section {
-  text-align: center;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #4a4a50;
-  margin-bottom: 4px;
-}
-.mult-label {
-  font-size: 9px;
-  font-weight: bold;
-  color: #fff;
-  text-transform: uppercase;
-  margin-top: 2px;
-}
-
-.util-divider {
-  border-top: 1px solid #4a4a50;
-  margin: 2px 0;
-}
-
-.mult-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  justify-items: center;
-  padding: 8px;
-  position: relative;
-}
-
-.mult-lines {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-}
-.mult-lines line {
-  stroke: #888;
-  stroke-width: 1.5;
-}
-.mult-grid .jack-container {
-  z-index: 1;
-}
 
 .panel-filter {
   background: #88c898;
@@ -607,15 +541,14 @@ body {
   color: #2a2520;
   text-transform: uppercase;
   text-align: center;
-  max-width: 55px;
+  max-width: 40px;
   line-height: 1.2;
   font-weight: bold;
-  white-space: nowrap;
 }
 
 .jack-row {
   display: flex;
-  gap: 14px;
+  gap: 6px;
   flex-wrap: wrap;
   justify-content: center;
   padding-top: 4px;
@@ -632,9 +565,9 @@ body {
 }
 
 .synth-button {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
   background: #3a3a40;
   border: 2px solid #2a2a2e;
   cursor: pointer;
@@ -650,35 +583,12 @@ body {
   border-color: #d05050;
 }
 
-/* Light button color variants */
-.light-green .synth-button.active {
-  background: #40c040;
-  border-color: #50d050;
-  box-shadow: 0 0 8px rgba(64, 192, 64, 0.5);
-}
-.light-blue .synth-button.active {
-  background: #4080e0;
-  border-color: #5090f0;
-  box-shadow: 0 0 8px rgba(64, 128, 224, 0.5);
-}
-.light-yellow .synth-button.active {
-  background: #e0c030;
-  border-color: #f0d040;
-  box-shadow: 0 0 8px rgba(224, 192, 48, 0.5);
-}
-
 .button-label {
   font-size: 9px;
   color: #2a2520;
   text-transform: uppercase;
   font-weight: bold;
 }
-
-/* Yellow button labels in keyboard area to match sequencer */
-.keyboard-left-controls .button-label { color: #e0c030; }
-
-/* Blue glide label */
-.glide-knob .knob-label { color: #78b8d0; }
 
 .buttons-row {
   display: flex;
@@ -720,12 +630,11 @@ body {
 
 .wheel-track {
   width: 22px;
-  height: 140px;
+  height: 100px;
   background: #1a1a1e;
   border-radius: 4px;
   position: relative;
   cursor: pointer;
-  overflow: hidden;
 }
 
 .wheel-thumb {
@@ -733,23 +642,12 @@ body {
   left: -2px;
   width: 26px;
   height: 16px;
-  background: #e8e4dc;
-  border: 1px solid #bbb;
+  background: #4a4a50;
+  border: 1px solid #2a2a2e;
   border-radius: 3px;
+  transform: translateY(50%);
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
-
-.wheel-mark {
-  width: 14px;
-  height: 2px;
-  background: #1a1a1e;
-  border-radius: 1px;
-}
-
-.wheel-pitch .wheel-label { color: #78b8d0; }
 
 /* Title strip between panels and keyboard */
 .synth-title-strip {
@@ -808,17 +706,10 @@ body {
 
 .keyboard-left-controls {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 6px;
-  flex-shrink: 0;
-}
-
-.keyboard-top-row {
-  display: flex;
   align-items: center;
   gap: 12px;
+  padding: 4px 6px;
+  flex-shrink: 0;
 }
 
 .kb-buttons-section {
@@ -837,32 +728,32 @@ body {
 .triple-label {
   font-size: 8px;
   font-weight: bold;
-  color: #fff;
+  color: #888;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
 }
 
 .triple-label-above {
-  color: #fff;
+  color: #c49a40;
 }
 
 .triple-label-below {
-  color: #fff;
+  color: #78b8d0;
 }
 
 .keyboard-wheels {
   display: flex;
-  gap: 12px;
-  justify-content: center;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 6px;
   flex-shrink: 0;
-  margin-top: 8px;
 }
 
 .keyboard {
   display: flex;
   position: relative;
-  height: 260px;
+  height: 200px;
   flex: 1;
 }
 
@@ -875,7 +766,7 @@ body {
 
 .white-key {
   min-width: 0;
-  height: 260px;
+  height: 200px;
   background: #f5f2eb;
   border: 1px solid #999;
   border-radius: 0 0 3px 3px;
@@ -896,7 +787,7 @@ body {
 
 .black-key {
   width: 28px;
-  height: 160px;
+  height: 125px;
   background: #1a1a1a;
   border: 1px solid #111;
   border-radius: 0 0 2px 2px;

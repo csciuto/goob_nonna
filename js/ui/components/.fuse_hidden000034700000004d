@@ -33,23 +33,19 @@ export class Wheel {
     const container = document.createElement('div');
     container.className = 'wheel-container';
 
+    const labelEl = document.createElement('div');
+    labelEl.className = 'wheel-label';
+    labelEl.textContent = this.label;
+
     const track = document.createElement('div');
     track.className = 'wheel-track';
 
     const thumb = document.createElement('div');
     thumb.className = 'wheel-thumb';
 
-    const mark = document.createElement('div');
-    mark.className = 'wheel-mark';
-    thumb.appendChild(mark);
-
     track.appendChild(thumb);
-    container.appendChild(track);
-
-    const labelEl = document.createElement('div');
-    labelEl.className = 'wheel-label';
-    labelEl.textContent = this.label;
     container.appendChild(labelEl);
+    container.appendChild(track);
 
     this._track = track;
     this._thumb = thumb;
@@ -95,9 +91,8 @@ export class Wheel {
 
   _updateVisual() {
     const normalized = (this.value - this.min) / (this.max - this.min);
-    // Keep thumb within track: bottom ranges from 0 to (trackHeight - thumbHeight)
-    // Using calc so it works with any track/thumb size
-    this._thumb.style.bottom = `calc(${normalized * 100}% - ${normalized * 16}px)`;
+    const percent = normalized * 100;
+    this._thumb.style.bottom = `${percent}%`;
   }
 
   getElement() {

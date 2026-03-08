@@ -23,6 +23,11 @@ export class SwitchControl {
     const container = document.createElement('div');
     container.className = 'switch-container';
 
+    const labelEl = document.createElement('div');
+    labelEl.className = 'switch-label';
+    labelEl.textContent = this.label;
+    container.appendChild(labelEl);
+
     const switchBody = document.createElement('div');
     switchBody.className = 'switch-body';
 
@@ -43,11 +48,6 @@ export class SwitchControl {
     });
 
     container.appendChild(switchBody);
-
-    const labelEl = document.createElement('div');
-    labelEl.className = 'switch-label';
-    labelEl.textContent = this.label;
-    container.appendChild(labelEl);
     return container;
   }
 

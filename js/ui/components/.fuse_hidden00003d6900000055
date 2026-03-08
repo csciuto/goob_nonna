@@ -95,9 +95,8 @@ export class Wheel {
 
   _updateVisual() {
     const normalized = (this.value - this.min) / (this.max - this.min);
-    // Keep thumb within track: bottom ranges from 0 to (trackHeight - thumbHeight)
-    // Using calc so it works with any track/thumb size
-    this._thumb.style.bottom = `calc(${normalized * 100}% - ${normalized * 16}px)`;
+    const percent = normalized * 100;
+    this._thumb.style.bottom = `${percent}%`;
   }
 
   getElement() {
