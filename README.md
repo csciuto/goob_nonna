@@ -4,7 +4,7 @@ A web-based clone of the Moog Grandmother analog synthesizer, built with vanilla
 
 ## Demo
 
-Open `index.html` in a modern browser (Chrome/Firefox/Edge) or deploy to GitHub Pages. Click anywhere to initialize audio, then click the keyboard to play.
+Open `index.html` in a modern browser (Chrome/Firefox/Edge) or deploy to GitHub Pages. The UI loads immediately; audio initializes on your first note.
 
 ## Features
 
@@ -39,7 +39,7 @@ Open `index.html` in a modern browser (Chrome/Firefox/Edge) or deploy to GitHub 
 Funky Robot, Showdown Guitar, Dynasty Plucks, Haunted Cave, Ultra Sub Bass, Cavern Strings, J-Bass, Auto Zap Bass, Stepped Drone, Cyclical Patterns, Bag Pipes, Piano Bass, Lift Off, 3 Saws
 
 ### UI
-- **32-note keyboard** (F2 to C5) with mouse interaction
+- **32-note keyboard** (F2 to C5) with mouse and QWERTY input
 - **Rotary knobs** with vertical drag control
 - **Multi-position switches** for waveform/mode selection
 - **Vertical sliders** for ADSR
@@ -134,14 +134,16 @@ npx playwright test
 
 ## How to Play
 
-1. **Click anywhere** to initialize the audio engine (required by browsers)
-2. **Click keyboard keys** to play notes
-3. **Drag knobs vertically** to adjust parameters (up = increase, down = decrease)
-4. **Click switches** to change waveforms, modes, etc.
-5. **Patch cables**: Click an output jack, then click an input jack to connect. Click a cable to disconnect.
-6. **Pitch wheel**: Drag vertically, springs back to center
-7. **Mod wheel**: Drag vertically, stays in position. Controls LFO modulation depth.
-8. **Presets**: Select from the dropdown menu to load a factory preset
+1. **Play notes** — click the keyboard or use your computer keyboard
+2. **QWERTY mapping** — bottom row `Z S X D C V G B H N J M` and top row `Q 2 W 3 E R 5 T 6 Y 7 U` (two octaves, chromatic)
+3. **Octave shift** — `-` / `=` keys move the QWERTY range down/up
+4. **Tab** — toggle key labels between QWERTY shortcuts and note names
+5. **Drag knobs vertically** to adjust parameters (up = increase, down = decrease)
+6. **Click switches** to change waveforms, modes, etc.
+7. **Patch cables**: Click an output jack, then click an input jack to connect. Click a cable to disconnect.
+8. **Pitch wheel**: Drag vertically, springs back to center
+9. **Mod wheel**: Drag vertically, stays in position. Controls LFO modulation depth.
+10. **Presets**: Select from the dropdown menu to load a factory preset
 
 ## Signal Flow (Default)
 
@@ -158,8 +160,8 @@ Keyboard ──→ OSC 1 ──→ Mixer ──→ Filter ──→ VCA ──�
 - **Hard Sync**: OSC2-to-OSC1 hard sync is a placeholder (requires AudioWorklet for proper implementation)
 - **Continuous PWM**: Pulse width modulation via LFO requires AudioWorklet for smooth operation
 - **Ladder Filter**: Approximated with cascaded BiquadFilters rather than true OTA modeling
-- **No MIDI**: Mouse/keyboard input only
-- **Desktop Only**: Designed for 1280px+ screens with mouse interaction
+- **No MIDI**: Mouse and QWERTY keyboard input only
+- **Desktop Only**: Designed for 1280px+ screens
 
 ## Technologies
 

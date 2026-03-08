@@ -2,8 +2,41 @@ import { KEYBOARD_START_NOTE, KEYBOARD_END_NOTE, NOTE_NAMES } from '../utils/con
 
 /**
  * 32-note visual keyboard (F2 to C5).
- * Mouse click to play notes.
+ * Monophonic with last-note priority (like the Grandmother).
+ * Supports mouse and QWERTY input. Two rows:
+ *   Bottom: Z S X D C V G B H N J M , L . ;
+ *   Top:    Q 2 W 3 E R 5 T 6 Y 7 U I 9 O 0 P
+ * Octave shift: - / = keys. Tab toggles labels between shortcuts and note names.
  */
+
+// QWERTY key → semitone offset from base octave
+const LOWER_ROW = {
+  'z': 0, 's': 1, 'x': 2, 'd': 3, 'c': 4,
+  'v': 5, 'g': 6, 'b': 7, 'h': 8, 'n': 9,
+  'j': 10, 'm': 11, ',': 12, 'l': 13, '.': 14,
+  ';': 15,
+};
+// Upper row: one octave above lower row
+const UPPER_ROW = {
+  'q': 12, '2': 13, 'w': 14, '3': 15, 'e': 16,
+  'r': 17, '5': 18, 't': 19, '6': 20, 'y': 21,
+  '7': 22, 'u': 23, 'i': 24, '9': 25, 'o': 26,
+  '0': 27, 'p': 28,
+};
+
+// Build reverse map: offset → display key (prefer lower row, show uppercase)
+function buildOffsetToLabel() {
+  const map = {};
+  for (const [key, offset] of Object.entries(LOWER_ROW)) {
+    if (!(offset in map)) map[offset] = key.toUpperCase();
+  }
+  for (const [key, offset] of Object.entries(UPPER_ROW)) {
+    if (!(offset in map)) map[offset] = key.toUpperCase();
+  }
+  return map;
+}
+const OFFSET_TO_LABEL = buildOffsetToLabel();
+
 export class Keyboard {
   /**
    * @param {object} options
@@ -14,10 +47,17 @@ export class Keyboard {
     this.onNoteOn = onNoteOn;
     this.onNoteOff = onNoteOff;
     this._activeNote = null;
+    this._noteSource = null; // 'mouse' | 'kb'
     this._mouseDown = false;
     this._keys = new Map(); // midiNote → element
+    this._labels = new Map(); // midiNote → label element
+    this._heldKeys = new Set(); // currently held QWERTY keys
+    this._baseOctave = 48; // C3 — default QWERTY base
+    this._showNotes = false; // false = shortcuts, true = note names
 
     this.element = this._create();
+    this._bindQwerty();
+    this._updateLabels();
   }
 
   _isBlackKey(midiNote) {
@@ -31,27 +71,27 @@ export class Keyboard {
     return `${name}${octave}`;
   }
 
+  _getShortcutLabel(midiNote) {
+    const offset = midiNote - this._baseOctave;
+    return OFFSET_TO_LABEL[offset] || '';
+  }
+
   _create() {
     const container = document.createElement('div');
     container.className = 'keyboard';
 
-    // Prevent context menu
     container.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    // Create keys
     for (let note = KEYBOARD_START_NOTE; note <= KEYBOARD_END_NOTE; note++) {
       const isBlack = this._isBlackKey(note);
       const key = document.createElement('div');
       key.className = `key ${isBlack ? 'black-key' : 'white-key'}`;
       key.dataset.note = note;
 
-      // Note name on white keys
-      if (!isBlack) {
-        const label = document.createElement('span');
-        label.className = 'key-label';
-        label.textContent = this._getNoteName(note);
-        key.appendChild(label);
-      }
+      const label = document.createElement('span');
+      label.className = 'key-label';
+      key.appendChild(label);
+      this._labels.set(note, label);
 
       this._keys.set(note, key);
       container.appendChild(key);
@@ -61,7 +101,7 @@ export class Keyboard {
     container.addEventListener('mousedown', (e) => {
       this._mouseDown = true;
       const note = this._getNoteFromEvent(e);
-      if (note !== null) this._pressKey(note);
+      if (note !== null) this._pressNote(note, 'mouse');
       e.preventDefault();
     });
 
@@ -69,21 +109,100 @@ export class Keyboard {
       if (!this._mouseDown) return;
       const note = this._getNoteFromEvent(e);
       if (note !== null && note !== this._activeNote) {
-        if (this._activeNote !== null) this._releaseKey(this._activeNote);
-        this._pressKey(note);
+        this._releaseNote();
+        this._pressNote(note, 'mouse');
       }
     });
 
     document.addEventListener('mouseup', () => {
       if (this._mouseDown) {
         this._mouseDown = false;
-        if (this._activeNote !== null) {
-          this._releaseKey(this._activeNote);
-        }
+        if (this._noteSource === 'mouse') this._releaseNote();
       }
     });
 
     return container;
+  }
+
+  _updateLabels() {
+    for (let note = KEYBOARD_START_NOTE; note <= KEYBOARD_END_NOTE; note++) {
+      const label = this._labels.get(note);
+      if (!label) continue;
+      label.textContent = this._showNotes
+        ? this._getNoteName(note)
+        : this._getShortcutLabel(note);
+    }
+  }
+
+  _bindQwerty() {
+    document.addEventListener('keydown', (e) => {
+      if (e.repeat) return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+
+      // Tab toggles label mode
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        this._showNotes = !this._showNotes;
+        this._updateLabels();
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+
+      // Octave shift
+      if (key === '-' || key === '_') {
+        this._baseOctave = Math.max(KEYBOARD_START_NOTE, this._baseOctave - 12);
+        if (!this._showNotes) this._updateLabels();
+        return;
+      }
+      if (key === '=' || key === '+') {
+        this._baseOctave = Math.min(KEYBOARD_END_NOTE - 12, this._baseOctave + 12);
+        if (!this._showNotes) this._updateLabels();
+        return;
+      }
+
+      const offset = LOWER_ROW[key] ?? UPPER_ROW[key] ?? null;
+      if (offset === null) return;
+
+      const midiNote = this._baseOctave + offset;
+      if (midiNote < KEYBOARD_START_NOTE || midiNote > KEYBOARD_END_NOTE) return;
+
+      this._heldKeys.add(key);
+      this._pressNote(midiNote, 'kb');
+    });
+
+    document.addEventListener('keyup', (e) => {
+      const key = e.key.toLowerCase();
+      if (!this._heldKeys.has(key)) return;
+      this._heldKeys.delete(key);
+
+      const offset = LOWER_ROW[key] ?? UPPER_ROW[key] ?? null;
+      if (offset === null) return;
+
+      const midiNote = this._baseOctave + offset;
+
+      if (midiNote === this._activeNote && this._noteSource === 'kb') {
+        const fallback = this._getFallbackNote();
+        if (fallback !== null) {
+          this._pressNote(fallback, 'kb');
+        } else {
+          this._releaseNote();
+        }
+      }
+    });
+  }
+
+  _getFallbackNote() {
+    let last = null;
+    for (const key of this._heldKeys) {
+      const offset = LOWER_ROW[key] ?? UPPER_ROW[key] ?? null;
+      if (offset === null) continue;
+      const note = this._baseOctave + offset;
+      if (note >= KEYBOARD_START_NOTE && note <= KEYBOARD_END_NOTE) {
+        last = note;
+      }
+    }
+    return last;
   }
 
   _getNoteFromEvent(e) {
@@ -92,18 +211,26 @@ export class Keyboard {
     return parseInt(target.dataset.note, 10);
   }
 
-  _pressKey(midiNote) {
+  _pressNote(midiNote, source) {
+    if (this._activeNote !== null && this._activeNote !== midiNote) {
+      const prevEl = this._keys.get(this._activeNote);
+      if (prevEl) prevEl.classList.remove('active');
+      if (this.onNoteOff) this.onNoteOff(this._activeNote);
+    }
     this._activeNote = midiNote;
+    this._noteSource = source;
     const keyEl = this._keys.get(midiNote);
     if (keyEl) keyEl.classList.add('active');
     if (this.onNoteOn) this.onNoteOn(midiNote, 1.0);
   }
 
-  _releaseKey(midiNote) {
-    const keyEl = this._keys.get(midiNote);
+  _releaseNote() {
+    if (this._activeNote === null) return;
+    const keyEl = this._keys.get(this._activeNote);
     if (keyEl) keyEl.classList.remove('active');
-    if (this.onNoteOff) this.onNoteOff(midiNote);
-    if (this._activeNote === midiNote) this._activeNote = null;
+    if (this.onNoteOff) this.onNoteOff(this._activeNote);
+    this._activeNote = null;
+    this._noteSource = null;
   }
 
   getElement() {

@@ -7,43 +7,12 @@
 }
 
 body {
-  background: #1a1a1a;
-  color: #e0d8c8;
+  background: #141a14;
+  color: #e8e4dc;
   font-family: 'Courier New', monospace;
   overflow-x: hidden;
   min-width: 1280px;
   user-select: none;
-}
-
-/* Start Overlay */
-#start-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  cursor: pointer;
-}
-
-.start-message {
-  text-align: center;
-}
-
-.start-message h2 {
-  font-size: 48px;
-  letter-spacing: 8px;
-  color: #e0d8c8;
-  margin-bottom: 20px;
-}
-
-.start-message p {
-  font-size: 18px;
-  color: #888;
 }
 
 /* Synth Container */
@@ -59,15 +28,15 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background: #2a2520;
-  border-bottom: 2px solid #4a4035;
+  background: #1e2e1e;
+  border-bottom: 2px solid #2a4a2a;
   margin-bottom: 5px;
 }
 
 .synth-header h1 {
-  font-size: 24px;
+  font-size: 26px;
   letter-spacing: 6px;
-  color: #e0d8c8;
+  color: #e8e4dc;
   font-weight: normal;
 }
 
@@ -78,36 +47,36 @@ body {
 }
 
 .guide-link {
-  color: #c8a060;
+  color: #8a2828;
   text-decoration: none;
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: 1px;
   padding: 5px 10px;
-  border: 1px solid #5a5045;
+  border: 1px solid #3a5a3a;
   border-radius: 3px;
   transition: background 0.1s;
 }
 
 .guide-link:hover {
-  background: #3a3530;
-  color: #e0d8c8;
+  background: #243824;
+  color: #e8e4dc;
 }
 
 .preset-selector select {
-  background: #3a3530;
-  color: #e0d8c8;
-  border: 1px solid #5a5045;
+  background: #243824;
+  color: #e8e4dc;
+  border: 1px solid #3a5a3a;
   padding: 5px 10px;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
 }
 
 /* Panel Area */
 .panel-area {
   position: relative;
-  background: #d4c9a8;
-  border: 2px solid #4a4035;
+  background: #e0daca;
+  border: 2px solid #2a4a2a;
   padding: 5px;
   min-height: 400px;
 }
@@ -121,8 +90,8 @@ body {
 
 /* Individual Panel */
 .panel {
-  background: #c8bb98;
-  border: 1px solid #a89878;
+  background: #d6d0c0;
+  border: 1px solid #a09880;
   padding: 8px;
   flex: 1;
   min-width: 0;
@@ -132,18 +101,18 @@ body {
 }
 
 .panel h3 {
-  font-size: 10px;
+  font-size: 12px;
   text-align: center;
-  color: #3a3020;
+  color: #2a2418;
   letter-spacing: 2px;
   text-transform: uppercase;
-  border-bottom: 1px solid #a89878;
+  border-bottom: 1px solid #a09880;
   padding-bottom: 3px;
   margin-bottom: 2px;
 }
 
 .panel h4 {
-  font-size: 9px;
+  font-size: 11px;
   color: #5a5040;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -151,7 +120,7 @@ body {
 }
 
 .panel-section {
-  border-top: 1px solid #b8a888;
+  border-top: 1px solid #b0a890;
   padding-top: 4px;
 }
 
@@ -183,20 +152,20 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #2a2520;
-  border: 2px solid #1a1510;
+  background: #1e2e1e;
+  border: 2px solid #0e1a0e;
   position: relative;
   cursor: grab;
   transition: box-shadow 0.1s;
 }
 
 .knob:hover {
-  box-shadow: 0 0 6px rgba(224, 216, 200, 0.3);
+  box-shadow: 0 0 6px rgba(122, 154, 112, 0.4);
 }
 
 .knob.active {
   cursor: grabbing;
-  box-shadow: 0 0 8px rgba(224, 216, 200, 0.5);
+  box-shadow: 0 0 8px rgba(122, 154, 112, 0.6);
 }
 
 .knob-pointer {
@@ -205,21 +174,21 @@ body {
   left: 50%;
   width: 2px;
   height: 14px;
-  background: #e0d8c8;
+  background: #e8e4dc;
   transform: translateX(-50%);
   border-radius: 1px;
 }
 
 .knob-label {
-  font-size: 8px;
-  color: #3a3020;
+  font-size: 10px;
+  color: #2a2418;
   text-transform: uppercase;
   letter-spacing: 1px;
   text-align: center;
 }
 
 .knob-value {
-  font-size: 8px;
+  font-size: 9px;
   color: #5a5040;
   text-align: center;
 }
@@ -233,8 +202,8 @@ body {
 }
 
 .switch-label {
-  font-size: 8px;
-  color: #3a3020;
+  font-size: 10px;
+  color: #2a2418;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -242,15 +211,15 @@ body {
 .switch-body {
   display: flex;
   gap: 1px;
-  background: #1a1510;
+  background: #0e1a0e;
   border-radius: 3px;
   padding: 1px;
 }
 
 .switch-option {
-  font-size: 7px;
-  padding: 3px 4px;
-  color: #888;
+  font-size: 9px;
+  padding: 3px 5px;
+  color: #6a8a60;
   cursor: pointer;
   border-radius: 2px;
   text-transform: uppercase;
@@ -259,12 +228,12 @@ body {
 }
 
 .switch-option:hover {
-  color: #ccc;
+  color: #b0c8a8;
 }
 
 .switch-option.active {
-  background: #4a4035;
-  color: #e0d8c8;
+  background: #2a4a2a;
+  color: #e8e4dc;
 }
 
 /* Slider (ADSR) */
@@ -276,8 +245,8 @@ body {
 }
 
 .slider-label {
-  font-size: 8px;
-  color: #3a3020;
+  font-size: 10px;
+  color: #2a2418;
   text-transform: uppercase;
   font-weight: bold;
 }
@@ -285,7 +254,7 @@ body {
 .slider-track {
   width: 16px;
   height: 80px;
-  background: #1a1510;
+  background: #0e1a0e;
   border-radius: 3px;
   position: relative;
   cursor: pointer;
@@ -296,7 +265,7 @@ body {
   bottom: 0;
   left: 0;
   width: 100%;
-  background: #6a6050;
+  background: #4a6a40;
   border-radius: 0 0 3px 3px;
   pointer-events: none;
 }
@@ -306,8 +275,8 @@ body {
   left: -3px;
   width: 22px;
   height: 8px;
-  background: #e0d8c8;
-  border: 1px solid #3a3020;
+  background: #e8e4dc;
+  border: 1px solid #2a2418;
   border-radius: 2px;
   transform: translateY(50%);
   pointer-events: none;
@@ -331,8 +300,8 @@ body {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #1a1510;
-  border: 2px solid #3a3530;
+  background: #0e1a0e;
+  border: 2px solid #2a4a2a;
   cursor: pointer;
   position: relative;
   display: flex;
@@ -342,30 +311,30 @@ body {
 }
 
 .jack:hover {
-  border-color: #e0d8c8;
+  border-color: #e8e4dc;
 }
 
 .jack-output {
-  border-color: #8a4040;
+  border-color: #8a2828;
 }
 
 .jack-input {
-  border-color: #40608a;
+  border-color: #3a6a3a;
 }
 
 .jack-hole {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #0a0a0a;
+  background: #060a06;
 }
 
 .jack.connected {
-  box-shadow: 0 0 4px rgba(224, 216, 200, 0.5);
+  box-shadow: 0 0 4px rgba(122, 154, 112, 0.5);
 }
 
 .jack-label {
-  font-size: 6px;
+  font-size: 8px;
   color: #5a5040;
   text-transform: uppercase;
   text-align: center;
@@ -379,7 +348,7 @@ body {
   flex-wrap: wrap;
   justify-content: center;
   padding-top: 4px;
-  border-top: 1px solid #b8a888;
+  border-top: 1px solid #b0a890;
   margin-top: auto;
 }
 
@@ -395,24 +364,24 @@ body {
   width: 28px;
   height: 28px;
   border-radius: 4px;
-  background: #3a3530;
-  border: 2px solid #2a2520;
+  background: #243824;
+  border: 2px solid #1e2e1e;
   cursor: pointer;
   transition: all 0.1s;
 }
 
 .synth-button:hover {
-  background: #4a4540;
+  background: #2e4a2e;
 }
 
 .synth-button.active {
-  background: #8a4040;
-  border-color: #aa5050;
+  background: #8a2828;
+  border-color: #aa3333;
 }
 
 .button-label {
-  font-size: 7px;
-  color: #3a3020;
+  font-size: 9px;
+  color: #2a2418;
   text-transform: uppercase;
 }
 
@@ -447,16 +416,16 @@ body {
 }
 
 .wheel-label {
-  font-size: 8px;
-  color: #3a3020;
+  font-size: 10px;
+  color: #e8e4dc;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
 .wheel-track {
-  width: 20px;
+  width: 22px;
   height: 100px;
-  background: #1a1510;
+  background: #0e1a0e;
   border-radius: 4px;
   position: relative;
   cursor: pointer;
@@ -465,21 +434,32 @@ body {
 .wheel-thumb {
   position: absolute;
   left: -2px;
-  width: 24px;
+  width: 26px;
   height: 16px;
-  background: #4a4540;
-  border: 1px solid #2a2520;
+  background: #3a5a3a;
+  border: 1px solid #1e2e1e;
   border-radius: 3px;
   transform: translateY(50%);
   pointer-events: none;
 }
 
-/* Keyboard */
+/* Keyboard Area — wheels sit alongside keyboard */
 .keyboard-area {
   margin-top: 5px;
-  padding: 5px;
-  background: #2a2520;
-  border: 2px solid #4a4035;
+  padding: 8px;
+  background: #1e2e1e;
+  border: 2px solid #2a4a2a;
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.keyboard-wheels {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 6px;
+  flex-shrink: 0;
 }
 
 .keyboard {
@@ -487,6 +467,7 @@ body {
   position: relative;
   height: 120px;
   justify-content: center;
+  flex: 1;
 }
 
 .key {
@@ -498,8 +479,8 @@ body {
 .white-key {
   width: 36px;
   height: 120px;
-  background: #f5f0e8;
-  border: 1px solid #888;
+  background: #f5f2eb;
+  border: 1px solid #999;
   border-radius: 0 0 3px 3px;
   z-index: 1;
   display: flex;
@@ -509,34 +490,42 @@ body {
 }
 
 .white-key:hover {
-  background: #e8e0d0;
+  background: #eae6dd;
 }
 
 .white-key.active {
-  background: #d0c8b0;
+  background: #ddd8cc;
 }
 
 .black-key {
   width: 22px;
   height: 75px;
-  background: #2a2520;
-  border: 1px solid #1a1510;
+  background: #1a1a1a;
+  border: 1px solid #111;
   border-radius: 0 0 2px 2px;
   margin-left: -11px;
   margin-right: -11px;
   z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 3px;
+}
+
+.black-key .key-label {
+  color: #777;
 }
 
 .black-key:hover {
-  background: #3a3530;
+  background: #2a2a2a;
 }
 
 .black-key.active {
-  background: #4a4540;
+  background: #3a3a3a;
 }
 
 .key-label {
-  font-size: 7px;
+  font-size: 8px;
   color: #888;
   pointer-events: none;
 }

@@ -1,4 +1,4 @@
-import { ensureAudioContextRunning, getAudioContext } from './audio/audio-context.js';
+import { ensureAudioContextRunning } from './audio/audio-context.js';
 import { AudioEngine } from './audio/engine.js';
 import { Layout } from './ui/layout.js';
 import { CABLE_COLORS } from './utils/constants.js';
@@ -9,34 +9,28 @@ import { CABLE_COLORS } from './utils/constants.js';
 
 let engine = null;
 let layout = null;
-let initialized = false;
+let uiBuilt = false;
+let audioReady = false;
 
-async function init() {
-  if (initialized) return;
-  initialized = true;
+function buildUI() {
+  if (uiBuilt) return;
+  uiBuilt = true;
 
-  const ctx = await ensureAudioContextRunning();
-  engine = new AudioEngine(ctx);
-
-  // Build UI
   const container = document.getElementById('synth');
   layout = new Layout();
   layout.build(container);
 
-  // Wire UI to engine
-  layout.wireToEngine(engine);
-
-  // Wire keyboard
+  // Wire keyboard — audio engine starts lazily on first note
   layout.keyboard.onNoteOn = (note, vel) => {
-    ensureAudioContextRunning();
-    engine.noteOn(note, vel);
+    initAudio().then(() => engine.noteOn(note, vel));
   };
   layout.keyboard.onNoteOff = (note) => {
-    engine.noteOff(note);
+    if (engine) engine.noteOff(note);
   };
 
   // Wire patch cables
   layout.patchCables.onConnect = (sourceId, destId, color) => {
+    if (!engine) return;
     const patchId = engine.createPatch(sourceId, destId, color);
     if (patchId) {
       const sourceEl = layout.getJackElement(sourceId);
@@ -48,14 +42,24 @@ async function init() {
   };
 
   layout.patchCables.onDisconnect = (patchId) => {
+    if (!engine) return;
     engine.removePatch(patchId);
     layout.patchCables.removeCable(patchId);
   };
 
-  // Load presets into selector
   loadPresetSelector();
 
-  console.log('Goob Nonna initialized');
+  console.log('Goob Nonna UI ready');
+}
+
+async function initAudio() {
+  if (audioReady) return;
+  audioReady = true;
+
+  const ctx = await ensureAudioContextRunning();
+  engine = new AudioEngine(ctx);
+  layout.wireToEngine(engine);
+  console.log('Goob Nonna audio initialized');
 }
 
 async function loadPresetSelector() {
@@ -82,8 +86,10 @@ async function loadPresetSelector() {
   }
 }
 
-function applyPreset(preset) {
-  if (!engine || !layout) return;
+async function applyPreset(preset) {
+  if (!layout) return;
+  await initAudio();
+  if (!engine) return;
 
   // Remove all existing patches
   engine.removeAllPatches();
@@ -153,19 +159,5 @@ function applyPreset(preset) {
   }
 }
 
-// Initialize on first user interaction (required for AudioContext)
-document.addEventListener('click', () => init(), { once: true });
-
-// Also try to init on DOMContentLoaded (UI will render, audio waits for click)
-document.addEventListener('DOMContentLoaded', () => {
-  // Create a start overlay
-  const overlay = document.createElement('div');
-  overlay.id = 'start-overlay';
-  overlay.innerHTML = '<div class="start-message"><h2>GOOB NONNA</h2><p>Click anywhere to start</p></div>';
-  document.body.appendChild(overlay);
-
-  overlay.addEventListener('click', async () => {
-    await init();
-    overlay.remove();
-  });
-});
+// Build UI immediately on load — audio deferred to first user interaction
+document.addEventListener('DOMContentLoaded', () => buildUI());

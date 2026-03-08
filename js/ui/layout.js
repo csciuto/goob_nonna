@@ -74,11 +74,10 @@ export class Layout {
     this.panels.utilities = new PanelUtilities({ onJackClick });
     this.panels.arpSeq = new PanelArpSeq({ onJackClick });
 
-    // Assemble panels left-to-right
+    // Assemble panels left-to-right (no controller — wheels move to keyboard)
     const panelRow = document.createElement('div');
     panelRow.className = 'panel-row';
 
-    panelRow.appendChild(this.panels.controller.getElement());
     panelRow.appendChild(kbJackPanel);
     panelRow.appendChild(this.panels.oscillators.getElement());
     panelRow.appendChild(this.panels.mixer.getElement());
@@ -98,10 +97,18 @@ export class Layout {
       onDisconnect: null,
     });
 
-    // Keyboard
+    // Keyboard area with wheels alongside
     this.keyboard = new Keyboard({});
     const keyboardArea = document.createElement('div');
     keyboardArea.className = 'keyboard-area';
+
+    // Wheels go left of keyboard
+    const wheelsSection = document.createElement('div');
+    wheelsSection.className = 'keyboard-wheels';
+    wheelsSection.appendChild(this.panels.controller.pitchWheel.getElement());
+    wheelsSection.appendChild(this.panels.controller.modWheel.getElement());
+    keyboardArea.appendChild(wheelsSection);
+
     keyboardArea.appendChild(this.keyboard.getElement());
     container.appendChild(keyboardArea);
 
