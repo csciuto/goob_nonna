@@ -1,5 +1,7 @@
 # Goob Nonna
 
+**Live:** [corey.sciu.to/goob_nonna](https://corey.sciu.to/goob_nonna/)
+
 A web-based clone of the Moog Grandmother analog synthesizer, built with vanilla JavaScript and the Web Audio API. No build tools, no frameworks — just static files you can serve from anywhere.
 
 ## Demo
@@ -188,3 +190,7 @@ Keyboard ──→ OSC 1 ──→ Mixer ──→ Filter ──→ VCA ──�
 ## License
 
 MIT
+
+## Preview image
+
+`npm run screenshot` runs the Playwright smoke test and refreshes `preview.png`, used for link previews. `npm run test:e2e` runs the browser tests.
