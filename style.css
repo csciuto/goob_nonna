@@ -1275,6 +1275,7 @@ body {
 
 /* footer: contact and version (stamped by the deploy workflow) */
 .app-foot { text-align: center; font: 11px/1.6 system-ui, sans-serif; color: #9a9a9a; padding: 8px 16px 16px; }
+.app-foot a { color: inherit; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* Phones and narrow windows: panels stack full width instead of the page being clipped at 900px */
