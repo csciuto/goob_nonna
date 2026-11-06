@@ -8,7 +8,7 @@ export class PanelArpSeq {
   constructor({ onJackClick }) {
     this.element = document.createElement('div');
     this.element.className = 'panel panel-arp-seq';
-    this.element.innerHTML = '<h3>ARP / SEQ</h3>';
+    this.element.innerHTML = '<h2>ARP / SEQ</h2>';
 
     this.jacks = {};
 

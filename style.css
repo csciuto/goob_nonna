@@ -125,7 +125,7 @@ body {
   flex: none;
 }
 
-.back-popover .panel-back h3 {
+.back-popover .panel-back h2 {
   color: #999;
   border-bottom-color: #4a4a50;
   font-size: 10px;
@@ -171,7 +171,7 @@ body {
   gap: 10px;
 }
 
-.panel h3 {
+.panel h2 {
   font-size: 12px;
   text-align: center;
   color: #2a2520;
@@ -183,7 +183,7 @@ body {
   font-weight: bold;
 }
 
-.panel h4 {
+.panel h3 {
   font-size: 11px;
   color: #2a2520;
   letter-spacing: 1px;
@@ -209,7 +209,7 @@ body {
 .panel-arp-seq .button-label {
   font-size: 8px;
 }
-.panel-arp-seq h3 { color: #2a2520; }
+.panel-arp-seq h2 { color: #2a2520; }
 .panel-arp-seq .knob-label { color: #2a2520; }
 .panel-arp-seq .knob-value { color: #2a2520; }
 .panel-arp-seq .switch-label { color: #2a2520; }
@@ -244,8 +244,8 @@ body {
   flex: 1.4 1 170px;
   background: #2a2a2e;
 }
-.panel-modulation h3 { color: #fff; border-bottom-color: #4a4a50; }
-.panel-modulation h4 { color: #fff; font-weight: bold; }
+.panel-modulation h2 { color: #fff; border-bottom-color: #4a4a50; }
+.panel-modulation h3 { color: #fff; font-weight: bold; }
 .panel-modulation .knob-label { color: #fff; }
 .panel-modulation .switch-label { color: #fff; }
 .panel-modulation .knob-value { color: #fff; }
@@ -279,8 +279,8 @@ body {
   flex: 2.3 1 280px;
   background: #78b8d0;
 }
+.panel-oscillators h2 { color: #1a2a38; }
 .panel-oscillators h3 { color: #1a2a38; }
-.panel-oscillators h4 { color: #1a2a38; }
 .panel-oscillators .knob-label { color: #1a2a38; }
 .panel-oscillators .knob-value { color: #1a2a38; }
 .panel-oscillators .switch-label { color: #1a2a38; }
@@ -319,7 +319,7 @@ body {
   width: 1px;
   background: #1a2a38;
 }
-.osc-grid h3 {
+.osc-grid h2 {
   text-align: center;
   margin: 0;
   padding: 2px 0;
@@ -381,7 +381,7 @@ body {
   flex: 0.8 1 100px;
   background: #2a2a2e;
 }
-.panel-mixer h3 { color: #fff; border-bottom-color: #4a4a50; }
+.panel-mixer h2 { color: #fff; border-bottom-color: #4a4a50; }
 .panel-mixer .knob-label { color: #fff; }
 .panel-mixer .knob-value { color: #fff; }
 .panel-mixer .jack-label { color: #fff; }
@@ -397,7 +397,7 @@ body {
   flex: 0.8 1 100px;
   background: #2a2a2e;
 }
-.panel-utilities h3 { color: #fff; border-bottom-color: #4a4a50; }
+.panel-utilities h2 { color: #fff; border-bottom-color: #4a4a50; }
 .panel-utilities .knob-label { color: #fff; }
 .panel-utilities .knob-value { color: #fff; }
 .panel-utilities .jack-label { color: #fff; }
@@ -457,7 +457,7 @@ body {
   flex: 1.1 1 130px;
   background: #88c898;
 }
-.panel-filter h3 { color: #1a2a1e; }
+.panel-filter h2 { color: #1a2a1e; }
 .panel-filter .knob-label { color: #1a2a1e; }
 .panel-filter .knob-value { color: #1a2a1e; }
 .panel-filter .switch-label { color: #1a2a1e; }
@@ -503,7 +503,7 @@ body {
   flex: 1 1 120px;
   background: #2a2a2e;
 }
-.panel-envelope h3 { color: #fff; border-bottom-color: #4a4a50; margin-bottom: 10px; }
+.panel-envelope h2 { color: #fff; border-bottom-color: #4a4a50; margin-bottom: 10px; }
 .panel-envelope .slider-label { color: #fff; }
 .panel-envelope .knob-label { color: #fff; }
 .panel-envelope .knob-value { color: #fff; }
@@ -611,7 +611,7 @@ body {
   flex: 0.9 1 110px;
   background: #2a2a2e;
 }
-.panel-output h3 { color: #fff; border-bottom-color: #4a4a50; }
+.panel-output h2 { color: #fff; border-bottom-color: #4a4a50; }
 .panel-output .knob-label { color: #fff; }
 .panel-output .knob-value { color: #fff; }
 .panel-output .switch-label { color: #fff; }
@@ -632,7 +632,7 @@ body {
   align-items: center;
   gap: 6px;
 }
-.reverb-section h4 {
+.reverb-section h3 {
   color: #1a1a1e;
   font-size: 10px;
   font-weight: bold;
@@ -924,6 +924,7 @@ body {
 
 /* Blue glide label */
 .glide-knob .knob-label { color: #78b8d0; }
+.glide-knob .knob-value { color: #78b8d0; }  /* sits on the dark keyboard panel */
 
 .buttons-row {
   display: flex;
@@ -1271,3 +1272,7 @@ body {
 .synth-toast.visible {
   opacity: 1;
 }
+
+/* footer: contact and version (stamped by the deploy workflow) */
+.app-foot { text-align: center; font: 11px/1.6 system-ui, sans-serif; color: #9a9a9a; padding: 8px 16px 16px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

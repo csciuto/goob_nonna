@@ -7,7 +7,7 @@ export class PanelOutput {
   constructor({ onJackClick }) {
     this.element = document.createElement('div');
     this.element.className = 'panel panel-output';
-    this.element.innerHTML = '<h3>OUTPUT</h3>';
+    this.element.innerHTML = '<h2>OUTPUT</h2>';
 
     this.jacks = {};
 
@@ -54,7 +54,7 @@ export class PanelOutput {
     const reverbSection = document.createElement('div');
     reverbSection.className = 'reverb-section';
 
-    const reverbTitle = document.createElement('h4');
+    const reverbTitle = document.createElement('h3');
     reverbTitle.textContent = 'SPRING REVERB';
     reverbSection.appendChild(reverbTitle);
 

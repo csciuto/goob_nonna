@@ -32,3 +32,9 @@ All design decisions must match the real Moog Grandmother hardware. Refer to `do
 - `js/ui/keyboard.js` — Polyphonic QWERTY keyboard (for arp), monophonic mouse
 - `js/utils/constants.js` — All constants and patch point IDs
 - `style.css` — All styles in one file
+
+## App standards
+Follows [csciuto/app-template STANDARDS.md](https://github.com/csciuto/app-template/blob/main/STANDARDS.md). Commit and
+push freely once tests pass. `.github/workflows/deploy.yml` runs the Vitest unit tests and the Playwright tests
+(desktop and phone, axe in `tests/e2e/a11y.spec.js`) and only then deploys, stamping `dev` in the footer's
+`.version`. The panel is desktop-only for now: phone-width tests that need the full panel are tagged `@desktop`.

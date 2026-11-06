@@ -10,7 +10,7 @@ export class PanelBack {
   constructor({ onJackClick }) {
     this.element = document.createElement('div');
     this.element.className = 'panel panel-back';
-    this.element.innerHTML = '<h3>BACK PANEL</h3>';
+    this.element.innerHTML = '<h2>BACK PANEL</h2>';
 
     this.jacks = {};
 

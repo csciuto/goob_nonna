@@ -8,7 +8,7 @@ export class PanelModulation {
   constructor({ onJackClick }) {
     this.element = document.createElement('div');
     this.element.className = 'panel panel-modulation';
-    this.element.innerHTML = '<h3>MODULATION</h3>';
+    this.element.innerHTML = '<h2>MODULATION</h2>';
 
     this.jacks = {};
 

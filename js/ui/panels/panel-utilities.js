@@ -6,7 +6,7 @@ export class PanelUtilities {
   constructor({ onJackClick }) {
     this.element = document.createElement('div');
     this.element.className = 'panel panel-utilities';
-    this.element.innerHTML = '<h3>UTILITIES</h3>';
+    this.element.innerHTML = '<h2>UTILITIES</h2>';
 
     this.jacks = {};
 

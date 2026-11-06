@@ -7,7 +7,7 @@ export class PanelFilter {
   constructor({ onJackClick }) {
     this.element = document.createElement('div');
     this.element.className = 'panel panel-filter';
-    this.element.innerHTML = '<h3>FILTER</h3>';
+    this.element.innerHTML = '<h2>FILTER</h2>';
 
     this.jacks = {};
 

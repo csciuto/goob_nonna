@@ -7,7 +7,7 @@ export class PanelController {
   constructor() {
     this.element = document.createElement('div');
     this.element.className = 'panel panel-controller';
-    this.element.innerHTML = '<h3>CONTROLLER</h3>';
+    this.element.innerHTML = '<h2>CONTROLLER</h2>';
 
     this.pitchWheel = new Wheel({
       label: 'PITCH',

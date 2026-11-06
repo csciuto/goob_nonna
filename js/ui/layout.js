@@ -82,7 +82,7 @@ export class Layout {
     // Title strip between panels and keyboard (like real Grandmother)
     const titleStrip = document.createElement('div');
     titleStrip.className = 'synth-title-strip';
-    titleStrip.innerHTML = '<div class="title-left"><span class="title-goob">GOOB</span><span class="title-nonna">NONNA</span><span class="title-subtitle">SEMI-MODULAR ANALOG SYNTHESIZER</span></div><div class="title-right"><div class="preset-selector"><select id="preset-select"><option value="">-- Select Preset --</option></select></div><button class="kebab-btn" id="kebab-btn" title="More">&#8942;</button></div>';
+    titleStrip.innerHTML = '<div class="title-left"><span class="title-goob">GOOB</span><span class="title-nonna">NONNA</span><span class="title-subtitle">SEMI-MODULAR ANALOG SYNTHESIZER</span></div><div class="title-right"><div class="preset-selector"><select id="preset-select" aria-label="Preset"><option value="">-- Select Preset --</option></select></div><button class="kebab-btn" id="kebab-btn" title="More">&#8942;</button></div>';
 
     // Back panel popover
     const backPopover = document.createElement('div');

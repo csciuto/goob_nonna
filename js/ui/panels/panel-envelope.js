@@ -7,7 +7,7 @@ export class PanelEnvelope {
   constructor({ onJackClick }) {
     this.element = document.createElement('div');
     this.element.className = 'panel panel-envelope';
-    this.element.innerHTML = '<h3>ENVELOPE</h3>';
+    this.element.innerHTML = '<h2>ENVELOPE</h2>';
 
     this.jacks = {};
 

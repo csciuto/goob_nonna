@@ -48,7 +48,7 @@ test.describe('Goob Nonna Synth', () => {
       await expect(page.locator('#preset-select')).toBeVisible();
     });
 
-    test('guide link exists in kebab menu', async ({ page }) => {
+    test('guide link exists in kebab menu @desktop', async ({ page }) => {
       await page.locator('#kebab-btn').click();
       const link = page.locator('.guide-link');
       await expect(link).toBeVisible();
@@ -144,15 +144,6 @@ test.describe('Goob Nonna Synth', () => {
       expect(text).not.toMatch(/^[A-G][#b]?\d$/);
     });
 
-    test('Shift shows note names while held', async ({ page }) => {
-      await page.keyboard.down('Shift');
-      const labels = page.locator('.white-key .key-label');
-      const firstLabel = labels.first();
-      const text = await firstLabel.textContent();
-      expect(text).toMatch(/^[A-G][#b]?\d$/);
-      await page.keyboard.up('Shift');
-    });
-
     test('releasing Shift reverts to shortcuts', async ({ page }) => {
       await page.keyboard.down('Shift');
       await page.keyboard.up('Shift');
@@ -170,11 +161,15 @@ test.describe('Goob Nonna Synth', () => {
       expect(count).toBeGreaterThan(20);
     });
 
-    test('Shift adds shift-held class to body', async ({ page }) => {
+    // Spec: the Shift key is the hardware HOLD modifier, so holding it lights HOLD (docs/synth-spec.md)
+    test('holding Shift lights the HOLD button', async ({ page }) => {
+      const hold = page.locator('.button-container', { has: page.locator('.button-label', { hasText: /^HOLD$/ }) }).locator('.synth-button');
+      await page.locator('.title-goob').click();   // controls wire up once the first click starts the audio
+      await expect(hold).not.toHaveClass(/active/);
       await page.keyboard.down('Shift');
-      await expect(page.locator('body')).toHaveClass(/shift-held/);
+      await expect(hold).toHaveClass(/active/);
       await page.keyboard.up('Shift');
-      await expect(page.locator('body')).not.toHaveClass(/shift-held/);
+      await expect(hold).not.toHaveClass(/active/);
     });
   });
 

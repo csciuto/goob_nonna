@@ -18,9 +18,9 @@ export class PanelOscillators {
     grid.className = 'osc-grid';
 
     // --- Headers ---
-    const h1 = document.createElement('h3');
+    const h1 = document.createElement('h2');
     h1.textContent = 'OSC 1';
-    const h2 = document.createElement('h3');
+    const h2 = document.createElement('h2');
     h2.textContent = 'OSC 2';
     grid.appendChild(h1);
     grid.appendChild(h2);
