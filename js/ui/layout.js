@@ -134,6 +134,9 @@ export class Layout {
     this.keyboard = new Keyboard({});
     const keyboardArea = document.createElement('div');
     keyboardArea.className = 'keyboard-area';
+    keyboardArea.tabIndex = 0;  // scrolls sideways on phones, so it must be reachable by keyboard
+    keyboardArea.setAttribute('role', 'region');
+    keyboardArea.setAttribute('aria-label', 'Keyboard');
 
     // Left controls: top row (glide + buttons), bottom row (wheels)
     const leftControls = document.createElement('div');

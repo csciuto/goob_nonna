@@ -48,7 +48,7 @@ test.describe('Goob Nonna Synth', () => {
       await expect(page.locator('#preset-select')).toBeVisible();
     });
 
-    test('guide link exists in kebab menu @desktop', async ({ page }) => {
+    test('guide link exists in kebab menu', async ({ page }) => {
       await page.locator('#kebab-btn').click();
       const link = page.locator('.guide-link');
       await expect(link).toBeVisible();

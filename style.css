@@ -1276,3 +1276,16 @@ body {
 /* footer: contact and version (stamped by the deploy workflow) */
 .app-foot { text-align: center; font: 11px/1.6 system-ui, sans-serif; color: #9a9a9a; padding: 8px 16px 16px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Phones and narrow windows: panels stack full width instead of the page being clipped at 900px */
+@media (max-width: 899.98px) {
+  body { min-width: 0; }
+  .panel-row { flex-wrap: wrap; }
+  .panel { flex: 1 1 100%; }
+  .title-subtitle { display: none; }
+  .synth-title-strip { flex-wrap: wrap; gap: 6px; padding: 6px 10px; }
+  /* keys keep a playable width and scroll sideways in their own strip */
+  .keyboard-area { flex-wrap: wrap; overflow-x: auto; }
+  .keyboard { flex: 1 0 560px; height: 200px; }
+  .white-key { height: 200px; }
+}
