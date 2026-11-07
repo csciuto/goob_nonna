@@ -62,7 +62,6 @@ function buildUI() {
 
   loadPresetSelector();
 
-  console.log('Goob Nonna UI ready');
 }
 
 function initAudio() {
@@ -71,7 +70,6 @@ function initAudio() {
     const ctx = await ensureAudioContextRunning();
     engine = new AudioEngine(ctx);
     layout.wireToEngine(engine);
-    console.log('Goob Nonna audio initialized');
   })();
   return initPromise;
 }

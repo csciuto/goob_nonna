@@ -227,7 +227,6 @@ export class AudioEngine {
     const glideTime = this._glide > 0 ? this._getGlideTime() : 0;
     const shouldGlide = glideTime > 0 && hadPreviousNote && (!this._legatoGlide || wasHoldingNotes);
 
-    console.log(`noteOn(${midiNote}): prev=${prevNote} held=[${this._heldNotes}] glide=${this._glide} shouldGlide=${shouldGlide} glideTime=${shouldGlide ? glideTime.toFixed(3) : 0}`);
 
     // Set oscillator frequencies (with glide if applicable)
     this.osc1.setNote(midiNote, shouldGlide ? glideTime : 0);
@@ -254,7 +253,6 @@ export class AudioEngine {
    */
   noteOff(midiNote) {
     this._heldNotes = this._heldNotes.filter(n => n !== midiNote);
-    console.log(`noteOff(${midiNote}): held=[${this._heldNotes}] currentNote=${this._currentNote}`);
 
     if (this._heldNotes.length > 0) {
       // Play the last held note (for legato behavior)
