@@ -11,7 +11,7 @@ All design decisions must match the real Moog Grandmother hardware. Refer to `do
 - Run tests before considering any feature complete
 
 ## Documentation
-- **Keep `docs/synth-spec.md` updated** whenever behavior changes
+- **Keep `docs/synth-spec.md` updated** whenever behavior changes; keep `ARCHITECTURE.md` (how it's built) current when files, modules or techniques change
 - If you add/change a feature, update the spec to reflect the new behavior
 - When the user provides new hardware behavior details, record them in the spec
 - **Update `docs/getting-started.html`** when major functionality is implemented (user-facing guide)

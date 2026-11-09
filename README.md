@@ -2,6 +2,8 @@
 
 **Live:** [corey.sciu.to/goob_nonna](https://corey.sciu.to/goob_nonna/)
 
+How it's built: [ARCHITECTURE.md](ARCHITECTURE.md).
+
 Built with [Claude Code](https://claude.com/claude-code).
 
 A web-based clone of the Moog Grandmother analog synthesizer, built with vanilla JavaScript and the Web Audio API. No build tools, no frameworks — just static files you can serve from anywhere.
