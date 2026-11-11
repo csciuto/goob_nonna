@@ -1,67 +1,53 @@
+const SMOOTH = 0.012;
+const RANGE = 4;          // the shaper's input range, in units: three full sources still fit
+
 /**
- * 3-channel mixer: OSC1, OSC2, Noise.
- * Each channel has a level control (GainNode).
- * All summed into a single output.
+ * Three-channel mixer: OSC 1, OSC 2 and noise, each replaceable by a cable into its input.
+ * Like the hardware, it starts to overdrive gently above about 1 o'clock on a level knob and
+ * harder as levels rise: the sum runs through a soft saturation before the output.
  */
 export class MixerModule {
   constructor(audioContext) {
     this.ctx = audioContext;
 
-    // Input gain nodes for each channel (junction points for patching)
     this.osc1Input = this.ctx.createGain();
-    this.osc1Input.gain.value = 1.0;
-
     this.osc2Input = this.ctx.createGain();
-    this.osc2Input.gain.value = 1.0;
-
     this.noiseInput = this.ctx.createGain();
-    this.noiseInput.gain.value = 1.0;
 
-    // Level controls
     this.osc1Level = this.ctx.createGain();
-    this.osc1Level.gain.value = 0.8; // Default: OSC1 audible
-
+    this.osc1Level.gain.value = 0.8;
     this.osc2Level = this.ctx.createGain();
-    this.osc2Level.gain.value = 0.0; // Default: OSC2 off
-
+    this.osc2Level.gain.value = 0;
     this.noiseLevel = this.ctx.createGain();
-    this.noiseLevel.gain.value = 0.0; // Default: Noise off
+    this.noiseLevel.gain.value = 0;
 
-    // Output (junction point)
+    this.sum = this.ctx.createGain();
+    this.sum.gain.value = 1 / RANGE;
+    this.drive = this.ctx.createWaveShaper();
+    this.drive.curve = MixerModule.curve();
+    this.drive.oversample = '2x';
     this.output = this.ctx.createGain();
-    this.output.gain.value = 1.0;
 
-    // Connect chain: input → level → output
     this.osc1Input.connect(this.osc1Level);
-    this.osc1Level.connect(this.output);
-
     this.osc2Input.connect(this.osc2Level);
-    this.osc2Level.connect(this.output);
-
     this.noiseInput.connect(this.noiseLevel);
-    this.noiseLevel.connect(this.output);
+    for (const n of [this.osc1Level, this.osc2Level, this.noiseLevel]) n.connect(this.sum);
+    this.sum.connect(this.drive);
+    this.drive.connect(this.output);
   }
 
-  setOsc1Level(value) {
-    // value: 0-10 knob range → 0-1
-    this.osc1Level.gain.setValueAtTime(value / 10, this.ctx.currentTime);
+  /** The saturation: about 5% compression at a level of 0.6, clearly overdriven by 2. */
+  static saturate(x) { return Math.tanh(x * 0.7) / 0.7; }
+  static curve(points = 2049) {
+    return Float32Array.from({ length: points }, (_, i) => MixerModule.saturate((i / (points - 1) * 2 - 1) * RANGE));
   }
 
-  setOsc2Level(value) {
-    this.osc2Level.gain.setValueAtTime(value / 10, this.ctx.currentTime);
-  }
-
-  setNoiseLevel(value) {
-    this.noiseLevel.gain.setValueAtTime(value / 10, this.ctx.currentTime);
-  }
+  // knob values, 0 to 10
+  setOsc1Level(value) { this.osc1Level.gain.setTargetAtTime(value / 10, this.ctx.currentTime, SMOOTH); }
+  setOsc2Level(value) { this.osc2Level.gain.setTargetAtTime(value / 10, this.ctx.currentTime, SMOOTH); }
+  setNoiseLevel(value) { this.noiseLevel.gain.setTargetAtTime(value / 10, this.ctx.currentTime, SMOOTH); }
 
   destroy() {
-    this.osc1Input.disconnect();
-    this.osc2Input.disconnect();
-    this.noiseInput.disconnect();
-    this.osc1Level.disconnect();
-    this.osc2Level.disconnect();
-    this.noiseLevel.disconnect();
-    this.output.disconnect();
+    for (const n of [this.osc1Input, this.osc2Input, this.noiseInput, this.osc1Level, this.osc2Level, this.noiseLevel, this.sum, this.drive, this.output]) n.disconnect();
   }
 }

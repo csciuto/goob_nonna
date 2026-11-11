@@ -1,4 +1,4 @@
-import { KEYBOARD_START_NOTE, KEYBOARD_END_NOTE, NOTE_NAMES } from '../utils/constants.js';
+import { DEFAULT_VELOCITY, KEYBOARD_START_NOTE, KEYBOARD_END_NOTE, NOTE_NAMES } from '../utils/constants.js';
 
 /**
  * 32-note visual keyboard (F2 to C5).
@@ -44,6 +44,7 @@ export class Keyboard {
    * @param {function} options.onNoteOff - Callback(midiNote)
    */
   constructor({ onNoteOn = null, onNoteOff = null } = {}) {
+    this._externalNotes = new Set();   // notes held on a MIDI keyboard
     this.onNoteOn = onNoteOn;
     this.onNoteOff = onNoteOff;
     this._activeNote = null;
@@ -264,7 +265,7 @@ export class Keyboard {
     const visualNote = midiNote - this._noteOffset;
     const keyEl = this._keys.get(visualNote);
     if (keyEl) keyEl.classList.add('active');
-    if (this.onNoteOn) this.onNoteOn(midiNote, 1.0);
+    if (this.onNoteOn) this.onNoteOn(midiNote, DEFAULT_VELOCITY);
   }
 
   _releaseNote() {
@@ -276,6 +277,26 @@ export class Keyboard {
     if (this.onNoteOff) this.onNoteOff(this._activeNote);
     this._activeNote = null;
     this._noteSource = null;
+  }
+
+  /** A note from outside the page (a MIDI keyboard): plays it, and lights its key if it is on screen. */
+  externalNoteOn(midiNote, velocity = DEFAULT_VELOCITY) {
+    const keyEl = this._keys.get(midiNote - this._noteOffset);
+    if (keyEl) keyEl.classList.add('active');
+    this._externalNotes.add(midiNote);
+    if (this.onNoteOn) this.onNoteOn(midiNote, velocity);
+  }
+
+  externalNoteOff(midiNote) {
+    if (!this._externalNotes.delete(midiNote)) return;
+    const keyEl = this._keys.get(midiNote - this._noteOffset);
+    if (keyEl && this._activeNote !== midiNote) keyEl.classList.remove('active');
+    if (this.onNoteOff) this.onNoteOff(midiNote);
+  }
+
+  /** Let go of everything an outside keyboard is holding. */
+  externalAllOff() {
+    for (const note of [...this._externalNotes]) this.externalNoteOff(note);
   }
 
   getElement() {

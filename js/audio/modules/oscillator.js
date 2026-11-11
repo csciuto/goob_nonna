@@ -1,119 +1,79 @@
-import { WAVEFORMS, OCTAVE_FEET } from '../../utils/constants.js';
-import { midiToFrequency, footToOctaveMultiplier, detuneFrequency } from '../../utils/math.js';
+import { WAVEFORMS } from '../../utils/constants.js';
+
+const SHAPES = { [WAVEFORMS.TRIANGLE]: 0, [WAVEFORMS.SAW]: 1, [WAVEFORMS.SQUARE]: 2, [WAVEFORMS.NARROW_PULSE]: 3 };
+const FOOT_OCTAVES = { 32: -2, 16: -1, 8: 0, 4: 1, 2: 2 };
+
+/** One volt per octave: a full-scale signal (5 V) at a pitch input is five octaves. */
+export const OCTAVES_PER_UNIT = 5;
+/** PWM IN takes 0 to +5 V; full scale moves the pulse width by 45% of the cycle. Model value. */
+export const PW_PER_UNIT = 0.45;
+/** LIN FM IN: Hz of deviation for a full-scale signal. Model value. */
+export const LIN_FM_HZ_PER_UNIT = 2000;
+const SMOOTH = 0.008;
 
 /**
- * Oscillator module - represents one oscillator (OSC1 or OSC2).
- * Uses OscillatorNode for standard waveforms.
- * Narrow pulse uses a custom PeriodicWave.
+ * Oscillator module (OSC 1 or OSC 2): the `gn-osc` worklet plus its jacks.
+ * Pitch arrives as signals summed on the worklet's `pitch` parameter, in octaves above C4: the
+ * keyboard (wired in by the engine), the pitch wheel, modulation, and the PITCH IN jack.
  */
 export class OscillatorModule {
-  constructor(audioContext, id = 'osc1') {
+  constructor(audioContext, id = 'osc1', { driftCents = 0, seed = 1 } = {}) {
     this.ctx = audioContext;
     this.id = id;
-
-    // State
     this._waveform = WAVEFORMS.SAW;
     this._octaveFoot = 8;
     this._detuneSemitones = 0;
-    this._baseNote = 60; // Middle C
-    this._frequency = 261.63;
 
-    // Create oscillator
-    this.oscillator = this.ctx.createOscillator();
-    this.oscillator.type = 'sawtooth';
+    this.node = new AudioWorkletNode(this.ctx, 'gn-osc', {
+      numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [1],
+      processorOptions: { driftCents, seed },
+    });
+    this.pitch = this.node.parameters.get('pitch');
+    this.pw = this.node.parameters.get('pw');
 
-    // Output gain (junction point for patching)
     this.output = this.ctx.createGain();
-    this.output.gain.value = 1.0;
+    this.node.connect(this.output);
 
-    // Pitch CV input - a gain node that sums pitch modulation
+    // PITCH IN: summed with the keyboard's pitch, 1 V per octave
     this.pitchInput = this.ctx.createGain();
-    this.pitchInput.gain.value = 1.0;
+    this.pitchInput.gain.value = OCTAVES_PER_UNIT;
+    this.pitchInput.connect(this.pitch);
 
-    // PWM input placeholder
+    // PWM IN
     this.pwmInput = this.ctx.createGain();
-    this.pwmInput.gain.value = 0;
+    this.pwmInput.gain.value = PW_PER_UNIT;
+    this.pwmInput.connect(this.pw);
 
-    // Connect oscillator to output
-    this.oscillator.connect(this.output);
+    // LIN FM IN (the panel has this jack on oscillator 2)
+    this.linFmInput = this.ctx.createGain();
+    this.linFmInput.gain.value = LIN_FM_HZ_PER_UNIT;
+    this.linFmInput.connect(this.node.parameters.get('linFm'));
 
-    // Build narrow pulse PeriodicWave
-    this._narrowPulseWave = this._createNarrowPulseWave();
-
-    // Start the oscillator
-    this.oscillator.start();
-  }
-
-  _createNarrowPulseWave() {
-    // Create a 25% duty cycle pulse wave using Fourier coefficients
-    const n = 64;
-    const real = new Float32Array(n);
-    const imag = new Float32Array(n);
-    const dutyCycle = 0.25;
-    real[0] = 0;
-    imag[0] = 0;
-    for (let k = 1; k < n; k++) {
-      real[k] = 0;
-      imag[k] = (2 / (k * Math.PI)) * Math.sin(k * Math.PI * dutyCycle);
-    }
-    return this.ctx.createPeriodicWave(real, imag, { disableNormalization: false });
+    // Sync source: the engine feeds oscillator 1's wave here; the SYNC button enables it
+    this.syncInput = this.ctx.createGain();
+    this.syncInput.connect(this.node, 0, 0);
   }
 
   setWaveform(waveform) {
     this._waveform = waveform;
-    if (waveform === WAVEFORMS.NARROW_PULSE) {
-      this.oscillator.setPeriodicWave(this._narrowPulseWave);
-    } else {
-      this.oscillator.type = waveform;
-    }
+    this.node.parameters.get('shape').setValueAtTime(SHAPES[waveform] ?? 1, this.ctx.currentTime);
   }
 
-  setOctave(foot) {
-    this._octaveFoot = foot;
-    this._updateFrequency();
-  }
+  setOctave(foot) { this._octaveFoot = foot; this._updateTune(); }
+  setDetune(semitones) { this._detuneSemitones = semitones; this._updateTune(); }
+  setSync(enabled) { this.node.parameters.get('sync').setValueAtTime(enabled ? 1 : 0, this.ctx.currentTime); }
 
-  setDetune(semitones) {
-    this._detuneSemitones = semitones;
-    this._updateFrequency();
-  }
-
-  setNote(midiNote, glideTime = 0) {
-    this._baseNote = midiNote;
-    this._updateFrequency(glideTime);
-  }
-
+  /** Pitch wheel, in semitones. */
   setPitchBend(semitones) {
-    // Apply pitch bend via detune in cents
-    this.oscillator.detune.setValueAtTime(semitones * 100, this.ctx.currentTime);
+    this.pitch.setTargetAtTime(semitones / 12, this.ctx.currentTime, SMOOTH);
   }
 
-  _updateFrequency(glideTime = 0) {
-    const baseFreq = midiToFrequency(this._baseNote);
-    const octaveMultiplier = footToOctaveMultiplier(this._octaveFoot);
-    const freq = detuneFrequency(baseFreq * octaveMultiplier, this._detuneSemitones);
-    const now = this.ctx.currentTime;
-    if (glideTime > 0) {
-      // Cancel any in-progress ramp and anchor at current frequency.
-      // Use our tracked _frequency (not .value which is unreliable during ramps).
-      const fromFreq = Math.max(this._frequency, 1); // exponentialRamp needs > 0
-      this.oscillator.frequency.cancelScheduledValues(now);
-      this.oscillator.frequency.setValueAtTime(fromFreq, now);
-      this.oscillator.frequency.exponentialRampToValueAtTime(freq, now + glideTime);
-    } else {
-      this.oscillator.frequency.cancelScheduledValues(now);
-      this.oscillator.frequency.setValueAtTime(freq, now);
-    }
-    this._frequency = freq;
-  }
-
-  getFrequency() {
-    return this._frequency;
+  _updateTune() {
+    const octaves = (FOOT_OCTAVES[this._octaveFoot] ?? 0) + this._detuneSemitones / 12;
+    this.node.parameters.get('tune').setTargetAtTime(octaves, this.ctx.currentTime, SMOOTH);
   }
 
   destroy() {
-    this.oscillator.stop();
-    this.oscillator.disconnect();
-    this.output.disconnect();
+    for (const n of [this.node, this.output, this.pitchInput, this.pwmInput, this.linFmInput, this.syncInput]) n.disconnect();
   }
 }

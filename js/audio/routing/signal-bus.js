@@ -21,7 +21,7 @@ export class SignalBus {
    * @param {string} options.label - Display label
    * @param {string} options.module - Module this jack belongs to
    */
-  register(id, { type, node, normalledFrom = null, label = '', module = '' }) {
+  register(id, { type, node, normalledFrom = null, label = '', module = '', onPatch = null }) {
     this.jacks.set(id, {
       id,
       type,
@@ -29,6 +29,7 @@ export class SignalBus {
       normalledFrom,
       label,
       module,
+      onPatch,      // called with true/false when a cable goes into or comes out of this input
       patched: false,
     });
   }

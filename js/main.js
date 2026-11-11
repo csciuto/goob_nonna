@@ -1,6 +1,9 @@
 import { ensureAudioContextRunning } from './audio/audio-context.js';
 import { AudioEngine } from './audio/engine.js';
 import { Layout } from './ui/layout.js';
+import { buildControls, readState, applyState, sendAll, encodePatch, decodePatch } from './ui/controls.js';
+import { initMidiIn } from './vendor/midi-in.js';
+import { MidiClockFollower, ticksPerStep } from './arp-seq/midi-clock.js';
 import { CABLE_COLORS } from './utils/constants.js';
 
 /**
@@ -11,6 +14,9 @@ let engine = null;
 let layout = null;
 let uiBuilt = false;
 let initPromise = null;
+let controls = null;        // every sound-shaping control, by name (ui/controls.js)
+let defaults = null;        // their values on a fresh page
+const cables = new Map();   // patchId -> [sourceId, destId]: the cables on the panel
 
 function buildUI() {
   if (uiBuilt) return;
@@ -19,6 +25,8 @@ function buildUI() {
   const container = document.getElementById('synth');
   layout = new Layout();
   layout.build(container);
+  controls = buildControls(layout);
+  defaults = readState(controls);
 
   // Wire keyboard — audio engine starts lazily on first interaction.
   // After engine exists, calls are synchronous (no microtask delay).
@@ -42,34 +50,100 @@ function buildUI() {
   document.getElementById('synth').addEventListener('click', () => initAudio(), { once: true });
 
   // Wire patch cables
-  layout.patchCables.onConnect = (sourceId, destId, color) => {
-    if (!engine) return;
-    const patchId = engine.createPatch(sourceId, destId, color);
-    if (patchId) {
-      const sourceEl = layout.getJackElement(sourceId);
-      const destEl = layout.getJackElement(destId);
-      if (sourceEl && destEl) {
-        layout.patchCables.addCable(patchId, sourceEl, destEl, color);
-      }
-    }
-  };
-
-  layout.patchCables.onDisconnect = (patchId) => {
-    if (!engine) return;
-    engine.removePatch(patchId);
-    layout.patchCables.removeCable(patchId);
-  };
+  layout.patchCables.onConnect = (sourceId, destId, color) => { addCable(sourceId, destId, color); saveToLink(); };
+  layout.patchCables.onDisconnect = (patchId) => { removeCable(patchId); saveToLink(); };
 
   loadPresetSelector();
+  setupMidi();
 
+  // A share link carries a patch: set the panel from it now; the engine picks it up when audio starts
+  const shared = location.hash.startsWith('#patch=') && decodePatch(location.hash.slice(7), defaults, id => !!layout.getJackElement(id));
+  if (shared) requestAnimationFrame(() => loadPatch(shared.state, shared.cables));
+
+  // Keep the address in step with the panel, so the page can be reloaded or shared as it stands
+  let timer = null;
+  for (const type of ['pointerup', 'keyup', 'click', 'wheel']) {
+    document.addEventListener(type, () => { clearTimeout(timer); timer = setTimeout(saveToLink, 250); }, { passive: true });
+  }
+}
+
+// ── MIDI keyboard ────────────────────────────────────────────────
+
+/**
+ * MIDI IN: a keyboard plays the synth like its own keys (through the arpeggiator and sequencer too),
+ * with velocity at KB VEL OUT, both wheels moving the panel's wheels, and MIDI clock driving the
+ * arpeggiator while it runs.
+ */
+function setupMidi() {
+  const button = document.getElementById('midi-btn');
+  const wheels = layout.panels.controller;
+  const follower = new MidiClockFollower();
+  let clockTimer = null;
+  const midi = initMidiIn(button, {
+    noteOn: (note, velocity) => layout.keyboard.externalNoteOn(note, velocity),
+    noteOff: note => layout.keyboard.externalNoteOff(note),
+    bend: value => wheels.pitchWheel.setValue(value),
+    mod: value => wheels.modWheel.setValue(value),
+    clock() {
+      if (!engine) return;
+      const arpSeq = engine.getArpSeq();
+      arpSeq.setExternalClock(true, 'midi');
+      if (follower.tick(ticksPerStep(controls.arpRate.get()))) arpSeq.externalClockTick();
+      clearTimeout(clockTimer);        // the clock stopped coming: hand the tempo back to the RATE knob
+      clockTimer = setTimeout(() => arpSeq.setExternalClock(false, 'midi'), 1000);
+    },
+    start() { follower.start(); if (engine) engine.getArpSeq().externalReset(); },
+    allOff() { layout.keyboard.externalAllOff(); wheels.pitchWheel.setValue(0); },
+    status: text => layout._showToast((text + (text.endsWith('connected') && !engine ? ' · click once for sound' : '')).toUpperCase()),
+    active: on => button.setAttribute('aria-pressed', String(on)),
+  }, { storageKey: 'goobNonna.midiIn' });
+  window.__midiIn = midi.feed;       // test hook: bytes as if a keyboard sent them
+}
+
+// ── Cables ───────────────────────────────────────────────────────
+
+/** Put a cable on the panel and, once the audio is running, in the engine. */
+function addCable(sourceId, destId, color = CABLE_COLORS[cables.size % CABLE_COLORS.length]) {
+  const sourceEl = layout.getJackElement(sourceId), destEl = layout.getJackElement(destId);
+  if (!sourceEl || !destEl) return;
+  const patchId = `${sourceId}->${destId}`;
+  if (cables.has(patchId)) return;
+  if (engine && !engine.createPatch(sourceId, destId, color)) return;     // not a connection the synth can make
+  cables.set(patchId, [sourceId, destId]);
+  layout.patchCables.addCable(patchId, sourceEl, destEl, color);
+}
+
+function removeCable(patchId) {
+  if (!cables.delete(patchId)) return;
+  if (engine) engine.removePatch(patchId);
+  layout.patchCables.removeCable(patchId);
+}
+
+/** Replace the whole patch: every control (defaults where `state` is silent) and every cable. */
+function loadPatch(state, cableList = []) {
+  for (const id of [...cables.keys()]) removeCable(id);
+  applyState(controls, state, defaults);
+  for (const [sourceId, destId] of cableList) addCable(sourceId, destId);
+}
+
+function saveToLink() {
+  if (!controls) return;
+  const text = encodePatch(readState(controls), defaults, [...cables.values()]);
+  const hash = text ? '#patch=' + text : '';
+  if (hash !== location.hash) history.replaceState(null, '', hash || location.pathname + location.search);
 }
 
 function initAudio() {
   if (initPromise) return initPromise;
   initPromise = (async () => {
     const ctx = await ensureAudioContextRunning();
-    engine = new AudioEngine(ctx);
+    engine = await AudioEngine.create(ctx);
     layout.wireToEngine(engine);
+    sendAll(controls);                 // the engine starts from its own defaults: give it the panel's settings
+    for (const [patchId, [sourceId, destId]] of [...cables]) {
+      if (!engine.createPatch(sourceId, destId)) { cables.delete(patchId); layout.patchCables.removeCable(patchId); }
+    }
+    window.__synth = { engine, layout, controls };     // for the browser tests and for poking at it from the console
   })();
   return initPromise;
 }
@@ -108,79 +182,10 @@ async function loadPresetSelector() {
   }
 }
 
-async function applyPreset(preset) {
-  if (!layout) return;
-  await initAudio();
-  if (!engine) return;
-
-  // Remove all existing patches
-  engine.removeAllPatches();
-  layout.patchCables.removeAllCables();
-
-  // Apply knob/switch settings to BOTH engine AND UI controls.
-  // Setting UI controls via setValue() fires onChange which sets the engine,
-  // so we only need to call engine directly for controls without UI counterparts.
-  if (preset.settings) {
-    const s = preset.settings;
-    const p = layout.panels;
-
-    // Oscillators — UI switches + knobs
-    if (s.osc1Waveform !== undefined) {
-      engine.setOsc1Waveform(s.osc1Waveform);
-    }
-    if (s.osc1Octave !== undefined) engine.setOsc1Octave(s.osc1Octave);
-    if (s.osc1Detune !== undefined) engine.setOsc1Detune(s.osc1Detune);
-    if (s.osc2Waveform !== undefined) engine.setOsc2Waveform(s.osc2Waveform);
-    if (s.osc2Octave !== undefined) engine.setOsc2Octave(s.osc2Octave);
-    if (s.osc2Detune !== undefined) p.oscillators.osc2Freq.setValue(s.osc2Detune);
-    if (s.osc2Sync !== undefined) engine.setOsc2Sync(s.osc2Sync);
-
-    // Mixer
-    if (s.osc1Level !== undefined) p.mixer.osc1Level.setValue(s.osc1Level);
-    if (s.osc2Level !== undefined) p.mixer.osc2Level.setValue(s.osc2Level);
-    if (s.noiseLevel !== undefined) p.mixer.noiseLevel.setValue(s.noiseLevel);
-
-    // Filter
-    if (s.cutoff !== undefined) p.filter.cutoff.setValue(s.cutoff);
-    if (s.resonance !== undefined) p.filter.resonance.setValue(s.resonance);
-    if (s.envAmt !== undefined) p.filter.envAmt.setValue(s.envAmt);
-    if (s.kbTrack !== undefined) engine.setFilterKbTrack(s.kbTrack);
-
-    // Envelope
-    if (s.attack !== undefined) p.envelope.attack.setValue(s.attack);
-    if (s.decay !== undefined) p.envelope.decay.setValue(s.decay);
-    if (s.sustain !== undefined) p.envelope.sustain.setValue(s.sustain);
-    if (s.release !== undefined) p.envelope.release.setValue(s.release);
-
-    // VCA
-    if (s.vcaMode !== undefined) engine.setVCAMode(s.vcaMode);
-    if (s.volume !== undefined) p.output.volume.setValue(s.volume);
-
-    // Reverb
-    if (s.reverbMix !== undefined) p.output.reverbMix.setValue(s.reverbMix);
-
-    // LFO
-    if (s.lfoRate !== undefined) p.modulation.lfoRate.setValue(s.lfoRate);
-    if (s.lfoWaveform !== undefined) engine.setLFOWaveform(s.lfoWaveform);
-    if (s.pitchAmt !== undefined) p.modulation.pitchAmt.setValue(s.pitchAmt);
-    if (s.cutoffAmt !== undefined) p.modulation.cutoffAmt.setValue(s.cutoffAmt);
-    if (s.pwAmt !== undefined) p.modulation.pwAmt.setValue(s.pwAmt);
-  }
-
-  // Apply patch cables
-  if (preset.patches) {
-    for (const patch of preset.patches) {
-      const color = CABLE_COLORS[Math.floor(Math.random() * CABLE_COLORS.length)];
-      const patchId = engine.createPatch(patch.source, patch.dest, color);
-      if (patchId) {
-        const sourceEl = layout.getJackElement(patch.source);
-        const destEl = layout.getJackElement(patch.dest);
-        if (sourceEl && destEl) {
-          layout.patchCables.addCable(patchId, sourceEl, destEl, color);
-        }
-      }
-    }
-  }
+function applyPreset(preset) {
+  loadPatch(preset.settings || {}, (preset.patches || []).map(p => [p.source, p.dest]));
+  saveToLink();
+  initAudio();
 }
 
 // Build UI immediately on load — audio deferred to first user interaction

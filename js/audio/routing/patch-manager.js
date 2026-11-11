@@ -58,7 +58,11 @@ export class PatchManager {
     const destJack = this.signalBus.get(destId);
 
     if (!sourceJack || !destJack) return null;
-    if (sourceJack.type !== JACK_TYPE.OUTPUT || destJack.type !== JACK_TYPE.INPUT) return null;
+    // MULT jacks work either way, but a cable needs a real source or a real destination at one end
+    const canSend = sourceJack.type === JACK_TYPE.OUTPUT || sourceJack.type === JACK_TYPE.BOTH;
+    const canTake = destJack.type === JACK_TYPE.INPUT || destJack.type === JACK_TYPE.BOTH;
+    if (!canSend || !canTake) return null;
+    if (sourceJack.type === JACK_TYPE.BOTH && destJack.type === JACK_TYPE.BOTH) return null;
 
     const patchId = `${sourceId}->${destId}`;
 
@@ -79,7 +83,9 @@ export class PatchManager {
     }
 
     // Record the patch
+    const firstCable = !this._isDestinationPatched(destId);
     this.patches.set(patchId, { sourceId, destId, color });
+    if (firstCable && destJack.onPatch) destJack.onPatch(true);
     this.signalBus.setPatched(destId, true);
     this.signalBus.setPatched(sourceId, true);
 
@@ -114,6 +120,8 @@ export class PatchManager {
       this.signalBus.setPatched(patch.destId, false);
       // Restore normalled connection
       this._restoreNormalled(patch.destId);
+      const destJack = this.signalBus.get(patch.destId);
+      if (destJack && destJack.onPatch) destJack.onPatch(false);
     }
 
     // Check if source is still patched anywhere

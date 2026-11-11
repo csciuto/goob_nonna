@@ -1,0 +1,356 @@
+/**
+ * The synth's signal generators and processors, as pure DSP "cores" plus thin AudioWorklet wrappers.
+ *
+ * The cores have no Web Audio in them, so the unit tests run them in Node and measure the result
+ * (pitch, slope, envelope times). The wrappers at the bottom register each core as a processor; that
+ * part runs only inside an AudioWorklet.
+ *
+ * Signal levels follow the hardware in units of 5 volts: an audio or LFO signal is -1..+1 (10 V peak
+ * to peak), a gate or full envelope is 1.6 (+8 V), and pitch inputs are 1 volt per octave, so one
+ * unit there is five octaves. The engine does that scaling; cores take plain octaves, Hz and seconds.
+ */
+
+const LN2 = Math.LN2;
+export const C4 = 261.6255653005986;
+export const GATE_THRESHOLD = 0.24;   // 1.2 V: "any signal > +1.2 Volts will act as a Trigger"
+export const LOGIC_THRESHOLD = 0.5;   // 2.5 V: clock, on/off and reset inputs
+
+/** Small seeded random generator, so drift, noise seeds and S/H are the same on every run. */
+export function mulberry(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export const SHAPE = { TRIANGLE: 0, SAW: 1, SQUARE: 2, NARROW: 3 };
+
+/**
+ * Oscillator: triangle, saw, square (50%) and narrow pulse (25%), with pulse-width modulation,
+ * hard sync and linear FM. Edges are band-limited (polyBLEP), which needs the sample after an edge,
+ * so the output runs one sample late.
+ */
+export class OscCore {
+  constructor(sampleRate, { driftCents = 0, seed = 1 } = {}) {
+    this.sr = sampleRate;
+    this.phase = 0;
+    this.prevSync = 0;
+    this.held = 0;            // the previous sample, waiting for any edge correction
+    this.driftCents = driftCents;
+    this.drift = 0;           // current drift, in octaves
+    this.rand = mulberry(seed);
+  }
+
+  /** Slow random pitch wander (mean-reverting, about a 2 second time constant). Call once per block. */
+  advanceDrift(samples) {
+    if (!this.driftCents) return;
+    const dt = samples / this.sr, tau = 2;
+    const gauss = this.rand() + this.rand() + this.rand() + this.rand() - 2;   // roughly normal, sd 0.58
+    const sigma = (this.driftCents / 2) / 1200;
+    this.drift += -this.drift * (dt / tau) + sigma * Math.sqrt(2 * dt / tau) * gauss / 0.58;
+  }
+
+  static value(shape, phase, duty) {
+    if (shape === SHAPE.SAW) return 2 * phase - 1;
+    if (shape === SHAPE.TRIANGLE) return 4 * Math.abs(phase - 0.5) - 1;
+    return (phase < duty ? 1 : -1) - (2 * duty - 1);     // pulse, with its DC removed (AC coupled)
+  }
+
+  /**
+   * One sample.
+   * @param pitch  octaves above C4 (keyboard, knobs, bend and modulation, already summed)
+   * @param shape  SHAPE.*
+   * @param pw     pulse-width offset, as a fraction of the cycle (added to 50% or 25%)
+   * @param linHz  linear FM, in Hz
+   * @param sync   the sync source's signal; a rising zero crossing restarts the cycle when syncOn
+   */
+  tick(pitch, shape, pw = 0, linHz = 0, sync = 0, syncOn = false) {
+    let f = C4 * Math.exp((pitch + this.drift) * LN2) + linHz;
+    if (!(f > 0)) f = 0;
+    if (f > this.sr * 0.45) f = this.sr * 0.45;
+    const dt = f / this.sr;
+    const pulse = shape === SHAPE.SQUARE || shape === SHAPE.NARROW;
+    let duty = (shape === SHAPE.NARROW ? 0.25 : 0.5) + pw;
+    duty = duty < 0.05 ? 0.05 : duty > 0.95 ? 0.95 : duty;
+
+    let prevFix = 0, curFix = 0;
+    // A step of height h that happened x samples ago (0 <= x < 1): correct this sample and the last.
+    const edge = (h, x) => {
+      curFix += h * (x - x * x / 2 - 0.5);
+      const t = x - 1;
+      prevFix += h * (t * t / 2 + t + 0.5);
+    };
+
+    const prevPhase = this.phase;
+    let synced = false;
+    if (syncOn && this.prevSync <= 0 && sync > 0) {
+      const frac = -this.prevSync / (sync - this.prevSync);      // how far into this sample the crossing fell
+      let at = prevPhase + dt * frac; if (at >= 1) at -= 1;
+      const before = OscCore.value(shape, at, duty);
+      this.phase = dt * (1 - frac);
+      edge(OscCore.value(shape, 0, duty) - before, 1 - frac);
+      synced = true;
+    }
+    this.prevSync = sync;
+
+    if (!synced) {
+      let p = prevPhase + dt, wrapped = false;
+      if (p >= 1) {
+        p -= 1; wrapped = true;
+        if (dt > 0) {
+          if (shape === SHAPE.SAW) edge(-2, p / dt);
+          else if (pulse) edge(2, p / dt);
+        }
+      }
+      if (pulse && dt > 0 && p >= duty && (wrapped || prevPhase < duty)) edge(-2, (p - duty) / dt);
+      this.phase = p;
+    }
+
+    const out = this.held + prevFix;
+    this.held = OscCore.value(shape, this.phase, duty) + curFix;
+    return out;
+  }
+}
+
+/**
+ * Four-pole (24 dB per octave) transistor-ladder low-pass filter: four one-pole stages in a feedback
+ * loop, solved without a one-sample delay in the loop so the resonant peak sits exactly at the cutoff,
+ * with a soft saturation that bounds self-oscillation. Resonance thins the bass, as on the hardware.
+ */
+export class LadderCore {
+  constructor(sampleRate, seed = 7) {
+    this.sr = sampleRate;
+    this.s = [0, 0, 0, 0];
+    this.rand = mulberry(seed);
+  }
+
+  /** @param fc cutoff in Hz; @param k feedback amount: 0 none, 4 the edge of self-oscillation */
+  tick(x, fc, k) {
+    const max = this.sr * 0.45;
+    fc = fc < 5 ? 5 : fc > max ? max : fc;
+    const g = Math.tan(Math.PI * fc / this.sr);
+    const G = g / (1 + g), b = 1 - G;
+    const s = this.s;
+    const sigma = b * (G * G * G * s[0] + G * G * s[1] + G * s[2] + s[3]);
+    // a whisper of noise gives self-oscillation something to start from
+    let u = (x + (this.rand() - 0.5) * 2e-5 - k * sigma) / (1 + k * G * G * G * G);
+    u = Math.tanh(u * 0.5) * 2;
+    for (let i = 0; i < 4; i++) {
+      const v = (u - s[i]) * G;
+      const y = v + s[i];
+      s[i] = y + v;
+      u = y;
+    }
+    return u;
+  }
+}
+
+/** Resonance knob (0 to 4) to ladder feedback: the top of the knob is just past self-oscillation. */
+export const resonanceToFeedback = knob => Math.max(0, knob) * 1.06;
+
+/**
+ * ADSR envelope driven by a gate signal. Attack is linear, decay and release are exponential.
+ * A new gate starts the attack from wherever the level is, so retriggering doesn't click.
+ * `kb` is the second output, for the VCA's KB RLS mode: full level at once, then the release.
+ */
+export class EnvCore {
+  constructor(sampleRate) {
+    this.sr = sampleRate;
+    this.level = 0;
+    this.kb = 0;
+    this.stage = 0;      // 0 idle/release, 1 attack, 2 decay/sustain
+    this.high = false;
+  }
+
+  /** Times in seconds; sustain 0 to 1. Returns the envelope level, 0 to 1. */
+  tick(gate, attack, decay, sustain, release) {
+    const high = gate > GATE_THRESHOLD;
+    if (high && !this.high) this.stage = 1;
+    if (!high && this.high) this.stage = 0;
+    this.high = high;
+
+    if (this.stage === 1) {
+      this.level += 1 / (Math.max(attack, 0.0005) * this.sr);
+      if (this.level >= 1) { this.level = 1; this.stage = 2; }
+    } else if (this.stage === 2) {
+      this.level = sustain + (this.level - sustain) * Math.exp(-3 / (Math.max(decay, 0.001) * this.sr));
+    } else if (this.level > 0) {
+      this.level *= Math.exp(-3 / (Math.max(release, 0.001) * this.sr));
+      if (this.level < 1e-5) this.level = 0;
+    }
+
+    if (high) this.kb += (1 - this.kb) * 0.05;                // about a millisecond: instant, without a click
+    else if (this.kb > 0) {
+      this.kb *= Math.exp(-3 / (Math.max(release, 0.001) * this.sr));
+      if (this.kb < 1e-5) this.kb = 0;
+    }
+    return this.level;
+  }
+}
+
+export const LFO_OUT = { SINE: 0, SAW: 1, RAMP: 2, SQUARE: 3, SH: 4, TRIANGLE: 5 };
+
+/**
+ * Modulation oscillator: every waveform at once, plus sample and hold, which takes a new random
+ * value at the start of each cycle. A rising edge on sync restarts the cycle (and so steps the S/H).
+ */
+export class LfoCore {
+  constructor(sampleRate, seed = 11) {
+    this.sr = sampleRate;
+    this.phase = 0;
+    this.prevSync = 0;
+    this.rand = mulberry(seed);
+    this.sh = this.rand() * 2 - 1;
+    this.out = new Float64Array(6);
+  }
+
+  tick(rateHz, sync = 0) {
+    if (this.prevSync <= GATE_THRESHOLD && sync > GATE_THRESHOLD) { this.phase = 0; this.sh = this.rand() * 2 - 1; }
+    this.prevSync = sync;
+    const p = this.phase, o = this.out;
+    o[0] = Math.sin(2 * Math.PI * p);
+    o[1] = 2 * p - 1;
+    o[2] = 1 - 2 * p;
+    o[3] = p < 0.5 ? 1 : -1;
+    o[4] = this.sh;
+    o[5] = 1 - 4 * Math.abs(p - 0.5);
+    let f = rateHz; if (!(f > 0)) f = 0; if (f > this.sr * 0.45) f = this.sr * 0.45;
+    this.phase = p + f / this.sr;
+    if (this.phase >= 1) { this.phase -= 1; this.sh = this.rand() * 2 - 1; }
+    return o;
+  }
+}
+
+/** One-pole (6 dB per octave) high-pass filter. */
+export class Hp1Core {
+  constructor(sampleRate) { this.sr = sampleRate; this.x1 = 0; this.y1 = 0; }
+  tick(x, fc) {
+    const a = 1 / (1 + 2 * Math.PI * fc / this.sr);
+    const y = a * (this.y1 + x - this.x1);
+    this.x1 = x; this.y1 = y;
+    return y;
+  }
+}
+
+// ── AudioWorklet wrappers ───────────────────────────────────────────────────────────────────────────
+
+if (typeof registerProcessor === 'function') {
+  const at = (arr, i) => (arr.length > 1 ? arr[i] : arr[0]);
+  const A = 'a-rate', K = 'k-rate';
+
+  registerProcessor('gn-osc', class extends AudioWorkletProcessor {
+    static get parameterDescriptors() {
+      return [
+        { name: 'pitch', defaultValue: 0, automationRate: A },    // octaves above C4
+        { name: 'tune', defaultValue: 0, automationRate: K },     // octave switch and frequency knob, in octaves
+        { name: 'pw', defaultValue: 0, automationRate: A },
+        { name: 'linFm', defaultValue: 0, automationRate: A },    // Hz
+        { name: 'shape', defaultValue: SHAPE.SAW, automationRate: K },
+        { name: 'sync', defaultValue: 0, automationRate: K },
+      ];
+    }
+    constructor(options) {
+      super();
+      this.core = new OscCore(sampleRate, options.processorOptions || {});
+    }
+    process(inputs, outputs, p) {
+      const out = outputs[0][0], sync = inputs[0][0];
+      const tune = p.tune[0], shape = Math.round(p.shape[0]), syncOn = p.sync[0] > 0.5;
+      this.core.advanceDrift(out.length);
+      for (let i = 0; i < out.length; i++) {
+        out[i] = this.core.tick(at(p.pitch, i) + tune, shape, at(p.pw, i), at(p.linFm, i), sync ? sync[i] : 0, syncOn);
+      }
+      return true;
+    }
+  });
+
+  registerProcessor('gn-ladder', class extends AudioWorkletProcessor {
+    static get parameterDescriptors() {
+      return [
+        { name: 'cutoff', defaultValue: 1000, minValue: 1, automationRate: A },   // Hz, from the knob
+        { name: 'cv', defaultValue: 0, automationRate: A },                         // octaves added to it
+        { name: 'res', defaultValue: 0, automationRate: A },                        // knob units, 0 to 4
+      ];
+    }
+    constructor() { super(); this.core = new LadderCore(sampleRate); }
+    process(inputs, outputs, p) {
+      const out = outputs[0][0], x = inputs[0][0];
+      for (let i = 0; i < out.length; i++) {
+        const fc = at(p.cutoff, i) * Math.exp(at(p.cv, i) * LN2);
+        out[i] = this.core.tick(x ? x[i] : 0, fc, resonanceToFeedback(at(p.res, i)));
+      }
+      return true;
+    }
+  });
+
+  registerProcessor('gn-env', class extends AudioWorkletProcessor {
+    static get parameterDescriptors() {
+      return [
+        { name: 'attack', defaultValue: 0.01, automationRate: K },
+        { name: 'decay', defaultValue: 0.2, automationRate: K },
+        { name: 'sustain', defaultValue: 0.7, automationRate: K },
+        { name: 'release', defaultValue: 0.3, automationRate: K },
+      ];
+    }
+    constructor() { super(); this.core = new EnvCore(sampleRate); }
+    process(inputs, outputs, p) {
+      const env = outputs[0][0], kb = outputs[1][0], gate = inputs[0][0];
+      const a = p.attack[0], d = p.decay[0], s = p.sustain[0], r = p.release[0];
+      for (let i = 0; i < env.length; i++) {
+        env[i] = this.core.tick(gate ? gate[i] : 0, a, d, s, r);
+        kb[i] = this.core.kb;
+      }
+      return true;
+    }
+  });
+
+  registerProcessor('gn-lfo', class extends AudioWorkletProcessor {
+    static get parameterDescriptors() {
+      return [
+        { name: 'rate', defaultValue: 5, automationRate: K },      // Hz, from the knob
+        { name: 'rateCv', defaultValue: 0, automationRate: A },    // octaves added to it
+      ];
+    }
+    constructor() { super(); this.core = new LfoCore(sampleRate); }
+    process(inputs, outputs, p) {
+      const sync = inputs[0][0], rate = p.rate[0], n = outputs[0][0].length;
+      for (let i = 0; i < n; i++) {
+        const o = this.core.tick(rate * Math.exp(at(p.rateCv, i) * LN2), sync ? sync[i] : 0);
+        for (let c = 0; c < 6; c++) outputs[c][0][i] = o[c];
+      }
+      return true;
+    }
+  });
+
+  registerProcessor('gn-hp1', class extends AudioWorkletProcessor {
+    static get parameterDescriptors() {
+      return [{ name: 'cutoff', defaultValue: 200, minValue: 1, automationRate: K }];
+    }
+    constructor() { super(); this.core = new Hp1Core(sampleRate); }
+    process(inputs, outputs, p) {
+      const out = outputs[0][0], x = inputs[0][0], fc = p.cutoff[0];
+      for (let i = 0; i < out.length; i++) out[i] = this.core.tick(x ? x[i] : 0, fc);
+      return true;
+    }
+  });
+
+  /** Watches its inputs for logic edges (clock, on/off, reset) and reports them to the main thread. */
+  registerProcessor('gn-edge', class extends AudioWorkletProcessor {
+    constructor() { super(); this.high = []; }
+    process(inputs) {
+      for (let n = 0; n < inputs.length; n++) {
+        const x = inputs[n][0];
+        if (!x) { if (this.high[n]) { this.high[n] = false; this.port.postMessage({ input: n, up: false }); } continue; }
+        for (let i = 0; i < x.length; i++) {
+          const up = x[i] > LOGIC_THRESHOLD;
+          if (up !== !!this.high[n]) { this.high[n] = up; this.port.postMessage({ input: n, up }); }
+        }
+      }
+      return true;
+    }
+  });
+}

@@ -1,63 +1,33 @@
 /**
- * Bipolar Attenuator utility module.
- * Input normalled to +1.0 DC (simulating +8V constant).
- * Attenuator knob scales from -1 to +1.
+ * Bipolar attenuator. Its input is normalled to a positive voltage (+8 V), so with nothing patched
+ * the output is a steady voltage set by the knob, -8 V to +8 V. That normal is a regular normalled
+ * connection in the patch bay (from `dc`), so a cable into the input replaces it.
  */
 export class AttenuatorModule {
   constructor(audioContext) {
     this.ctx = audioContext;
 
-    // DC source (normalled input: constant +1.0)
     this.dcSource = this.ctx.createConstantSource();
-    this.dcSource.offset.value = 1.0;
+    this.dcSource.offset.value = 1.6;
     this.dcSource.start();
+    this.dc = this.ctx.createGain();           // the hidden source the input is normalled to
+    this.dcSource.connect(this.dc);
 
-    // Input junction (patch breaks DC normalling)
     this.input = this.ctx.createGain();
-    this.input.gain.value = 1.0;
-
-    // Attenuator gain (bipolar: -1 to +1)
     this.attenuator = this.ctx.createGain();
-    this.attenuator.gain.value = 0; // Center position = fully attenuated
-
-    // Output junction
+    this.attenuator.gain.value = 0;            // center: fully attenuated
     this.output = this.ctx.createGain();
-    this.output.gain.value = 1.0;
-
-    // Default: DC source → input → attenuator → output
-    this.dcSource.connect(this.input);
     this.input.connect(this.attenuator);
     this.attenuator.connect(this.output);
-
-    this._dcConnected = true;
   }
 
+  /** -1 to +1 */
   setAmount(bipolarValue) {
-    // -1 to +1
-    this.attenuator.gain.setValueAtTime(bipolarValue, this.ctx.currentTime);
-  }
-
-  /** Called when a patch cable is connected to input */
-  breakNormal() {
-    if (this._dcConnected) {
-      this.dcSource.disconnect(this.input);
-      this._dcConnected = false;
-    }
-  }
-
-  /** Called when patch cable is removed from input */
-  restoreNormal() {
-    if (!this._dcConnected) {
-      this.dcSource.connect(this.input);
-      this._dcConnected = true;
-    }
+    this.attenuator.gain.setTargetAtTime(bipolarValue, this.ctx.currentTime, 0.012);
   }
 
   destroy() {
     this.dcSource.stop();
-    this.dcSource.disconnect();
-    this.input.disconnect();
-    this.attenuator.disconnect();
-    this.output.disconnect();
+    for (const n of [this.dcSource, this.dc, this.input, this.attenuator, this.output]) n.disconnect();
   }
 }

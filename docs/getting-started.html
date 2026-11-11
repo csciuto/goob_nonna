@@ -220,32 +220,43 @@ A   D    S          R</div>
 
 <h2>Patching: The Modular Part</h2>
 
-<p>The jacks on the panel let you rewire the synth. There are two types:</p>
+<p>The jacks on the panel let you rewire the synth. There are three kinds:</p>
 
 <ul>
   <li><strong>Outputs</strong> (red-tinted rings) — sources of signal</li>
   <li><strong>Inputs</strong> (blue-tinted rings) — destinations that accept signal</li>
+  <li><strong>Mult</strong> (gray rings) — four jacks wired together; each works as either</li>
 </ul>
 
 <p><strong>To patch:</strong> Click an output jack, then click an input jack. A cable appears. Click the cable to remove it, or right-click a jack to unplug its cable. Each jack can only hold one cable.</p>
 
-<p><strong>The key concept:</strong> When you plug into an input, you <em>replace</em> whatever was connected there by default. Pull the cable out, and the default connection comes back. This means you can't break anything permanently — just unplug.</p>
+<p><strong>The key concept:</strong> Audio inputs (the mixer's three inputs, the filter's INPUT, VCA IN, REVERB IN) and the envelope's TRIGGER IN <em>replace</em> whatever was connected there by default. Pull the cable out, and the default connection comes back. Control inputs (PITCH IN, CUTOFF IN, RATE IN and the rest) <em>add</em> to what the knobs and keyboard are already doing. Either way you can't break anything permanently — just unplug.</p>
+
+<p>Pitch inputs follow the one-volt-per-octave standard, and the LFO and envelope are strong signals: straight into PITCH IN or CUTOFF IN they sweep several octaves. Run them through the <strong>Attenuator</strong> first for something subtler.</p>
 
 <h3>Patch Ideas to Try</h3>
 
-<div class="patch-idea"><strong>LFO S/H OUT &rarr; CUTOFF IN</strong> — Random filter cutoff on every LFO cycle. Instant robot.</div>
-<div class="patch-idea"><strong>NOISE OUT &rarr; FILTER IN</strong> — Replace the oscillators with noise through the filter. Wind, percussion, ocean.</div>
-<div class="patch-idea"><strong>ENV OUT &rarr; OSC PITCH IN</strong> — Envelope controls pitch. Notes swoop up or down on each keypress.</div>
-<div class="patch-idea"><strong>LFO TRI OUT &rarr; OSC PITCH IN</strong> — Continuous pitch wobble independent of the mod wheel.</div>
-<div class="patch-idea"><strong>KB VEL OUT &rarr; CUTOFF IN</strong> — Velocity-sensitive filter (harder playing = brighter).</div>
+<div class="patch-idea"><strong>S/H OUT &rarr; CUTOFF IN</strong> — Random filter cutoff on every LFO cycle. Instant robot.</div>
+<div class="patch-idea"><strong>+ENV OUT &rarr; ATTENUATOR &rarr; OSC 1 PITCH IN</strong> — Envelope controls pitch. Notes swoop up or down on each keypress; the attenuator sets how far and which way.</div>
+<div class="patch-idea"><strong>WAVE OUT &rarr; ATTENUATOR &rarr; OSC 2 PITCH IN</strong> — Vibrato on one oscillator only, independent of the mod wheel.</div>
+<div class="patch-idea"><strong>KB VEL OUT &rarr; CUTOFF IN</strong> — Velocity-sensitive filter with a MIDI keyboard (harder playing = brighter).</div>
+<div class="patch-idea"><strong>WAVE OUT (square) &rarr; TRIGGER IN</strong> — The LFO fires the envelope by itself: a rhythm with no keys held.</div>
+<div class="patch-idea"><strong>GATE OUT &rarr; SYNC IN, RATE at minimum, S/H OUT &rarr; CUTOFF IN</strong> — A new random filter setting with every key.</div>
+<div class="patch-idea"><strong>KB OUT &rarr; RATE IN</strong> — The LFO tracks the keyboard, fast enough to be a third oscillator.</div>
+<div class="patch-idea"><strong>OSC 1 WAVE OUT &rarr; OSC 2 LIN FM IN</strong> — Metallic, bell-like tones.</div>
+<div class="patch-idea"><strong>RESONANCE all the way up, mixer knobs down, KBD TRACK 1:1</strong> — No cables: the filter sings a sine wave you can play.</div>
 
 <h3>The Utility Modules</h3>
 
 <ul>
-  <li><strong>Mult</strong> — Splits one signal into multiple copies. Patch something into one jack, get copies from the others.</li>
-  <li><strong>Attenuator</strong> — Scales a signal down (or inverts it). Useful when an LFO is too strong for a destination.</li>
-  <li><strong>HPF</strong> — High-pass filter. Removes low frequencies. Patch audio through it to thin things out.</li>
+  <li><strong>Mult</strong> — Splits one signal into copies. Patch something into any one jack, take it from the others.</li>
+  <li><strong>Attenuator</strong> — Scales a signal down, or inverts it (center is off). With nothing plugged into its input it puts out a steady voltage you set with the knob: patch its OUTPUT into PITCH IN to transpose, or into RATE IN to push the LFO past its knob.</li>
+  <li><strong>High Pass</strong> — Removes low frequencies, gently. Patch audio through it to thin things out.</li>
 </ul>
+
+<h3>The Rear Panel</h3>
+
+<p>Under the <strong>&#8942;</strong> menu: <strong>CLK IN</strong> steps the arpeggiator or sequencer from any pulse (try the LFO's square wave), <strong>ON/OFF IN</strong> starts and stops it, <strong>RESET IN</strong> sends it back to the first step, and <strong>CLK OUT</strong> pulses on every step.</p>
 
 <hr>
 
@@ -294,6 +305,14 @@ A   D    S          R</div>
 <h3>Tap Tempo</h3>
 
 <p>Tap the <strong>TAP</strong> button (yellow) at least three times at your desired tempo. This overrides the RATE knob. To return control to the knob, hold TAP for about one second until its light turns off.</p>
+
+<h3>MIDI Keyboard</h3>
+
+<p>Press <strong>MIDI IN</strong> (next to the presets) and allow MIDI when the browser asks. A connected keyboard now plays the synth, through the arpeggiator and sequencer too. Its pitch and mod wheels move the ones on screen, and how hard you play comes out of <strong>KB VEL OUT</strong>: patch that somewhere to hear it. If the keyboard or your DAW sends MIDI clock, the arpeggiator follows it and the RATE knob chooses the note value. Press MIDI IN again to turn it off. Works in Chrome, Edge and Firefox.</p>
+
+<h3>Saving and Sharing a Patch</h3>
+
+<p>The address bar always holds your patch: every knob, switch and cable. Bookmark it to keep a sound, or copy it to send one. Loading a preset sets the whole panel, and <strong>Default</strong> clears it.</p>
 
 <h3>Keyboard Octave Shift</h3>
 

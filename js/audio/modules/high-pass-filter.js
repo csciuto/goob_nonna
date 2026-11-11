@@ -1,38 +1,22 @@
 import { mapToLogRange } from '../../utils/math.js';
 
-/**
- * Utility High-Pass Filter (-6dB/oct).
- */
+/** Utility high-pass filter: static, 6 dB per octave (the `gn-hp1` worklet). */
 export class HighPassFilterModule {
   constructor(audioContext) {
     this.ctx = audioContext;
-
-    // Input junction
     this.input = this.ctx.createGain();
-    this.input.gain.value = 1.0;
-
-    // HPF
-    this.filter = this.ctx.createBiquadFilter();
-    this.filter.type = 'highpass';
-    this.filter.frequency.value = 200;
-    this.filter.Q.value = 0.707;
-
-    // Output junction
+    this.node = new AudioWorkletNode(this.ctx, 'gn-hp1', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [1] });
     this.output = this.ctx.createGain();
-    this.output.gain.value = 1.0;
-
-    this.input.connect(this.filter);
-    this.filter.connect(this.output);
+    this.input.connect(this.node);
+    this.node.connect(this.output);
+    this.setCutoff(0.5);
   }
 
   setCutoff(normalized) {
-    const freq = mapToLogRange(normalized, 20, 20000);
-    this.filter.frequency.setValueAtTime(freq, this.ctx.currentTime);
+    this.node.parameters.get('cutoff').setTargetAtTime(mapToLogRange(normalized, 20, 20000), this.ctx.currentTime, 0.012);
   }
 
   destroy() {
-    this.input.disconnect();
-    this.filter.disconnect();
-    this.output.disconnect();
+    for (const n of [this.input, this.node, this.output]) n.disconnect();
   }
 }

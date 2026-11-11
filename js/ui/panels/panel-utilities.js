@@ -14,10 +14,10 @@ export class PanelUtilities {
     const multSection = document.createElement('div');
     multSection.className = 'mult-section';
 
-    this.jacks.mult1 = new Jack({ id: PATCH_POINTS.MULT_1, type: 'input', label: '', onClick: onJackClick });
-    this.jacks.mult2 = new Jack({ id: PATCH_POINTS.MULT_2, type: 'input', label: '', onClick: onJackClick });
-    this.jacks.mult3 = new Jack({ id: PATCH_POINTS.MULT_3, type: 'input', label: '', onClick: onJackClick });
-    this.jacks.mult4 = new Jack({ id: PATCH_POINTS.MULT_4, type: 'input', label: '', onClick: onJackClick });
+    this.jacks.mult1 = new Jack({ id: PATCH_POINTS.MULT_1, type: 'both', label: '', onClick: onJackClick });
+    this.jacks.mult2 = new Jack({ id: PATCH_POINTS.MULT_2, type: 'both', label: '', onClick: onJackClick });
+    this.jacks.mult3 = new Jack({ id: PATCH_POINTS.MULT_3, type: 'both', label: '', onClick: onJackClick });
+    this.jacks.mult4 = new Jack({ id: PATCH_POINTS.MULT_4, type: 'both', label: '', onClick: onJackClick });
     this.jacks.mult1.getElement().dataset.tooltip = 'Mult — all 4 jacks are connected, splits one signal into copies';
     this.jacks.mult2.getElement().dataset.tooltip = 'Mult — all 4 jacks are connected';
     this.jacks.mult3.getElement().dataset.tooltip = 'Mult — all 4 jacks are connected';

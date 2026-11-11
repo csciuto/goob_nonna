@@ -1,6 +1,7 @@
 import { Arpeggiator } from './arpeggiator.js';
 import { Sequencer } from './sequencer.js';
 import { Clock } from './clock.js';
+import { DEFAULT_VELOCITY } from '../utils/constants.js';
 
 /**
  * ArpSeqController — coordinates the arpeggiator, sequencer, clock,
@@ -34,6 +35,8 @@ export class ArpSeqController {
     this.onStep = null;    // () => {} — for LED blink
     this.onOctaveShift = null; // (direction) => {} — -1 or +1
     this.onTapTempoChange = null; // (active) => {} — TAP LED
+    this.onClock = null;       // () => {} — every clock step, for CLOCK OUT
+    this.onPlayChange = null;  // (playing) => {} — when something other than the PLAY button starts or stops it
 
     this._lastNote = null;
   }
@@ -190,6 +193,36 @@ export class ArpSeqController {
     });
   }
 
+  // ── Rear-panel inputs ──────────────────────────────────────────
+
+  /**
+   * Steps come from outside instead of the RATE knob: a cable in CLOCK IN ('jack') or MIDI clock ('midi').
+   * The internal clock returns when neither is driving.
+   */
+  setExternalClock(on, source = 'jack') {
+    this._clockSources ||= new Set();
+    if (on) this._clockSources.add(source); else this._clockSources.delete(source);
+    this.clock.setExternal(this._clockSources.size > 0);
+  }
+
+  /** A rising edge at CLOCK IN. */
+  externalClockTick() {
+    this.clock.externalTick();
+  }
+
+  /** ON/OFF IN: above 2.5 V runs the arpeggiator or sequencer, below stops it. */
+  externalRun(on) {
+    if (this._mode === 'rec' || on === this._playing) return;
+    if (on) this.start(); else this.stop();
+    if (this.onPlayChange) this.onPlayChange(this._playing);
+  }
+
+  /** RESET IN: back to the beginning of the pattern. */
+  externalReset() {
+    this.arp.reset();
+    this.seq.reset();
+  }
+
   stop() {
     this._playing = false;
     this.clock.stop();
@@ -201,6 +234,7 @@ export class ArpSeqController {
 
   _onClockStep(step, time) {
     if (this.onStep) this.onStep();
+    if (this.onClock) this.onClock();
 
     // Release previous note
     if (this._lastNote !== null) {
@@ -212,7 +246,7 @@ export class ArpSeqController {
       const note = this.arp.nextNote();
       if (note !== null) {
         this._lastNote = note;
-        if (this.onNoteOn) this.onNoteOn(note, 1.0);
+        if (this.onNoteOn) this.onNoteOn(note, DEFAULT_VELOCITY);
       }
     } else if (this._mode === 'seq') {
       const stepData = this.seq.nextStep();

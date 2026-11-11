@@ -1,12 +1,13 @@
 # Goob Nonna — Claude Code Guidelines
 
 ## Golden Rule
-All design decisions must match the real Moog Grandmother hardware. Refer to `docs/synth-spec.md` for how things should work — that is the source of truth. Do not reference files outside the project for instructions. If you need new information about the hardware, ask the user, and record what they tell you in the spec.
+All design decisions must match the real Moog Grandmother hardware. Refer to `docs/synth-spec.md` for how things should work — that is the source of truth; it follows Moog's *Grandmother User's Manual* (Version 2), including its Patch Point Index. Do not reference files outside the project for instructions. If you need new information about the hardware, check the manual or ask the user, and record it in the spec. Numbers the manual doesn't give are marked **model value** there.
 
 ## Testing
 - **Always write and run tests when changing functionality.** No exceptions.
 - Unit tests live in `tests/unit/` and use vitest: `npx vitest run`
-- Test pure logic (arpeggiator, sequencer, clock, glide, math) without Web Audio
+- Test pure logic (arpeggiator, sequencer, clock, glide, math) and the DSP cores in `js/audio/worklets.js` without Web Audio
+- **Anything that changes the sound gets a sound test** in `tests/e2e/sound.spec.js`: render the engine offline with `tests/sound-kit.js` and assert on measured numbers (pitch, level, timing)
 - Mock `performance.now()` and `AudioContext` where needed
 - Run tests before considering any feature complete
 
@@ -23,7 +24,10 @@ All design decisions must match the real Moog Grandmother hardware. Refer to `do
 - Keyboard Shift key = hardware HOLD-as-modifier (for combos like legato glide)
 
 ## Key Files
-- `js/audio/engine.js` — Main audio engine, note handling, glide
+- `js/audio/engine.js` — Main audio engine: wiring, patch points, note handling, glide, output
+- `js/audio/worklets.js` — DSP cores (oscillator, ladder filter, envelope, LFO, high-pass) and their AudioWorklet wrappers
+- `js/ui/controls.js` — Every sound-shaping control by name: presets, start-up sync, share links
+- `js/vendor/midi-in.js` — Shared MIDI input (pinned in `package.json`; don't edit here)
 - `js/arp-seq/arp-seq-controller.js` — Coordinates arpeggiator, sequencer, clock
 - `js/arp-seq/arpeggiator.js` — Note pattern cycling with hold/octave expansion
 - `js/arp-seq/sequencer.js` — Step recording/playback with transposition

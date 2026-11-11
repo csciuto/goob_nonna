@@ -82,7 +82,7 @@ export class Layout {
     // Title strip between panels and keyboard (like real Grandmother)
     const titleStrip = document.createElement('div');
     titleStrip.className = 'synth-title-strip';
-    titleStrip.innerHTML = '<div class="title-left"><span class="title-goob">GOOB</span><span class="title-nonna">NONNA</span><span class="title-subtitle">SEMI-MODULAR ANALOG SYNTHESIZER</span></div><div class="title-right"><div class="preset-selector"><select id="preset-select" aria-label="Preset"><option value="">-- Select Preset --</option></select></div><button class="kebab-btn" id="kebab-btn" title="More">&#8942;</button></div>';
+    titleStrip.innerHTML = '<div class="title-left"><span class="title-goob">GOOB</span><span class="title-nonna">NONNA</span><span class="title-subtitle">SEMI-MODULAR ANALOG SYNTHESIZER</span></div><div class="title-right"><button class="midi-btn" id="midi-btn" aria-pressed="false" title="Play from a MIDI keyboard">MIDI IN</button><div class="preset-selector"><select id="preset-select" aria-label="Preset"><option value="">-- Select Preset --</option></select></div><button class="kebab-btn" id="kebab-btn" title="More">&#8942;</button></div>';
 
     // Back panel popover
     const backPopover = document.createElement('div');
@@ -187,6 +187,23 @@ export class Layout {
     keyboardArea.appendChild(this.keyboard.getElement());
     container.appendChild(keyboardArea);
 
+    // Shift key acts as HOLD-modifier for combo functions
+    // (on real hardware you'd hold the HOLD button, but mouse can't do two things at once).
+    // Wired here, not with the engine, so it works before the first click has started the audio.
+    this._shiftHeld = false;
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Shift') {
+        this._shiftHeld = true;
+        this.holdBtn.setActive(true);
+      }
+    });
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'Shift') {
+        this._shiftHeld = false;
+        this.holdBtn.setActive(this._arpSeq ? this._arpSeq.isHolding() : false);
+      }
+    });
+
     // Handle window resize to update cable positions
     window.addEventListener('resize', () => {
       if (this.patchCables) {
@@ -200,6 +217,7 @@ export class Layout {
     // Toast notification element
     this._toastEl = document.createElement('div');
     this._toastEl.className = 'synth-toast';
+    this._toastEl.setAttribute('role', 'status');
     document.body.appendChild(this._toastEl);
 
     return this;
@@ -301,6 +319,9 @@ export class Layout {
     this.panels.arpSeq.octSeq.onChange = (v) => arpSeq.setOctSeq(v);
     this.panels.arpSeq.rate.onChange = (v) => arpSeq.setRate(v);
 
+    // ON/OFF IN can start and stop it too: keep the PLAY light honest
+    arpSeq.onPlayChange = (playing) => this.playBtn.setActive(playing);
+
     // LED blink on arp/seq step
     arpSeq.onStep = () => {
       this.panels.arpSeq.led.setOn(true);
@@ -336,21 +357,7 @@ export class Layout {
       this._showToast(holding ? 'HOLD ON' : 'HOLD OFF');
     };
 
-    // Shift key acts as HOLD-modifier for combo functions
-    // (on real hardware you'd hold the HOLD button, but mouse can't do two things at once)
-    this._shiftHeld = false;
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Shift') {
-        this._shiftHeld = true;
-        this.holdBtn.setActive(true);
-      }
-    });
-    document.addEventListener('keyup', (e) => {
-      if (e.key === 'Shift') {
-        this._shiftHeld = false;
-        this.holdBtn.setActive(arpSeq.isHolding());
-      }
-    });
+    this._arpSeq = arpSeq;
 
     this.tapBtn.onPress = () => {
       if (this._shiftHeld) {

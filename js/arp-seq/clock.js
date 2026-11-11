@@ -46,15 +46,35 @@ export class Clock {
   start(callback) {
     this._callback = callback;
     this._running = true;
+    this._step = 0;
+    if (this._external) return;        // steps come from CLOCK IN instead
     const intervalMs = this.getIntervalMs();
 
-    let step = 0;
-    this._intervalId = setInterval(() => {
-      if (this._callback) {
-        this._callback(step, this.ctx.currentTime);
-      }
-      step++;
-    }, intervalMs);
+    this._intervalId = setInterval(() => this._tick(), intervalMs);
+  }
+
+  _tick() {
+    if (this._callback) this._callback(this._step, this.ctx.currentTime);
+    this._step++;
+  }
+
+  /** With a cable in CLOCK IN, each rising edge there is one step and the internal clock is ignored. */
+  setExternal(external) {
+    if (this._external === external) return;
+    this._external = external;
+    if (this._running) {
+      this.stop();
+      this.start(this._callback);
+    }
+  }
+
+  isExternal() {
+    return !!this._external;
+  }
+
+  /** One step from CLOCK IN. */
+  externalTick() {
+    if (this._running && this._external) this._tick();
   }
 
   stop() {

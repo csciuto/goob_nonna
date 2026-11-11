@@ -68,7 +68,14 @@ export class PatchCableRenderer {
   handleJackClick(jackId, jackType, jackElement) {
     if (!this._pending) {
       // Start a new connection from an output jack
-      if (jackType === 'output') {
+      if (jackType === 'both') {
+        // a MULT jack: the other end decides which way the signal runs
+        const pos = this._getJackCenter(jackElement);
+        const color = this._nextColor();
+        this._pending = { sourceId: jackId, sourcePos: pos, color, isBoth: true };
+        this._pendingPath.setAttribute('stroke', color);
+        this._pendingPath.style.display = 'block';
+      } else if (jackType === 'output') {
         const pos = this._getJackCenter(jackElement);
         const color = this._nextColor();
         this._pending = { sourceId: jackId, sourcePos: pos, color };
@@ -86,17 +93,22 @@ export class PatchCableRenderer {
     } else {
       // Complete the connection
       let sourceId, destId;
-      if (this._pending.isInput) {
-        // Started from input, now clicking output
-        if (jackType !== 'output') {
+      if (this._pending.isBoth) {
+        // Started from a MULT jack: to an input it sends, from an output it receives
+        if (jackType === 'input') { sourceId = this._pending.sourceId; destId = jackId; }
+        else if (jackType === 'output') { sourceId = jackId; destId = this._pending.sourceId; }
+        else { this.cancelPending(); return; }
+      } else if (this._pending.isInput) {
+        // Started from input, now clicking output (or a MULT jack)
+        if (jackType !== 'output' && jackType !== 'both') {
           this.cancelPending();
           return;
         }
         sourceId = jackId;
         destId = this._pending.sourceId;
       } else {
-        // Started from output, now clicking input
-        if (jackType !== 'input') {
+        // Started from output, now clicking input (or a MULT jack)
+        if (jackType !== 'input' && jackType !== 'both') {
           this.cancelPending();
           return;
         }

@@ -93,6 +93,12 @@ export class Wheel {
     if (this.onChange) this.onChange(this.value);
   }
 
+  setValue(newValue) {
+    this.value = Math.max(this.min, Math.min(this.max, newValue));
+    this._updateVisual();
+    if (this.onChange) this.onChange(this.value);
+  }
+
   _updateVisual() {
     const normalized = (this.value - this.min) / (this.max - this.min);
     // Keep thumb within track: bottom ranges from 0 to (trackHeight - thumbHeight)

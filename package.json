@@ -9,12 +9,16 @@
     "test:e2e": "playwright test",
     "serve": "python3 -m http.server 8080",
     "screenshot": "UPDATE_PREVIEW=1 playwright test tests/e2e/smoke.spec.js --project=desktop",
-    "test:all": "npm test && npm run test:e2e"
+    "test:all": "npm test && npm run test:e2e",
+    "vendor": "curl -fsSL https://raw.githubusercontent.com/csciuto/midi-in/v$npm_package_vendored_midi_in/midi-in.js -o js/vendor/midi-in.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
     "serve": "^14.2.6",
     "vitest": "^1.6.0",
     "@axe-core/playwright": "4.10.2"
+  },
+  "vendored": {
+    "midi-in": "1.0.0"
   }
 }

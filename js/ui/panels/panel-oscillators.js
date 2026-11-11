@@ -83,11 +83,8 @@ export class PanelOscillators {
     this.syncButton.dataset.tooltip = 'Hard-syncs OSC2 to OSC1 for harmonic timbres';
     this._syncEnabled = false;
 
-    this.syncButton.addEventListener('click', () => {
-      this._syncEnabled = !this._syncEnabled;
-      this.syncButton.classList.toggle('active', this._syncEnabled);
-      if (this._onSyncChange) this._onSyncChange(this._syncEnabled);
-    });
+    this.syncButton.setAttribute('aria-pressed', 'false');
+    this.syncButton.addEventListener('click', () => this.setSync(!this._syncEnabled));
 
     const syncCell = document.createElement('div');
     syncCell.className = 'sync-cell';
@@ -98,7 +95,7 @@ export class PanelOscillators {
       min: -7,
       max: 7,
       value: 0,
-      step: 0.1,
+      step: 0.05,       // fine enough for the slow beating of two nearly-tuned oscillators
       bipolar: true,
     });
     this.osc2Freq.getElement().dataset.tooltip = 'Fine-tunes oscillator 2 — detune slightly from OSC1 for thickness';
@@ -142,6 +139,15 @@ export class PanelOscillators {
     grid.appendChild(this.osc2Waveform.getElement());
 
     this.element.appendChild(grid);
+  }
+
+  getSync() { return this._syncEnabled; }
+
+  setSync(enabled) {
+    this._syncEnabled = !!enabled;
+    this.syncButton.classList.toggle('active', this._syncEnabled);
+    this.syncButton.setAttribute('aria-pressed', String(this._syncEnabled));
+    if (this._onSyncChange) this._onSyncChange(this._syncEnabled);
   }
 
   wire(engine) {

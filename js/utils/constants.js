@@ -5,6 +5,9 @@ export const KEYBOARD_START_NOTE = 41; // F2
 export const KEYBOARD_END_NOTE = 72;   // C5
 export const KEYBOARD_NUM_NOTES = KEYBOARD_END_NOTE - KEYBOARD_START_NOTE + 1; // 32
 
+/** Velocity for keys that can't sense it (mouse, computer keyboard, arpeggiator): MIDI's customary 100 of 127. */
+export const DEFAULT_VELOCITY = 100 / 127;
+
 /**
  * Note names for display
  */
@@ -74,7 +77,7 @@ export const ARP_OCTAVE_RANGE = [1, 2, 3];
 /**
  * Filter frequency range
  */
-export const FILTER_FREQ_MIN = 20;
+export const FILTER_FREQ_MIN = 10;
 export const FILTER_FREQ_MAX = 20000;
 
 /**
@@ -105,6 +108,7 @@ export const CABLE_COLORS = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#e67e2
 export const JACK_TYPE = {
   OUTPUT: 'output',
   INPUT: 'input',
+  BOTH: 'both',     // the MULT jacks: each can take a signal in or send it on
 };
 
 /**
@@ -185,6 +189,7 @@ export const PATCH_POINTS = {
   HPF_OUT: 'hpf-out',
   ATTEN_IN: 'atten-in',
   ATTEN_OUT: 'atten-out',
+  ATTEN_DC: 'atten-dc',      // not a jack: the voltage the attenuator's input is normalled to
   MULT_1: 'mult-1',
   MULT_2: 'mult-2',
   MULT_3: 'mult-3',
