@@ -67,8 +67,9 @@ five octaves. A trigger is any signal over 1.2 V (0.24). Clock, ON/OFF and RESET
   peak sits at the cutoff, with a soft saturation that bounds self-oscillation (AudioWorklet `gn-ladder`).
 
 ### Envelope (ADSR)
-- Attack, Decay, Release: 1 ms - 10 s (logarithmic). Sustain: 0-10 (0-100%).
-- Attack is linear; decay and release are exponential (95% of the way in the time set).
+- Attack, Decay, Release: 1 ms - 10 s, each knob step multiplying the time by the same amount (noon = 100 ms)
+  (**model value**: the manual gives no times or curve). Sustain: 0-10 (0-100%).
+- Attack is linear; decay and release are exponential (95% of the way in the time set) (**model value**).
 - Driven by a gate: the keyboard's GATE (also arpeggiator and sequencer) unless a cable is in **TRIGGER IN**,
   where any signal over 1.2 V starts the envelope and holds it while high.
 - A new gate starts the attack **from the current level**, not from zero (no click when a note is played while
