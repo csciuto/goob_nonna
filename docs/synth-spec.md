@@ -65,6 +65,9 @@ five octaves. A trigger is any signal over 1.2 V (0.24). Clock, ON/OFF and RESET
   ±8 V equals the knob's full travel.
 - Implementation: four one-pole stages in a feedback loop, solved without a sample of delay in the loop so the
   peak sits at the cutoff, with a soft saturation that bounds self-oscillation (AudioWorklet `gn-ladder`).
+  Two models, picked by FILTER OLD / NEW in the ⋮ menu (not a hardware control; OLD is the default while
+  they're compared by ear): OLD saturates once, at the input; NEW saturates in all four stages, as the
+  transistor ladder does, at twice the sample rate. How hard the mixer drives the filter is a **model value**.
 
 ### Envelope (ADSR)
 - Attack, Decay, Release: 1 ms - 10 s, each knob step multiplying the time by the same amount (noon = 100 ms)
@@ -76,7 +79,8 @@ five octaves. A trigger is any signal over 1.2 V (0.24). Clock, ON/OFF and RESET
   the last one fades).
 - A new note while another is held restarts the envelope: the gate drops for 3 ms between them. With legato
   glide on, overlapping notes do not restart it.
-- +ENV OUT is the envelope (0 to +8 V); -ENV OUT is its inverse.
+- +ENV OUT is the envelope (0 to +8 V); -ENV OUT is its inverse. (The Patch Point Index gives these outputs as
+  "10 Volts Peak-to-Peak"; 0 to +8 V matches the other control levels. Unresolved.)
 - The envelope reaches the VCA and the filter's ENVELOPE AMT inside the synth; no cable can disconnect it.
 
 ### VCA (Voltage Controlled Amplifier)
@@ -85,7 +89,8 @@ five octaves. A trigger is any signal over 1.2 V (0.24). Clock, ON/OFF and RESET
   - KB RLS: full level at once while a note is held, then the envelope's release time. The envelope itself
     still runs its full ADSR for the filter.
   - DRONE: always open
-- **VCA AMT IN**: in ENV and KB RLS it is summed with the mode's control (+8 V alone opens the VCA fully). In
+- **VCA AMT IN** (the manual disagrees with itself: page 22 says *multiplied* with the current settings, the
+  Patch Point Index says *summed*; this follows the index for now): in ENV and KB RLS it is summed with the mode's control (+8 V alone opens the VCA fully). In
   DRONE a cable here takes over completely: 0 V or below is silence, +8 V is full.
 - The control is limited to 0..full: a negative voltage closes the VCA, it never inverts the sound.
 

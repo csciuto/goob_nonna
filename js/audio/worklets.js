@@ -149,6 +149,90 @@ export class LadderCore {
   }
 }
 
+/** The ladder's soft saturation, 2·tanh(z/2), as a gain: sat(z) = z · satGain(z). */
+const satGain = z => { const a = 0.5 * z; return a > -1e-4 && a < 1e-4 ? 1 : Math.tanh(a) / a; };
+
+const SELF_OSC_TRIM = 23 / 1200 * Math.LN2;
+
+/** Half-band low-pass for 2× oversampling: a Blackman-windowed sinc at a quarter of the doubled rate. */
+const HB_TAPS = 47;
+const HALF_BAND = (() => {
+  const M = (HB_TAPS - 1) / 2, h = new Float64Array(HB_TAPS);
+  let sum = 0;
+  for (let n = 0; n < HB_TAPS; n++) {
+    const m = n - M, sinc = m === 0 ? 1 : Math.sin(Math.PI * m / 2) / (Math.PI * m / 2);
+    const w = 0.42 - 0.5 * Math.cos(2 * Math.PI * n / (HB_TAPS - 1)) + 0.08 * Math.cos(4 * Math.PI * n / (HB_TAPS - 1));
+    h[n] = sinc * w; sum += h[n];
+  }
+  return h.map(v => v / sum);
+})();
+
+/**
+ * The ladder as the transistors make it: each of the four stages saturates, not just the input, so a loud
+ * signal thickens and resonance softens when driven. Each stage is dy/dt = ωc·(sat(in) − sat(y)), solved
+ * without a delay in the loop; the saturations are folded in as gains from the previous step (exact when
+ * quiet, so tuning and resonance match LadderCore). Runs at twice the sample rate and filters back down,
+ * so the saturation's high harmonics don't fold into the audible range.
+ */
+export class LadderCoreNL {
+  constructor(sampleRate, seed = 7) {
+    this.sr = sampleRate;
+    this.s = new Float64Array(4);      // integrator states
+    this.y = new Float64Array(4);      // last stage outputs, for the saturation estimates
+    this.u = 0;
+    this.prevX = 0;
+    this.buf = new Float64Array(HB_TAPS);
+    this.pos = 0;
+    this.rand = mulberry(seed);
+  }
+
+  step(x, g, k) {
+    this.solve(x, g, k, this.u, this.y[0], this.y[1], this.y[2], this.y[3]);   // estimate from the last step,
+    return this.solve(x, g, k, this.u, this.y[0], this.y[1], this.y[2], this.y[3], true);   // then refine once
+  }
+
+  solve(x, g, k, eu, e0, e1, e2, e3, commit = false) {
+    const s = this.s, y = this.y;
+    const tu = satGain(eu), t0 = satGain(e0), t1 = satGain(e1), t2 = satGain(e2), t3 = satGain(e3);
+    // each stage: y_i = a_i · in_i + b_i
+    const d0 = 1 / (1 + g * t0), d1 = 1 / (1 + g * t1), d2 = 1 / (1 + g * t2), d3 = 1 / (1 + g * t3);
+    const a0 = g * tu * d0, b0 = s[0] * d0;
+    const a1 = g * t0 * d1, b1 = s[1] * d1;
+    const a2 = g * t1 * d2, b2 = s[2] * d2;
+    const a3 = g * t2 * d3, b3 = s[3] * d3;
+    // y3 = A·u + B, and u = x − k·y3
+    const A = a3 * a2 * a1 * a0;
+    const B = a3 * (a2 * (a1 * b0 + b1) + b2) + b3;
+    const u = (x - k * B) / (1 + k * A);
+    y[0] = a0 * u + b0; y[1] = a1 * y[0] + b1; y[2] = a2 * y[1] + b2; y[3] = a3 * y[2] + b3;
+    this.u = u;
+    if (commit) for (let i = 0; i < 4; i++) s[i] = 2 * y[i] - s[i];
+    return y[3];
+  }
+
+  push(v) { this.buf[this.pos] = v; this.pos = (this.pos + 1) % HB_TAPS; }
+
+  /** Same interface as LadderCore. */
+  tick(x, fc, k) {
+    const max = this.sr * 0.45;
+    fc = fc < 5 ? 5 : fc > max ? max : fc;
+    // Self-oscillating, the saturating input stage pulls the pitch about 23 cents flat; trim it back, as the
+    // hardware is calibrated to play in tune from the keys. Below self-oscillation nothing changes.
+    if (k > 4) fc *= Math.exp(SELF_OSC_TRIM * Math.min(1, (k - 4) / 0.24));
+    const g = Math.tan(Math.PI * fc / (2 * this.sr));
+    x += (this.rand() - 0.5) * 2e-5;
+    this.push(this.step(0.5 * (this.prevX + x), g, k));
+    this.push(this.step(x, g, k));
+    this.prevX = x;
+    let out = 0;
+    for (let n = 0, j = this.pos; n < HB_TAPS; n++, j = (j + 1) % HB_TAPS) out += HALF_BAND[n] * this.buf[j];
+    return out;
+  }
+}
+
+/** Ladder models: the first one, and the four-stage saturating one. */
+export const LADDER = { CLASSIC: 0, TRANSISTOR: 1 };
+
 /** Resonance knob (0 to 4) to ladder feedback: the top of the knob is just past self-oscillation. */
 export const resonanceToFeedback = knob => Math.max(0, knob) * 1.06;
 
@@ -274,14 +358,16 @@ if (typeof registerProcessor === 'function') {
         { name: 'cutoff', defaultValue: 1000, minValue: 1, automationRate: A },   // Hz, from the knob
         { name: 'cv', defaultValue: 0, automationRate: A },                         // octaves added to it
         { name: 'res', defaultValue: 0, automationRate: A },                        // knob units, 0 to 4
+        { name: 'model', defaultValue: LADDER.CLASSIC, minValue: 0, maxValue: 1, automationRate: K },
       ];
     }
-    constructor() { super(); this.core = new LadderCore(sampleRate); }
+    constructor() { super(); this.cores = [new LadderCore(sampleRate), new LadderCoreNL(sampleRate)]; }
     process(inputs, outputs, p) {
       const out = outputs[0][0], x = inputs[0][0];
+      const core = this.cores[p.model[0] >= 0.5 ? 1 : 0];
       for (let i = 0; i < out.length; i++) {
         const fc = at(p.cutoff, i) * Math.exp(at(p.cv, i) * LN2);
-        out[i] = this.core.tick(x ? x[i] : 0, fc, resonanceToFeedback(at(p.res, i)));
+        out[i] = core.tick(x ? x[i] : 0, fc, resonanceToFeedback(at(p.res, i)));
       }
       return true;
     }

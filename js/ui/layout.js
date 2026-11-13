@@ -111,6 +111,23 @@ export class Layout {
     this._keyLabelSwitch.getElement().classList.add('popover-switch');
     backPopover.appendChild(this._keyLabelSwitch.getElement());
 
+    // Filter model, to compare the first ladder with the four-stage one. Remembered on this device.
+    let model = 'old';
+    try { if (localStorage.getItem('ladder') === 'new') model = 'new'; } catch (_) { /* storage blocked */ }
+    this._ladderSwitch = new SwitchControl({
+      label: 'FILTER',
+      positions: [{ value: 'old', label: 'OLD' }, { value: 'new', label: 'NEW' }],
+      selectedIndex: model === 'new' ? 1 : 0,
+    });
+    this._ladderModel = model;
+    this._ladderSwitch.onChange = (v) => {
+      this._ladderModel = v;
+      try { localStorage.setItem('ladder', v); } catch (_) { /* storage blocked */ }
+      if (this._engine) this._engine.filter.setModel(v === 'new' ? 1 : 0);
+    };
+    this._ladderSwitch.getElement().classList.add('popover-switch');
+    backPopover.appendChild(this._ladderSwitch.getElement());
+
     backPopover.appendChild(this.panels.back.getElement());
 
     const versionLabel = document.createElement('div');
@@ -288,6 +305,8 @@ export class Layout {
    * Wire all UI controls to the audio engine.
    */
   wireToEngine(engine) {
+    this._engine = engine;
+    engine.filter.setModel(this._ladderModel === 'new' ? 1 : 0);
     for (const panel of Object.values(this.panels)) {
       if (panel.wire) panel.wire(engine);
     }

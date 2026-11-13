@@ -79,10 +79,10 @@ test.describe('sound @desktop', () => {
     expect(r.twoUp).toBeLessThan(-40);
   });
 
-  test('full resonance self-oscillates at the cutoff, and KBD TRACK plays it from the keys', async ({ page }) => {
-    const r = await inPage(page, async ({ render, slice, pitch, cents, rms }) => {
+  for (const model of [0, 1]) test(`full resonance self-oscillates at the cutoff, and KBD TRACK plays it from the keys (${model ? 'new' : 'old'} filter)`, async ({ page }) => {
+    const r = await inPage(page, `async ({ render, slice, pitch, cents, rms }) => {
       const at = async (track, note, res = 4) => {
-        const y = slice(await render({ seconds: 1.2, setup: e => { e.setMixerOsc1Level(0); e.setVCAMode('drone'); e.setFilterResonance(res); e.setFilterCutoff(0.5); e.setFilterKbTrack(track); }, events: [[0.05, e => e.noteOn(note)]] }), 0.7, 1.2);
+        const y = slice(await render({ seconds: 1.2, setup: e => { e.filter.setModel(${model}); e.setMixerOsc1Level(0); e.setVCAMode('drone'); e.setFilterResonance(res); e.setFilterCutoff(0.5); e.setFilterKbTrack(track); }, events: [[0.05, e => e.noteOn(note)]] }), 0.7, 1.2);
         return { hz: pitch(y), rms: rms(y) };
       };
       const fc = 10 * 2000 ** 0.5, base = await at(1, 60);
@@ -91,7 +91,7 @@ test.describe('sound @desktop', () => {
         full: cents((await at(1, 72)).hz, base.hz), half: cents((await at(0.5, 72)).hz, base.hz), off: cents((await at(0, 72)).hz, base.hz),
         quiet: (await at(1, 60, 3)).rms,
       };
-    });
+    }`);
     expect(Math.abs(r.base)).toBeLessThan(30);
     expect(r.level).toBeGreaterThan(0.02);
     expect(r.full).toBeCloseTo(1200, -1.5);

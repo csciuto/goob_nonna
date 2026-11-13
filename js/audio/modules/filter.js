@@ -55,6 +55,10 @@ export class FilterModule {
 
   setCutoff(normalized) { this._cutoffNormalized = normalized; this._updateCutoff(); }
 
+  /** Which ladder model runs: LADDER.CLASSIC (one saturation) or LADDER.TRANSISTOR (four, oversampled). */
+  setModel(model) { this.node.parameters.get('model').setValueAtTime(model, this.ctx.currentTime); this._model = model; }
+  getModel() { return this._model || 0; }
+
   /** Knob value, 0 to 4. The top of the knob self-oscillates. */
   setResonance(value) {
     this.node.parameters.get('res').setTargetAtTime(value, this.ctx.currentTime, SMOOTH);

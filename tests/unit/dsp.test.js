@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { OscCore, LadderCore, EnvCore, LfoCore, Hp1Core, SHAPE, LFO_OUT, C4, resonanceToFeedback } from '../../js/audio/worklets.js';
+import { OscCore, LadderCore, LadderCoreNL, EnvCore, LfoCore, Hp1Core, SHAPE, LFO_OUT, C4, resonanceToFeedback } from '../../js/audio/worklets.js';
 
 /** These tests run the synth's DSP in Node and measure what comes out. */
 const SR = 48000;
@@ -128,6 +128,52 @@ describe('ladder filter', () => {
     const l = new LadderCore(SR), y = sine(100, 4, 0.5).map(v => l.tick(v, 8000, 0));
     expect(Math.max(...y.map(Math.abs))).toBeLessThan(2.05);
     expect(level(y, 300) / level(y, 100)).toBeGreaterThan(0.05);   // odd harmonics appear
+  });
+});
+
+describe('ladder filter, four saturating stages (NEW)', () => {
+  const gainNL = (f, fc, k, amp = 0.02) => {
+    const l = new LadderCoreNL(SR), x = sine(f, amp, 0.5), y = x.map(v => l.tick(v, fc, k));
+    return dB(level(y.slice(SR / 4), f) / amp);
+  };
+
+  it('played quietly it matches the first filter: passband, cutoff, slope, resonance', () => {
+    for (const [f, fc, k] of [[100, 1000, 0], [1000, 1000, 0], [500, 1000, 3], [1000, 1000, 3.5], [3000, 1000, 2]]) {
+      expect(Math.abs(gainNL(f, fc, k) - ladderGain(f, fc, k)), `${f} Hz, cutoff ${fc}, k ${k}`).toBeLessThan(0.6);
+    }
+    expect(gainNL(100, 1000, 3)).toBeCloseTo(-12, 0);     // resonance thins the bass
+    const slope = gainNL(8000, 1000, 0) - gainNL(4000, 1000, 0);
+    expect(slope).toBeLessThan(-21);
+    expect(slope).toBeGreaterThan(-27);
+  });
+
+  it('self-oscillates in tune with resonance all the way up, and stays bounded', () => {
+    for (const fc of [220, 1000, 3000, 8000]) {
+      const l = new LadderCoreNL(SR), y = new Float64Array(SR * 2);
+      for (let i = 0; i < y.length; i++) y[i] = l.tick(0, fc, resonanceToFeedback(4));
+      const tail = y.slice(SR);
+      expect(rms(tail)).toBeGreaterThan(0.05);
+      expect(Math.max(...tail.map(Math.abs))).toBeLessThan(2.5);
+      expect(Math.abs(1200 * Math.log2(pitchOf(tail) / fc)), `${fc} Hz`).toBeLessThan(10);
+    }
+    const l = new LadderCoreNL(SR), y = new Float64Array(SR);
+    for (let i = 0; i < y.length; i++) y[i] = l.tick(0, 1000, resonanceToFeedback(3.6));
+    expect(rms(y.slice(SR / 2))).toBeLessThan(0.001);
+  });
+
+  it('driven hard, resonance softens and harmonics appear', () => {
+    const lift = amp => gainNL(1000, 1000, 3.5, amp) - gainNL(1000, 1000, 0, amp);
+    expect(lift(0.02) - lift(2)).toBeGreaterThan(6);
+    const l = new LadderCoreNL(SR), y = sine(200, 3, 0.5).map(v => l.tick(v, 500, 2)).slice(SR / 4);
+    expect(level(y, 600) / level(y, 200)).toBeGreaterThan(0.03);
+  });
+
+  it('oversampled: a driven high note folds back much less than the first filter', () => {
+    const fold = C => {   // 3.1 kHz driven hard: its 11th harmonic (34.1 kHz) folds back to 13.9 kHz
+      const l = new C(SR), y = sine(3100, 3, 1).map(v => l.tick(v, 20000, 0)).slice(SR / 2);
+      return dB(level(y, 13900) / level(y, 3100));
+    };
+    expect(fold(LadderCoreNL)).toBeLessThan(fold(LadderCore) - 10);
   });
 });
 

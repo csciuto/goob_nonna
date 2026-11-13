@@ -55,6 +55,22 @@ test.describe('Goob Nonna Synth', () => {
       await expect(link).toHaveAttribute('href', 'docs/getting-started.html');
     });
 
+    test('FILTER OLD / NEW in the menu picks the ladder model, and is remembered', async ({ page }) => {
+      await page.locator('.title-goob').click();   // the first click starts the audio
+      await page.waitForFunction(() => window.__synth && window.__synth.engine);
+      const model = () => page.evaluate(() => window.__synth.engine.filter.node.parameters.get('model').value);
+      expect(await model()).toBe(0);
+      await page.locator('#kebab-btn').click();
+      const sw = page.locator('.back-popover .switch-container', { has: page.locator('.switch-label', { hasText: 'FILTER' }) });
+      await sw.locator('.switch-option', { hasText: 'NEW' }).click();
+      await expect.poll(model).toBe(1);
+      await page.reload();
+      await page.locator('.title-goob').click();
+      await page.waitForFunction(() => window.__synth && window.__synth.engine);
+      await expect.poll(model).toBe(1);
+      await expect(sw.locator('.switch-option.active')).toHaveText('NEW');
+    });
+
     test('no console errors on load', async ({ page }) => {
       const errors = [];
       page.on('pageerror', (err) => errors.push(err.message));
