@@ -65,17 +65,19 @@ test.describe('Goob Nonna Synth', () => {
   });
 
   test.describe('Keyboard - Mouse', () => {
+    const press = async (page, key) => { await key.hover(); await page.mouse.down(); };
+
     test('clicking a white key activates it', async ({ page }) => {
       const whiteKey = page.locator('.white-key').first();
-      await whiteKey.dispatchEvent('mousedown');
+      await press(page, whiteKey);
       await expect(whiteKey).toHaveClass(/active/);
     });
 
     test('releasing mouse deactivates key', async ({ page }) => {
       const whiteKey = page.locator('.white-key').first();
-      await whiteKey.dispatchEvent('mousedown');
+      await press(page, whiteKey);
       await expect(whiteKey).toHaveClass(/active/);
-      await page.dispatchEvent('body', 'mouseup');
+      await page.mouse.up();
       await expect(whiteKey).not.toHaveClass(/active/);
     });
 
@@ -84,11 +86,11 @@ test.describe('Goob Nonna Synth', () => {
       const first = keys.nth(0);
       const second = keys.nth(1);
 
-      await first.dispatchEvent('mousedown');
+      await press(page, first);
       await expect(first).toHaveClass(/active/);
 
-      await page.dispatchEvent('body', 'mouseup');
-      await second.dispatchEvent('mousedown');
+      await page.mouse.up();
+      await press(page, second);
       await expect(second).toHaveClass(/active/);
       await expect(first).not.toHaveClass(/active/);
     });

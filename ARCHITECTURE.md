@@ -57,7 +57,8 @@ js/utils/constants.js, math.js patch point IDs, ranges; pure helpers (curves, no
 tests/unit/                    Vitest: the DSP cores measured in Node (dsp.test.js), arpeggiator, sequencer, clock,
                                glide, outside clocking, keyboard octave, patching, reverb, math
 tests/sound-kit.js             renders the real engine offline and measures it (pitch, levels, envelopes)
-tests/e2e/                     Playwright: sound (29 measured tests), presets and links, MIDI, synth flows, smoke, axe;
+tests/e2e/                     Playwright: sound (29 measured tests), presets and links, MIDI, touch (real touch events
+                               on the phone project), synth flows, smoke, axe;
                                fingerprint.spec.js, a by-hand sound regression check over every preset;
                                record.spec.js, a by-hand recording of a preset to a WAV
 tools/fingerprint-compare.mjs  compares two fingerprints band by band

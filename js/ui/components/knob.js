@@ -68,9 +68,10 @@ export class Knob {
     });
 
     // Mouse interaction
-    knobBody.addEventListener('mousedown', (e) => this._onMouseDown(e));
-    document.addEventListener('mousemove', (e) => this._onMouseMove(e));
-    document.addEventListener('mouseup', () => this._onMouseUp());
+    knobBody.addEventListener('pointerdown', (e) => this._onMouseDown(e));
+    document.addEventListener('pointermove', (e) => this._onMouseMove(e));
+    document.addEventListener('pointerup', () => this._onMouseUp());
+    document.addEventListener('pointercancel', () => this._onMouseUp());
 
     // Prevent text selection during drag
     knobBody.addEventListener('selectstart', (e) => e.preventDefault());

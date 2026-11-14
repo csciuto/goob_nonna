@@ -46,8 +46,9 @@ function buildUI() {
     }
   };
 
-  // Initialize audio on any click in the synth (so arp buttons work without playing a note first)
-  document.getElementById('synth').addEventListener('click', () => initAudio(), { once: true });
+  // Start the audio on the first press anywhere, mouse or touch (so arp buttons work without playing a note
+  // first). Not 'click': iPhone Safari only sends clicks to elements it thinks are clickable.
+  for (const ev of ['pointerdown', 'keydown']) document.addEventListener(ev, () => initAudio(), { once: true });
 
   // Wire patch cables
   layout.patchCables.onConnect = (sourceId, destId, color) => { addCable(sourceId, destId, color); saveToLink(); };

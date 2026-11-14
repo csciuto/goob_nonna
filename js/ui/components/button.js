@@ -46,18 +46,18 @@ export class Button {
         if (this.onChange) this.onChange(this.active);
       });
     } else {
-      btn.addEventListener('mousedown', (e) => {
+      btn.addEventListener('pointerdown', (e) => {
         this.active = true;
         this._updateVisual();
         if (this.onPress) this.onPress();
         e.preventDefault();
       });
-      btn.addEventListener('mouseup', () => {
+      btn.addEventListener('pointerup', () => {
         this.active = false;
         this._updateVisual();
         if (this.onRelease) this.onRelease();
       });
-      btn.addEventListener('mouseleave', () => {
+      btn.addEventListener('pointerleave', () => {
         if (this.active) {
           this.active = false;
           this._updateVisual();

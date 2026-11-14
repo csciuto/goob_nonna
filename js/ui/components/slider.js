@@ -52,9 +52,10 @@ export class Slider {
     });
 
     // Interaction
-    track.addEventListener('mousedown', (e) => this._onMouseDown(e));
-    document.addEventListener('mousemove', (e) => this._onMouseMove(e));
-    document.addEventListener('mouseup', () => this._onMouseUp());
+    track.addEventListener('pointerdown', (e) => this._onMouseDown(e));
+    document.addEventListener('pointermove', (e) => this._onMouseMove(e));
+    document.addEventListener('pointerup', () => this._onMouseUp());
+    document.addEventListener('pointercancel', () => this._onMouseUp());
     track.addEventListener('selectstart', (e) => e.preventDefault());
 
     return container;

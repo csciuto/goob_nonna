@@ -1305,3 +1305,9 @@ body {
   .keyboard { flex: 1 0 560px; height: 200px; }
   .white-key { height: 200px; }
 }
+
+/* Touch: a drag on a knob, slider or wheel turns it instead of scrolling the page; the keys play on a tap and
+   scroll sideways on a swipe; buttons don't wait for a double-tap zoom */
+.knob, .slider-track, .wheel-track { touch-action: none; }
+.keyboard { touch-action: pan-x; }
+.synth-button, .switch-option, .jack { touch-action: manipulation; }

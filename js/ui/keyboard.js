@@ -104,16 +104,18 @@ export class Keyboard {
       container.appendChild(key);
     }
 
-    // Mouse interaction
-    container.addEventListener('mousedown', (e) => {
+    // Mouse, pen and touch. A tap plays a key; on a phone a sideways swipe scrolls the keys instead
+    // (touch-action: pan-x), which cancels the pointer and lets the note go.
+    container.addEventListener('pointerdown', (e) => {
       this._mouseDown = true;
+      this._pointerType = e.pointerType;
       const visualNote = this._getNoteFromEvent(e);
       if (visualNote !== null) this._pressNote(visualNote + this._noteOffset, 'mouse');
-      e.preventDefault();
+      if (e.pointerType !== 'touch') e.preventDefault();
     });
 
-    container.addEventListener('mousemove', (e) => {
-      if (!this._mouseDown) return;
+    container.addEventListener('pointermove', (e) => {
+      if (!this._mouseDown || e.pointerType === 'touch') return;   // dragging across the keys: mouse and pen
       const visualNote = this._getNoteFromEvent(e);
       if (visualNote !== null) {
         const midiNote = visualNote + this._noteOffset;
@@ -124,12 +126,14 @@ export class Keyboard {
       }
     });
 
-    document.addEventListener('mouseup', () => {
+    const up = () => {
       if (this._mouseDown) {
         this._mouseDown = false;
         if (this._noteSource === 'mouse') this._releaseNote();
       }
-    });
+    };
+    document.addEventListener('pointerup', up);
+    document.addEventListener('pointercancel', up);
 
     return container;
   }

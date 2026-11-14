@@ -24,7 +24,8 @@ All design decisions must match the reference hardware (the semi-modular this ap
 ## Architecture
 - Vanilla JS with ES modules, Web Audio API, no frameworks
 - Semi-modular patch system with normalled connections
-- Audio engine initialized lazily on first user click
+- Audio engine initialized lazily on the first press (pointerdown or keydown; not click, which iPhone Safari doesn't send to plain elements)
+- Controls use pointer events (mouse, pen and touch alike), never mouse-only events; `tests/e2e/touch.spec.js` drives them with real touch events
 - Keyboard Shift key = hardware HOLD-as-modifier (for combos like legato glide)
 
 ## Key Files
