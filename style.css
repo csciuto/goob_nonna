@@ -8,7 +8,7 @@
 }
 
 body {
-  background: #1c1c1e;
+  background: #1e1814;
   color: #e8e4dc;
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
@@ -220,10 +220,10 @@ body {
   padding-top: 4px;
 }
 
-/* Panel colors matching the hardware */
+/* Panel colors: a different color per section (terracotta, olive, cream on espresso) */
 .panel-arp-seq {
   flex: 1 1 120px;
-  background: #e8d870;
+  background: #d98463;
 }
 .panel-arp-seq .switch-option {
   font-size: 9px;
@@ -232,12 +232,12 @@ body {
 .panel-arp-seq .button-label {
   font-size: 8px;
 }
-.panel-arp-seq h2 { color: #2a2520; }
-.panel-arp-seq .knob-label { color: #2a2520; }
-.panel-arp-seq .knob-value { color: #2a2520; }
-.panel-arp-seq .switch-label { color: #2a2520; }
-.panel-arp-seq .button-label { color: #2a2520; }
-.panel-arp-seq .jack-label { color: #2a2520; }
+.panel-arp-seq h2 { color: #2a1610; }
+.panel-arp-seq .knob-label { color: #2a1610; }
+.panel-arp-seq .knob-value { color: #2a1610; }
+.panel-arp-seq .switch-label { color: #2a1610; }
+.panel-arp-seq .button-label { color: #2a1610; }
+.panel-arp-seq .jack-label { color: #2a1610; }
 .jack-row.jack-row-top {
   border-top: none;
   margin-top: 0;
@@ -265,7 +265,7 @@ body {
 
 .panel-modulation {
   flex: 1.4 1 170px;
-  background: #2a2a2e;
+  background: #2f2622;
 }
 .panel-modulation h2 { color: #fff; border-bottom-color: #4a4a50; }
 .panel-modulation h3 { color: #fff; font-weight: bold; }
@@ -288,8 +288,8 @@ body {
   justify-items: center;
 }
 
-.panel-modulation .mod-pitch .knob-label { color: #78b8d0; }
-.panel-modulation .mod-cutoff .knob-label { color: #7bc87b; }
+.panel-modulation .mod-pitch .knob-label { color: #c4cc8a; }
+.panel-modulation .mod-cutoff .knob-label { color: #e3b04b; }
 .panel-modulation .mod-pw .knob-label {
   color: #222;
   background: #fff;
@@ -300,14 +300,14 @@ body {
 
 .panel-oscillators {
   flex: 2.3 1 280px;
-  background: #78b8d0;
+  background: #a3ad6a;
 }
-.panel-oscillators h2 { color: #1a2a38; }
-.panel-oscillators h3 { color: #1a2a38; }
-.panel-oscillators .knob-label { color: #1a2a38; }
-.panel-oscillators .knob-value { color: #1a2a38; }
-.panel-oscillators .switch-label { color: #1a2a38; }
-.panel-oscillators .jack-label { color: #1a2a38; }
+.panel-oscillators h2 { color: #1f2414; }
+.panel-oscillators h3 { color: #1f2414; }
+.panel-oscillators .knob-label { color: #1f2414; }
+.panel-oscillators .knob-value { color: #1f2414; }
+.panel-oscillators .switch-label { color: #1f2414; }
+.panel-oscillators .jack-label { color: #1f2414; }
 
 .osc-grid {
   display: grid;
@@ -340,13 +340,13 @@ body {
   bottom: 0;
   left: 50%;
   width: 1px;
-  background: #1a2a38;
+  background: #2a3018;
 }
 .osc-grid h2 {
   text-align: center;
   margin: 0;
   padding: 2px 0;
-  border-bottom: 1px solid #4a8a9e;
+  border-bottom: 1px solid #5c6634;
 }
 
 .jack-pair {
@@ -396,19 +396,19 @@ body {
 .sync-line {
   flex: 1;
   height: 2px;
-  background: #1a2a38;
+  background: #2a3018;
   margin: 0 4px;
 }
 
 .panel-mixer {
   flex: 0.8 1 100px;
-  background: #2a2a2e;
+  background: #2f2622;
 }
 .panel-mixer h2 { color: #fff; border-bottom-color: #4a4a50; }
 .panel-mixer .knob-label { color: #fff; }
 .panel-mixer .knob-value { color: #fff; }
 .panel-mixer .jack-label { color: #fff; }
-.panel-mixer .mixer-osc .knob-label { color: #78b8d0; }
+.panel-mixer .mixer-osc .knob-label { color: #c4cc8a; }
 .panel-mixer .jack-output-label .jack-label {
   color: #222;
   background: #fff;
@@ -418,7 +418,7 @@ body {
 
 .panel-utilities {
   flex: 0.8 1 100px;
-  background: #2a2a2e;
+  background: #2f2622;
 }
 .panel-utilities h2 { color: #fff; border-bottom-color: #4a4a50; }
 .panel-utilities .knob-label { color: #fff; }
@@ -478,13 +478,13 @@ body {
 
 .panel-filter {
   flex: 1.1 1 130px;
-  background: #88c898;
+  background: #ead09a;
 }
-.panel-filter h2 { color: #1a2a1e; }
-.panel-filter .knob-label { color: #1a2a1e; }
-.panel-filter .knob-value { color: #1a2a1e; }
-.panel-filter .switch-label { color: #1a2a1e; }
-.panel-filter .jack-label { color: #1a2a1e; }
+.panel-filter h2 { color: #2e2210; }
+.panel-filter .knob-label { color: #2e2210; }
+.panel-filter .knob-value { color: #2e2210; }
+.panel-filter .switch-label { color: #2e2210; }
+.panel-filter .jack-label { color: #2e2210; }
 .panel-filter .jack-output-label .jack-label {
   color: #222;
   background: #fff;
@@ -518,13 +518,13 @@ body {
 .filter-connect-line {
   width: 2px;
   height: 10px;
-  background: #1a2a1e;
+  background: #3a2c14;
   margin: 0 auto;
 }
 
 .panel-envelope {
   flex: 1 1 120px;
-  background: #2a2a2e;
+  background: #2f2622;
 }
 .panel-envelope h2 { color: #fff; border-bottom-color: #4a4a50; margin-bottom: 10px; }
 .panel-envelope .slider-label { color: #fff; }
@@ -632,7 +632,7 @@ body {
 
 .panel-output {
   flex: 0.9 1 110px;
-  background: #2a2a2e;
+  background: #2f2622;
 }
 .panel-output h2 { color: #fff; border-bottom-color: #4a4a50; }
 .panel-output .knob-label { color: #fff; }
@@ -934,9 +934,9 @@ body {
   box-shadow: 0 0 8px rgba(64, 128, 224, 0.5);
 }
 .light-yellow .synth-button.active {
-  background: #e0c030;
-  border-color: #f0d040;
-  box-shadow: 0 0 8px rgba(224, 192, 48, 0.5);
+  background: #d98463;
+  border-color: #e8957a;
+  box-shadow: 0 0 8px rgba(217, 132, 99, 0.5);
 }
 
 .button-label {
@@ -946,12 +946,12 @@ body {
   font-weight: bold;
 }
 
-/* Yellow button labels in keyboard area to match sequencer */
-.keyboard-left-controls .button-label { color: #e0c030; }
+/* Terracotta button labels in keyboard area to match sequencer */
+.keyboard-left-controls .button-label { color: #d98463; }
 
 /* Blue glide label */
-.glide-knob .knob-label { color: #78b8d0; }
-.glide-knob .knob-value { color: #78b8d0; }  /* sits on the dark keyboard panel */
+.glide-knob .knob-label { color: #c4cc8a; }
+.glide-knob .knob-value { color: #c4cc8a; }  /* sits on the dark keyboard panel */
 
 .buttons-row {
   display: flex;
@@ -1022,11 +1022,11 @@ body {
   border-radius: 1px;
 }
 
-.wheel-pitch .wheel-label { color: #78b8d0; }
+.wheel-pitch .wheel-label { color: #c4cc8a; }
 
 /* Title strip between panels and keyboard */
 .synth-title-strip {
-  background: #1c1c1e;
+  background: #1e1814;
   padding: 4px 16px;
   display: flex;
   align-items: center;
@@ -1049,7 +1049,7 @@ body {
 .title-goob {
   font-size: 20px;
   font-weight: bold;
-  color: #78b8d0;
+  color: #c4cc8a;
   letter-spacing: 3px;
 }
 
@@ -1071,7 +1071,7 @@ body {
 /* Keyboard Area — controls sit alongside keyboard */
 .keyboard-area {
   padding: 6px;
-  background: #2a2a2e;
+  background: #2f2622;
   border: 2px solid #3a3a40;
   border-top: none;
   display: flex;
