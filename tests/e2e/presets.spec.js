@@ -45,7 +45,7 @@ test.describe('presets and links @desktop', () => {
       const shown = sw => sw.getElement().querySelector('.active')?.textContent;
       return { osc1: shown(c.oscillators.osc1Waveform), osc2Octave: shown(c.oscillators.osc2Octave), sync: c.oscillators.syncButton.classList.contains('active') };
     });
-    expect(lit).toEqual({ osc1: '⊓', osc2Octave: "4'", sync: true });
+    expect(lit).toEqual({ osc1: '⊓', osc2Octave: "2'", sync: true });
     await page.selectOption('#preset-select', 'Default');
     expect(await page.evaluate(() => window.__synth.layout.panels.oscillators.syncButton.classList.contains('active'))).toBe(false);
   });

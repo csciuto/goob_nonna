@@ -144,8 +144,9 @@ five octaves. A trigger is any signal over 1.2 V (0.24). Clock, ON/OFF and RESET
 - The code is the shared `midi-in` module, vendored in `js/vendor/` at the version `package.json` pins.
 
 ## Presets and share links
-- A preset sets **every** control: anything it doesn't mention goes to its default, the mod wheel to zero, and
-  the cables to the preset's own. Switches on the panel move with it.
+- A preset sets **every** control: anything it doesn't mention goes to its default, and the cables to the
+  preset's own. The factory presets set the mod wheel half up, since most get their motion from the LFO;
+  Default leaves it at zero. Switches on the panel move with it.
 - The address bar always holds the current patch (`#patch=…`): every knob and switch that differs from the
   default, the mod wheel, and the cables. Opening the link restores it. The default patch has a clean address.
 - A link is untrusted input: unknown settings, wrong types, out-of-range values and unknown jacks are dropped.
