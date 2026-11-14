@@ -157,13 +157,6 @@ body {
 .back-popover .jack-label {
   color: #ccc;
 }
-.version-label {
-  font-size: 10px;
-  color: #666;
-  text-align: center;
-  padding: 4px 0 2px;
-  border-top: 1px solid #3a3a40;
-}
 
 /* Panel Area */
 .panel-area {

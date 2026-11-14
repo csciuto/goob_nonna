@@ -113,10 +113,6 @@ export class Layout {
 
     backPopover.appendChild(this.panels.back.getElement());
 
-    const versionLabel = document.createElement('div');
-    versionLabel.className = 'version-label';
-    versionLabel.textContent = document.querySelector('.version')?.textContent || 'dev';   // the deploy stamps the footer's
-    backPopover.appendChild(versionLabel);
     titleStrip.querySelector('.title-right').appendChild(backPopover);
 
     // Kebab menu toggle
