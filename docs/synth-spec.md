@@ -101,7 +101,9 @@ five octaves. A trigger is any signal over 1.2 V (0.24). Clock, ON/OFF and RESET
 ### LFO (Modulation Oscillator)
 - Rate: 0.07 Hz - 1.3 kHz. Waveform switch: Sine, Sawtooth, Ramp, Square. The LED follows the selected wave.
 - Mod wheel × the AMT knobs sets how much reaches each destination; with the wheel down, nothing does.
-  - PITCH AMT: both oscillators, up to ±1 octave (**model value**)
+  - PITCH AMT: both oscillators, up to ±1 octave, on a squared curve so the low end is a light vibrato: 1 on
+    the knob is ±1% of that, about ±12 cents with the wheel full up (**model value**; the factory sheets set it
+    just off zero)
   - CUTOFF AMT: the filter, up to ±5 octaves (the LFO's 5 V at 1 V per octave; **model value**)
   - PULSE WIDTH AMT: both oscillators' Square and Narrow Pulse width, up to ±45% of the cycle (**model value**)
 - WAVE OUT: the selected waveform, -5 to +5 V

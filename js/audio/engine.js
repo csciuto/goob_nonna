@@ -15,7 +15,8 @@ import { ArpSeqController } from '../arp-seq/arp-seq-controller.js';
 import { PATCH_POINTS, JACK_TYPE, VCA_MODES, PITCH_WHEEL_RANGE, KEYBOARD_START_NOTE } from '../utils/constants.js';
 import { mapToLogRange } from '../utils/math.js';
 
-/** Most the mod wheel can bend pitch with PITCH AMT at full: one octave each way. Model value. */
+/** Most the mod wheel can bend pitch with PITCH AMT at full: one octave each way. Model value. The knob is
+ *  squared (gentle at the bottom, like an audio-taper pot), so a knob just off zero is a light vibrato. */
 export const LFO_PITCH_OCTAVES = 1;
 /** Most it can move the cutoff with CUTOFF AMT at full: the LFO's 5 V at 1 V per octave. Model value. */
 export const LFO_CUTOFF_OCTAVES = 5;
@@ -250,7 +251,7 @@ export class AudioEngine {
 
   _updateModulation() {
     const mod = this._modWheel, t = this.ctx.currentTime;
-    this._pitchModGain.gain.setTargetAtTime(mod * this._pitchAmt * LFO_PITCH_OCTAVES, t, SMOOTH);
+    this._pitchModGain.gain.setTargetAtTime(mod * this._pitchAmt ** 2 * LFO_PITCH_OCTAVES, t, SMOOTH);
     this._cutoffModGain.gain.setTargetAtTime(mod * this._cutoffAmt * LFO_CUTOFF_OCTAVES, t, SMOOTH);
     this._pwmModGain.gain.setTargetAtTime(mod * this._pwAmt * PW_PER_UNIT, t, SMOOTH);
   }

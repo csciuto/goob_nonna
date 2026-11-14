@@ -199,12 +199,13 @@ test.describe('sound @desktop', () => {
       const spread = async (wheel, amt) => {
         const y = await render({ seconds: 2.2, setup: e => { e.setLFOWaveform('square'); e.setLFORate(3.4); e.setPitchAmount(amt); e.setModWheel(wheel); e.setOsc1Waveform('triangle'); }, events: [[0.05, e => e.noteOn(69)]] });
         const c = []; for (let t = 0.3; t < 2.1; t += 0.05) c.push(cents(pitch(slice(y, t, t + 0.04)), midi(69)));
-        return Math.max(...c) - Math.min(...c);
+        c.sort((a, b) => a - b);      // the two levels the square LFO switches between, ignoring windows across a jump
+        return c[Math.floor(c.length * 0.85)] - c[Math.floor(c.length * 0.15)];
       };
-      return { off: await spread(0, 1), half: await spread(1, 0.5), full: await spread(1, 1) };
+      return { off: await spread(0, 1), part: await spread(1, 0.7), full: await spread(1, 1) };
     });
     expect(r.off).toBeLessThan(5);
-    expect(r.half).toBeCloseTo(1200, -2);        // a square LFO at half amount: half an octave each way
+    expect(r.part).toBeCloseTo(1176, -2);        // 0.7 on the knob, squared: 0.49 of an octave each way
     expect(r.full).toBeCloseTo(2400, -2);
   });
 

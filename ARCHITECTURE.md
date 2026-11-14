@@ -58,7 +58,8 @@ tests/unit/                    Vitest: the DSP cores measured in Node (dsp.test.
                                glide, outside clocking, keyboard octave, patching, reverb, math
 tests/sound-kit.js             renders the real engine offline and measures it (pitch, levels, envelopes)
 tests/e2e/                     Playwright: sound (29 measured tests), presets and links, MIDI, synth flows, smoke, axe;
-                               fingerprint.spec.js, a by-hand sound regression check over every preset
+                               fingerprint.spec.js, a by-hand sound regression check over every preset;
+                               record.spec.js, a by-hand recording of a preset to a WAV
 tools/fingerprint-compare.mjs  compares two fingerprints band by band
 ```
 
