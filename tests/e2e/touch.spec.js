@@ -78,6 +78,17 @@ test.describe('touch', () => {
     await release();
   });
 
+  test('a button over the keys turns the sound on; after it, the very first key plays', async ({ page }) => {
+    const button = page.getByRole('button', { name: 'Tap for sound' });
+    await expect(button).toBeVisible();
+    (await touch(page, button))();
+    await expect(button).toBeHidden();
+    await expect.poll(() => page.evaluate(() => window.__synth?.engine?.ctx.state)).toBe('running');
+    const release = await touch(page, page.locator('.key[data-note="60"]'));
+    await expect.poll(() => gate(page)).toBeCloseTo(1.6, 2);
+    await release();
+  });
+
   test('the LFO light blinks once the sound is on', async ({ page }) => {
     (await touch(page, page.locator('.key[data-note="60"]')))();
     await expect.poll(() => page.evaluate(() => !!window.__synth)).toBe(true);

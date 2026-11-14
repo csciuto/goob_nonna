@@ -55,6 +55,11 @@ test.describe('Goob Nonna Synth', () => {
       await expect(link).toHaveAttribute('href', 'docs/getting-started.html');
     });
 
+    test('with a mouse there is no tap-for-sound button: the first key plays', async ({ page }, info) => {
+      test.skip(info.project.name !== 'desktop', 'mouse');
+      await expect(page.getByRole('button', { name: 'Tap for sound' })).toHaveCount(0);
+    });
+
     test('no console errors on load', async ({ page }) => {
       const errors = [];
       page.on('pageerror', (err) => errors.push(err.message));
@@ -66,6 +71,10 @@ test.describe('Goob Nonna Synth', () => {
 
   test.describe('Keyboard - Mouse', () => {
     const press = async (page, key) => { await key.hover(); await page.mouse.down(); };
+    test.beforeEach(async ({ page }) => {      // on a touchscreen, the sound button covers the keys until tapped
+      const sound = page.getByRole('button', { name: 'Tap for sound' });
+      if (await sound.isVisible()) { await sound.click(); await expect(sound).toBeHidden(); }
+    });
 
     test('clicking a white key activates it', async ({ page }) => {
       const whiteKey = page.locator('.white-key').first();

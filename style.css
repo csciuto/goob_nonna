@@ -1317,3 +1317,10 @@ body {
   border: 1px solid #d98463; border-radius: 4px; padding: 6px 10px; font: 12px/1.4 ui-monospace, monospace;
   white-space: pre-wrap; }
 .diag[hidden] { display: none; }
+
+/* Touchscreens: until the sound is on, a button over the keys turns it on (a key can't; see soundButton) */
+.keyboard-area { position: relative; }
+.sound-on { position: absolute; inset: 0; z-index: 5; margin: 0; border: 2px solid #d98463; border-radius: 4px;
+  background: rgba(47, 38, 34, 0.86); color: #f3e6d8; font: bold 18px/1.2 system-ui, sans-serif; letter-spacing: 1px;
+  cursor: pointer; touch-action: manipulation; }
+.sound-on[hidden] { display: none; }

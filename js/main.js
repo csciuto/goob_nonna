@@ -6,7 +6,7 @@ import { initMidiIn } from './vendor/midi-in.js';
 import { MidiClockFollower, ticksPerStep } from './arp-seq/midi-clock.js';
 import { CABLE_COLORS } from './utils/constants.js';
 import { report, startDiagnostics } from './ui/diagnostics.js';
-import { peekAudioContext, attempts, changes } from './audio/audio-context.js';
+import { peekAudioContext, getAudioContext, attempts, changes } from './audio/audio-context.js';
 
 /**
  * Main entry point - bootstraps the synth application.
@@ -60,6 +60,8 @@ function buildUI() {
     initAudio(true);
   };
   for (const ev of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']) document.addEventListener(ev, onGesture, true);
+
+  soundButton(container.querySelector('.keyboard-area'));
 
   // Wire patch cables
   layout.patchCables.onConnect = (sourceId, destId, color) => { addCable(sourceId, destId, color); saveToLink(); };
@@ -180,6 +182,42 @@ function initAudio(fromGesture = false) {
   });
   signalStarted(initPromise);
   return initPromise;
+}
+
+/**
+ * On a touchscreen a key can't turn the sound on: the browser only allows it as a finger lifts, so the first key
+ * would be silent. Until the sound is on, a button over the keys does it instead. It comes back if the phone
+ * switches the sound off and it doesn't return by itself within half a second.
+ */
+function soundButton(keyboardArea) {
+  if (!matchMedia('(pointer: coarse)').matches || !keyboardArea) return;
+  const btn = document.createElement('button');
+  btn.className = 'sound-on';
+  btn.type = 'button';
+  btn.textContent = 'Tap for sound';
+  keyboardArea.appendChild(btn);
+  let timer = null;
+  const update = () => {
+    const ctx = peekAudioContext();
+    const on = !!ctx && ctx.state === 'running';
+    clearTimeout(timer);
+    if (on) btn.hidden = true;
+    else if (!ctx) btn.hidden = false;
+    else timer = setTimeout(() => { btn.hidden = ctx.state === 'running'; }, 500);
+  };
+  const watch = () => {     // follow the context's state once it exists, however it was started
+    const ctx = peekAudioContext();
+    if (ctx && !ctx.__soundButton) { ctx.__soundButton = true; ctx.addEventListener('statechange', update); }
+    update();
+  };
+  btn.addEventListener('click', () => {
+    initAudio(true).then(watch, watch);
+    const ctx = getAudioContext();
+    if (ctx.state !== 'running') ctx.resume().then(watch, watch);
+    watch();
+  });
+  for (const ev of ['pointerup', 'keydown']) document.addEventListener(ev, () => setTimeout(watch, 0), true);
+  update();
 }
 
 /** The live line for ?debug: is the audio running, and did the engine get built? */
