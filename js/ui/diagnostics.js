@@ -7,10 +7,13 @@ box.className = 'diag';
 box.setAttribute('role', 'status');
 const lines = [];
 let status = '';
+let small = false;
+box.addEventListener('click', () => { small = !small; render(); });   // tap to shrink to one line, again to open
 
 function render() {
-  box.textContent = [status, ...lines].filter(Boolean).join('\n');
-  box.hidden = !box.textContent;
+  const all = [status, ...lines].filter(Boolean).join('\n');
+  box.textContent = small ? all.split('\n')[0] : all;
+  box.hidden = !all;
 }
 
 /** Show a problem (kept, newest last). */

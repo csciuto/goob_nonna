@@ -174,7 +174,7 @@ function audioProbe() {
   }
   const browser = (navigator.userAgent.match(/(SamsungBrowser|Firefox|EdgA|OPR|Chrome)\/[\d.]+/) || [navigator.userAgent.slice(0, 40)])[0];
   return [`audio: ${ctx.state} · ${ctx.sampleRate} Hz · start: ${startStep} · engine: ${engine ? 'yes' : 'no'} · ${browser}${meter}`,
-    ...attempts.map(a => '  try: ' + a)].join('\n');
+    ...(ctx.state === 'running' ? [] : attempts.slice(-3).map(a => '  try: ' + a))].join('\n');
 }
 
 async function loadPresetSelector() {
