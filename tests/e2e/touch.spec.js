@@ -5,9 +5,26 @@ import { test, expect } from '@playwright/test';
  * A phone, by touch: real touch events (through the DevTools protocol), not the mouse clicks Playwright's
  * click() sends even on a touch device. Runs on the phone project only.
  */
+/**
+ * Phones' autoplay rule, which the test browser doesn't enforce: audio starts suspended and resume() only
+ * works while a gesture that counts is being handled (for touch, the finger lifting, not landing); otherwise its
+ * promise never settles, as on a phone.
+ */
+const PHONE_AUTOPLAY_RULE = () => {
+  let gesture = false;
+  for (const ev of ['pointerup', 'touchend', 'click', 'keydown']) {
+    addEventListener(ev, () => { gesture = true; queueMicrotask(() => setTimeout(() => { gesture = false; })); }, true);
+  }
+  const resume = AudioContext.prototype.resume;
+  AudioContext.prototype.resume = function () { return gesture ? resume.call(this) : new Promise(() => {}); };
+  const Real = AudioContext;
+  window.AudioContext = class extends Real { constructor(...a) { super(...a); this.suspend(); } };
+};
+
 test.describe('touch', () => {
   test.beforeEach(async ({ page }, info) => {
     test.skip(info.project.name !== 'phone', 'touch screens only');
+    await page.addInitScript(PHONE_AUTOPLAY_RULE);
     await page.goto('/');
     await page.waitForSelector('.keyboard');
   });
@@ -30,7 +47,9 @@ test.describe('touch', () => {
     return d[d.length - 1];
   });
 
-  test('touching a key starts the sound and holds the note until the finger lifts', async ({ page }) => {
+  test('the first tap starts the sound (as the finger lifts); then a key holds its note until the finger lifts', async ({ page }) => {
+    (await touch(page, page.locator('.key[data-note="64"]')))();
+    await expect.poll(() => page.evaluate(() => window.__synth?.engine?.ctx.state)).toBe('running');
     const release = await touch(page, page.locator('.key[data-note="60"]'));
     await expect.poll(() => gate(page)).toBeCloseTo(1.6, 2);
     await expect(page.locator('.key[data-note="60"]')).toHaveClass(/active/);
