@@ -116,47 +116,10 @@ export class OscCore {
   }
 }
 
-/**
- * Four-pole (24 dB per octave) transistor-ladder low-pass filter: four one-pole stages in a feedback
- * loop, solved without a one-sample delay in the loop so the resonant peak sits exactly at the cutoff,
- * with a soft saturation that bounds self-oscillation. Resonance thins the bass, as on the hardware.
- */
-export class LadderCore {
-  constructor(sampleRate, seed = 7) {
-    this.sr = sampleRate;
-    this.s = [0, 0, 0, 0];
-    this.rand = mulberry(seed);
-  }
-
-  /** @param fc cutoff in Hz; @param k feedback amount: 0 none, 4 the edge of self-oscillation */
-  tick(x, fc, k) {
-    const max = this.sr * 0.45;
-    fc = fc < 5 ? 5 : fc > max ? max : fc;
-    const g = Math.tan(Math.PI * fc / this.sr);
-    const G = g / (1 + g), b = 1 - G;
-    const s = this.s;
-    const sigma = b * (G * G * G * s[0] + G * G * s[1] + G * s[2] + s[3]);
-    // a whisper of noise gives self-oscillation something to start from
-    let u = (x + (this.rand() - 0.5) * 2e-5 - k * sigma) / (1 + k * G * G * G * G);
-    u = Math.tanh(u * 0.5) * 2;
-    for (let i = 0; i < 4; i++) {
-      const v = (u - s[i]) * G;
-      const y = v + s[i];
-      s[i] = y + v;
-      u = y;
-    }
-    return u;
-  }
-}
-
 /** The ladder's soft saturation, 2·tanh(z/2), as a gain: sat(z) = z · satGain(z). */
 const satGain = z => { const a = 0.5 * z; return a > -1e-4 && a < 1e-4 ? 1 : Math.tanh(a) / a; };
 
-/** How much more level the four stages take than the input stage before saturating: higher is subtler,
- *  closer to the first filter (model value; kept subtle by ear). */
-const STAGE_HEADROOM = 2;
-
-const SELF_OSC_TRIM = 5.6 / 1200 * Math.LN2;
+const SELF_OSC_TRIM = 23 / 1200 * Math.LN2;
 
 /** Half-band low-pass for 2× oversampling: a Blackman-windowed sinc at a quarter of the doubled rate. */
 const HB_TAPS = 47;
@@ -172,13 +135,15 @@ const HALF_BAND = (() => {
 })();
 
 /**
- * The ladder as the transistors make it: each of the four stages saturates, not just the input, so a loud
- * signal thickens and resonance softens when driven. Each stage is dy/dt = ωc·(sat(in) − sat(y)), solved
- * without a delay in the loop; the saturations are folded in as gains from the previous step (exact when
- * quiet, so tuning and resonance match LadderCore). Runs at twice the sample rate and filters back down,
- * so the saturation's high harmonics don't fold into the audible range.
+ * Four-pole (24 dB per octave) transistor-ladder low-pass filter: four one-pole stages in a feedback loop.
+ * Each stage saturates, as the transistors do, so a loud signal thickens, resonance softens when driven and
+ * self-oscillation stays bounded; resonance thins the bass, as on the hardware. Each stage is
+ * dy/dt = ωc·(sat(in) − sat(y)), solved without a delay in the loop so the resonant peak sits at the cutoff;
+ * the saturations are folded in as gains from the previous step and refined once (exact when quiet). Runs at
+ * twice the sample rate and filters back down, so the saturation's high harmonics don't fold into the
+ * audible range.
  */
-export class LadderCoreNL {
+export class LadderCore {
   constructor(sampleRate, seed = 7) {
     this.sr = sampleRate;
     this.s = new Float64Array(4);      // integrator states
@@ -197,8 +162,7 @@ export class LadderCoreNL {
 
   solve(x, g, k, eu, e0, e1, e2, e3, commit = false) {
     const s = this.s, y = this.y;
-    const h = 1 / STAGE_HEADROOM;
-    const tu = satGain(eu), t0 = satGain(e0 * h), t1 = satGain(e1 * h), t2 = satGain(e2 * h), t3 = satGain(e3 * h);
+    const tu = satGain(eu), t0 = satGain(e0), t1 = satGain(e1), t2 = satGain(e2), t3 = satGain(e3);
     // each stage: y_i = a_i · in_i + b_i
     const d0 = 1 / (1 + g * t0), d1 = 1 / (1 + g * t1), d2 = 1 / (1 + g * t2), d3 = 1 / (1 + g * t3);
     const a0 = g * tu * d0, b0 = s[0] * d0;
@@ -217,11 +181,11 @@ export class LadderCoreNL {
 
   push(v) { this.buf[this.pos] = v; this.pos = (this.pos + 1) % HB_TAPS; }
 
-  /** Same interface as LadderCore. */
+  /** @param fc cutoff in Hz; @param k feedback amount: 0 none, 4 the edge of self-oscillation */
   tick(x, fc, k) {
     const max = this.sr * 0.45;
     fc = fc < 5 ? 5 : fc > max ? max : fc;
-    // Self-oscillating, the saturating stages pull the pitch about 6 cents flat; trim it back, as the
+    // Self-oscillating, the saturating input stage pulls the pitch about 23 cents flat; trim it back, as the
     // hardware is calibrated to play in tune from the keys. Below self-oscillation nothing changes.
     if (k > 4) fc *= Math.exp(SELF_OSC_TRIM * Math.min(1, (k - 4) / 0.24));
     const g = Math.tan(Math.PI * fc / (2 * this.sr));
@@ -234,9 +198,6 @@ export class LadderCoreNL {
     return out;
   }
 }
-
-/** Ladder models: the first one, and the four-stage saturating one. */
-export const LADDER = { CLASSIC: 0, TRANSISTOR: 1 };
 
 /** Resonance knob (0 to 4) to ladder feedback: the top of the knob is just past self-oscillation. */
 export const resonanceToFeedback = knob => Math.max(0, knob) * 1.06;
@@ -363,13 +324,12 @@ if (typeof registerProcessor === 'function') {
         { name: 'cutoff', defaultValue: 1000, minValue: 1, automationRate: A },   // Hz, from the knob
         { name: 'cv', defaultValue: 0, automationRate: A },                         // octaves added to it
         { name: 'res', defaultValue: 0, automationRate: A },                        // knob units, 0 to 4
-        { name: 'model', defaultValue: LADDER.CLASSIC, minValue: 0, maxValue: 1, automationRate: K },
       ];
     }
-    constructor() { super(); this.cores = [new LadderCore(sampleRate), new LadderCoreNL(sampleRate)]; }
+    constructor() { super(); this.core = new LadderCore(sampleRate); }
     process(inputs, outputs, p) {
       const out = outputs[0][0], x = inputs[0][0];
-      const core = this.cores[p.model[0] >= 0.5 ? 1 : 0];
+      const core = this.core;
       for (let i = 0; i < out.length; i++) {
         const fc = at(p.cutoff, i) * Math.exp(at(p.cv, i) * LN2);
         out[i] = core.tick(x ? x[i] : 0, fc, resonanceToFeedback(at(p.res, i)));

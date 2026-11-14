@@ -98,17 +98,13 @@ flowchart LR
   edges, and hard-sync resets), which needs the sample after an edge, so the output runs one sample late.
   Pulse width is a parameter; hard sync restarts the phase at the master's interpolated zero crossing; each
   oscillator has a slow mean-reverting random pitch drift from a seeded generator.
-- **Ladder filter.** Four one-pole stages in a feedback loop in zero-delay-feedback form (the loop is solved
-  algebraically each sample, so the resonant peak sits exactly at the cutoff and self-oscillation is in tune),
-  with a `tanh` saturation that bounds self-oscillation and adds drive. Passband gain falls as 1/(1+k), which is
-  the bass loss the hardware has. A second model (FILTER NEW in the ⋮ menu, remembered per device; OLD is the
-  default) saturates every stage the way the transistor ladder does: each stage is dy/dt = ωc·(sat(in) −
-  sat(y)), solved without delay with the saturations folded in as gains estimated from the last step and
-  refined once (Huovilainen's model, in a cheap zero-delay form). Quiet, it matches the first model; driven,
-  resonance softens and passband stays clean while notes near the cutoff thicken. It runs at twice the sample
-  rate (linear interpolation up, a 47-tap half-band FIR down). The four stages take twice the input stage's
-  level before saturating (`STAGE_HEADROOM`), which keeps the difference from the first model subtle; the
-  saturation pulls self-oscillation about 6 cents flat, so it is trimmed back up.
+- **Ladder filter.** Four one-pole stages in a feedback loop, every stage saturating the way the transistor
+  ladder does: each stage is dy/dt = ωc·(sat(in) − sat(y)) with sat(z) = 2·tanh(z/2) (Huovilainen's model),
+  solved without delay in the loop (zero-delay feedback, so the resonant peak sits at the cutoff) with the
+  saturations folded in as gains estimated from the last step and refined once. Passband gain falls as
+  1/(1+k), the bass loss the hardware has. Quiet it is linear; driven, resonance softens while notes near the
+  cutoff thicken. It runs at twice the sample rate (linear interpolation up, a 47-tap half-band FIR down) and
+  trims self-oscillation 23 cents up, since the saturation pulls it flat.
 - **Envelope.** A gate-driven state machine in the worklet (linear attack, exponential decay and release), so
   anything over 1.2 V can trigger it at audio rate and a retrigger continues from the current level. A second
   output is the VCA's KB RLS shape.
@@ -143,8 +139,8 @@ flowchart LR
 - Monophonic voice (as the hardware); the computer keyboard is polyphonic only into the arpeggiator.
 - Values the manual doesn't give (modulation depths, linear-FM scaling, the drift amount) are choices, marked
   **model value** in the spec.
-- The filter and oscillators are models, not circuit simulations. The oscillators and the OLD filter run at the
-  output sample rate, so very high resonant sweeps alias slightly; the NEW filter runs at twice the rate.
+- The filter and oscillators are models, not circuit simulations. The oscillators run at the output sample rate;
+  the filter runs at twice the rate, so its saturation barely aliases.
 - The arpeggiator's own clock runs on `setInterval`, so its timing is only as steady as the page's timers.
 - Sequences aren't saved in the link; patches are.
 - No audio input, Eurorack output or MIDI output.

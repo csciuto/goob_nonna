@@ -79,10 +79,10 @@ test.describe('sound @desktop', () => {
     expect(r.twoUp).toBeLessThan(-40);
   });
 
-  for (const model of [0, 1]) test(`full resonance self-oscillates at the cutoff, and KBD TRACK plays it from the keys (${model ? 'new' : 'old'} filter)`, async ({ page }) => {
+  test('full resonance self-oscillates at the cutoff, and KBD TRACK plays it from the keys', async ({ page }) => {
     const r = await inPage(page, `async ({ render, slice, pitch, cents, rms }) => {
       const at = async (track, note, res = 4) => {
-        const y = slice(await render({ seconds: 1.2, setup: e => { e.filter.setModel(${model}); e.setMixerOsc1Level(0); e.setVCAMode('drone'); e.setFilterResonance(res); e.setFilterCutoff(0.5); e.setFilterKbTrack(track); }, events: [[0.05, e => e.noteOn(note)]] }), 0.7, 1.2);
+        const y = slice(await render({ seconds: 1.2, setup: e => { e.setMixerOsc1Level(0); e.setVCAMode('drone'); e.setFilterResonance(res); e.setFilterCutoff(0.5); e.setFilterKbTrack(track); }, events: [[0.05, e => e.noteOn(note)]] }), 0.7, 1.2);
         return { hz: pitch(y), rms: rms(y) };
       };
       const fc = 10 * 2000 ** 0.5, base = await at(1, 60);
@@ -292,9 +292,14 @@ test.describe('sound @desktop', () => {
   test('RATE IN is 1 volt per octave; S/H OUT steps once per LFO cycle', async ({ page }) => {
     const r = await inPage(page, async ({ render, slice, pitch, cents, midi }) => {
       const steps = async amount => {
-        const y = await render({ seconds: 3, setup: e => { e.setOsc1Waveform('triangle'); e.setVCAMode('drone'); e.setLFORate(4.3); e.setAttenuatorAmount(amount); e.createPatch('atten-out', 'lfo-rate-in'); e.createPatch('lfo-sh-out', 'osc1-pitch-in'); } });
-        let n = 0, last = null;
-        for (let t = 0.2; t < 2.95; t += 0.01) { const c = cents(pitch(slice(y, t, t + 0.01), 40, 12000), midi(60)); if (last !== null && Math.abs(c - last) > 60) n++; last = c; }
+        const y = await render({ seconds: 8, setup: e => { e.setOsc1Waveform('triangle'); e.setVCAMode('drone'); e.setLFORate(4.3); e.setAttenuatorAmount(amount); e.createPatch('atten-out', 'lfo-rate-in'); e.createPatch('lfo-sh-out', 'osc1-pitch-in'); } });
+        // a step counts once the pitch settles (two windows in a row agree), so a window across a step isn't one
+        let n = 0, held = null, prev = null;
+        for (let t = 0.2; t < 7.95; t += 0.01) {
+          const c = cents(pitch(slice(y, t, t + 0.01), 40, 12000), midi(60));
+          if (prev !== null && Math.abs(c - prev) < 20) { if (held !== null && Math.abs(c - held) > 60) n++; held = c; }
+          prev = c;
+        }
         return n;
       };
       return { base: await steps(0), octaveUp: await steps(0.125) };

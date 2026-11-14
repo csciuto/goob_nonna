@@ -64,11 +64,9 @@ five octaves. A trigger is any signal over 1.2 V (0.24). Clock, ON/OFF and RESET
 - **ENV AMT IN**: summed with the ENVELOPE AMT knob (it varies the amount, it is not another cutoff input);
   ±8 V equals the knob's full travel.
 - Implementation: four one-pole stages in a feedback loop, solved without a sample of delay in the loop so the
-  peak sits at the cutoff, with a soft saturation that bounds self-oscillation (AudioWorklet `gn-ladder`).
-  Two models, picked by FILTER OLD / NEW in the ⋮ menu (not a hardware control; OLD is the default while
-  they're compared by ear): OLD saturates once, at the input; NEW saturates in all four stages, as the
-  transistor ladder does, at twice the sample rate, kept subtle by ear: the stages take twice the input's level
-  before saturating (**model value**). How hard the mixer drives the filter is a **model value**.
+  peak sits at the cutoff (AudioWorklet `gn-ladder`). Every stage saturates, as the transistor ladder does,
+  which bounds self-oscillation, thickens notes near the cutoff and softens resonance when driven. It runs at
+  twice the sample rate. How hard the mixer drives the filter is a **model value**.
 
 ### Envelope (ADSR)
 - Attack, Decay, Release: 1 ms - 10 s, each knob step multiplying the time by the same amount (noon = 100 ms)
