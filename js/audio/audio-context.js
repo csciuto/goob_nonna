@@ -1,4 +1,6 @@
 let audioContext = null;
+/** The last few tries to start the audio, for the on-page sound check. */
+export const attempts = [];
 
 export function getAudioContext() {
   if (!audioContext) {
@@ -15,9 +17,11 @@ export function getAudioContext() {
  */
 function keepTryingToStart(ctx) {
   const events = ['pointerdown', 'pointerup', 'touchend', 'mousedown', 'keydown', 'click'];
-  const tryStart = () => {
+  const tryStart = (e) => {
     if (ctx.state === 'running') { for (const ev of events) document.removeEventListener(ev, tryStart, true); return; }
-    ctx.resume().catch(() => {});
+    const gesture = navigator.userActivation ? navigator.userActivation.isActive : '?';
+    const note = result => { attempts.push(`${e.type} (gesture ${gesture}): ${result}, now ${ctx.state}`); if (attempts.length > 5) attempts.shift(); };
+    ctx.resume().then(() => note('ok'), err => note('refused: ' + (err?.message || err)));
   };
   for (const ev of events) document.addEventListener(ev, tryStart, true);
 }
