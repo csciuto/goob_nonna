@@ -10,6 +10,8 @@ All design decisions must match the reference hardware (the semi-modular this ap
 - Unit tests live in `tests/unit/` and use vitest: `npx vitest run`
 - Test pure logic (arpeggiator, sequencer, clock, glide, math) and the DSP cores in `js/audio/worklets.js` without Web Audio
 - **Anything that changes the sound gets a sound test** in `tests/e2e/sound.spec.js`: render the engine offline with `tests/sound-kit.js` and assert on measured numbers (pitch, level, timing)
+- **When a sound test's number changes after an engine change, first run the same test on the old code** (`git stash push js/`, run, `git stash pop`) before theorizing. It settles "real change or measurement artifact" in one step.
+- Around engine changes, check presets with the fingerprint (`tests/e2e/fingerprint.spec.js`, by hand; see ARCHITECTURE.md). It plays in real time and varies ±5 dB run to run: re-run once before chasing a surprise, and prefer offline renders (`tests/sound-kit.js`) for exact numbers.
 - Mock `performance.now()` and `AudioContext` where needed
 - Run tests before considering any feature complete
 
