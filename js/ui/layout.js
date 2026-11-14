@@ -57,7 +57,7 @@ export class Layout {
     this.panels.arpSeq = new PanelArpSeq({ onJackClick });
     this.panels.back = new PanelBack({ onJackClick });
 
-    // Assemble panels left-to-right matching real Grandmother
+    // Assemble panels left-to-right matching the hardware
     const panelRow = document.createElement('div');
     panelRow.className = 'panel-row';
 
@@ -79,7 +79,7 @@ export class Layout {
       onDisconnect: null,
     });
 
-    // Title strip between panels and keyboard (like real Grandmother)
+    // Title strip between panels and keyboard (like the hardware)
     const titleStrip = document.createElement('div');
     titleStrip.className = 'synth-title-strip';
     titleStrip.innerHTML = '<div class="title-left"><span class="title-goob">GOOB</span><span class="title-nonna">NONNA</span><span class="title-subtitle">SEMI-MODULAR ANALOG SYNTHESIZER</span></div><div class="title-right"><button class="midi-btn" id="midi-btn" aria-pressed="false" title="Play from a MIDI keyboard">MIDI IN</button><div class="preset-selector"><select id="preset-select" aria-label="Preset"><option value="">-- Select Preset --</option></select></div><button class="kebab-btn" id="kebab-btn" title="More">&#8942;</button></div>';

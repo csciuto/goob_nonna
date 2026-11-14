@@ -42,7 +42,7 @@ export class Arpeggiator {
       if (!this._hold) {
         this._rebuildPattern();
       } else {
-        // Grandmother behavior: if all fingers were lifted, new note = fresh pattern
+        // Hardware behavior: if all fingers were lifted, new note = fresh pattern
         if (this._heldNotes.length === 1 && this._lockedNotes.length > 0) {
           // Check if any locked notes are still physically held
           const anyStillHeld = this._lockedNotes.some(n => this._heldNotes.includes(n));

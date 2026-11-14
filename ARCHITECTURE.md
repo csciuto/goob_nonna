@@ -1,7 +1,7 @@
 # How Goob Nonna is built
 
 A static site: HTML, one stylesheet and plain ES modules, no framework, no bundler, no runtime dependencies. The
-synthesizer is a graph of Web Audio nodes wired like the Moog Grandmother's semi-modular signal path, with a patch
+synthesizer is a graph of Web Audio nodes wired like a legendary semi-modular's signal path, with a patch
 bay you can re-cable. The parts that give it its sound (oscillators, ladder filter, envelope, LFO) are small DSP
 programs running in an AudioWorklet. About 5,900 lines of app code (`js/`) in 48 small modules.
 

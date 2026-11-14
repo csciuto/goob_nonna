@@ -1,10 +1,10 @@
 # Goob Nonna - Synthesizer Specification
 
 ## Overview
-Web-based clone of Moog Grandmother. Semi-modular analog synth emulation using Web Audio API. Vanilla JS, no frameworks.
+Web-based tribute to a legendary semi-modular ("la nonna"). Semi-modular analog synth emulation using Web Audio API. Vanilla JS, no frameworks.
 
-**Hardware source.** Module, knob and jack behavior follows the Moog *Grandmother User's Manual* (Version 2),
-including its Patch Point Index (voltages, which inputs are normalled and which are summed). Where the manual
+**Hardware source.** Module, knob and jack behavior follows the hardware's user manual (Version 2; kept outside the repo),
+including its patch point index (voltages, which inputs are normalled and which are summed). Where the manual
 gives no number, this spec picks one and marks it **model value**; those are the places to correct if the
 hardware is measured.
 
@@ -52,7 +52,7 @@ five octaves. A trigger is any signal over 1.2 V (0.24). Clock, ON/OFF and RESET
 - Above about 1 o'clock (6 of 10) a level starts to overdrive gently, and harder as levels rise (a soft
   saturation on the sum). OUTPUT is the saturated sum.
 
-### Filter (Moog Ladder -24dB/oct Low-Pass)
+### Filter (Transistor Ladder -24dB/oct Low-Pass)
 - Cutoff: 10 Hz - 20 kHz (logarithmic)
 - Resonance: 0-4. It lifts the cutoff and thins the bass; all the way up the filter self-oscillates as a sine at
   the cutoff frequency (playable from the keys with KBD TRACK 1:1). Just below the top it rings but doesn't sing.

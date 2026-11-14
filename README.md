@@ -6,7 +6,7 @@ How it's built: [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Built with [Claude Code](https://claude.com/claude-code).
 
-A web-based clone of the Moog Grandmother analog synthesizer, built with vanilla JavaScript and the Web Audio API. No build tools, no frameworks — just static files you can serve from anywhere.
+A browser tribute to a legendary semi-modular analog synthesizer (every nonna is legendary), built with vanilla JavaScript and the Web Audio API. No build tools, no frameworks — just static files you can serve from anywhere.
 
 ## Demo
 
@@ -17,7 +17,7 @@ Open `index.html` in a modern browser (Chrome/Firefox/Edge) or deploy to GitHub 
 ### Audio Engine
 - **2 Oscillators** — Triangle, Saw, Square, Narrow Pulse, band-limited; four octave ranges each; hard sync; pulse-width modulation; linear FM; a few cents of analog-style drift
 - **3-Channel Mixer** — OSC 1, OSC 2 and Noise, overdriving gently as levels rise
-- **Moog Ladder Filter** — a four-pole ladder model (-24dB/oct): resonance that thins the bass and self-oscillates in tune at the top, keyboard tracking, bipolar envelope amount
+- **Ladder Filter** — a four-pole ladder model (-24dB/oct): resonance that thins the bass and self-oscillates in tune at the top, keyboard tracking, bipolar envelope amount
 - **ADSR Envelope** — gate-driven, retriggers from the current level, triggerable from any signal over 1.2 V
 - **VCA** — Three modes: ENV (full ADSR), KB RLS (instant attack, envelope release), DRONE (always on)
 - **LFO** — Sine, Sawtooth, Ramp, Square, plus Sample & Hold; 0.07 Hz to 1.3 kHz; to pitch, cutoff and pulse width via the mod wheel
@@ -27,7 +27,7 @@ Open `index.html` in a modern browser (Chrome/Firefox/Edge) or deploy to GitHub 
 The oscillators, filter, envelope and LFO run in an AudioWorklet (`js/audio/worklets.js`).
 
 ### Semi-Modular Patch System
-- **Every jack on the panel works**, following the Grandmother manual's Patch Point Index: signals are in volts, pitch inputs are 1 V per octave
+- **Every jack on the panel works**, following the hardware manual's patch point index: signals are in volts, pitch inputs are 1 V per octave
 - **8 normalled connections** a cable replaces; control inputs add to what the knobs are doing
 - **Click-to-connect** patch cable system with SVG rendering
 - Color-coded cables cycling through red, blue, yellow, green, orange, purple
@@ -49,7 +49,7 @@ The oscillators, filter, envelope and LFO run in an AudioWorklet (`js/audio/work
 ### 14 Factory Presets
 Funky Robot, Showdown Guitar, Dynasty Plucks, Haunted Cave, Ultra Sub Bass, Cavern Strings, J-Bass, Auto Zap Bass, Stepped Drone, Cyclical Patterns, Bag Pipes, Piano Bass, Lift Off, 3 Saws
 
-> **Note:** Each preset sets the whole panel and uses only features that work, but the values were OCR'd from documentation and haven't been checked by ear against a real Grandmother.
+> **Note:** Each preset sets the whole panel. They are read from the hardware's factory patch sheets: switches, waveforms and cables as drawn, knobs to about the nearest half step. They haven't been checked by ear against the hardware.
 
 ### UI
 - **32-note keyboard** (F2 to C5) with mouse and QWERTY input

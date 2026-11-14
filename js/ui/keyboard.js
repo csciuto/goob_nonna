@@ -2,7 +2,7 @@ import { DEFAULT_VELOCITY, KEYBOARD_START_NOTE, KEYBOARD_END_NOTE, NOTE_NAMES } 
 
 /**
  * 32-note visual keyboard (F2 to C5).
- * Monophonic with last-note priority (like the Grandmother).
+ * Monophonic with last-note priority (like the hardware).
  * Supports mouse and QWERTY input. Two rows:
  *   Bottom: Z S X D C V G B H N J M , L . ;
  *   Top:    Q 2 W 3 E R 5 T 6 Y 7 U I 9 O 0 P

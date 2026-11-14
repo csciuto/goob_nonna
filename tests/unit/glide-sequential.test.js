@@ -4,7 +4,7 @@ import { mapToLogRange } from '../../js/utils/math.js';
 /**
  * Test that glide works for sequential notes (release first, press second)
  * without ever needing to hold two notes simultaneously.
- * This mirrors the real Moog Grandmother behavior.
+ * This mirrors the hardware's behavior.
  */
 
 function makeGlideEngine() {

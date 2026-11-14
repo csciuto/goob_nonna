@@ -1,7 +1,7 @@
 {
   "name": "goob-nonna",
   "version": "1.0.0",
-  "description": "Web-based Moog Grandmother synthesizer clone",
+  "description": "Browser semi-modular synthesizer, a tribute to a legendary nonna",
   "type": "module",
   "scripts": {
     "test": "vitest run",

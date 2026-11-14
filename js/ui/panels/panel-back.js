@@ -3,7 +3,7 @@ import { PATCH_POINTS } from '../../utils/constants.js';
 
 /**
  * Back panel - clock and arp/seq utility jacks.
- * On the real Grandmother these are on the rear panel.
+ * On the hardware these are on the rear panel.
  * They may not have functional wiring but are included for completeness.
  */
 export class PanelBack {

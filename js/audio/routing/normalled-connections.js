@@ -1,7 +1,7 @@
 import { PATCH_POINTS } from '../../utils/constants.js';
 
 /**
- * The Grandmother's normalled connections: what feeds an input jack while nothing is plugged into it.
+ * The hardware's normalled connections: what feeds an input jack while nothing is plugged into it.
  * Patching a cable into the destination replaces the normal; pulling the cable restores it.
  *
  * Connections the hardware makes without a jack in between are not here, because a cable can't break
