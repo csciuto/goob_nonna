@@ -1311,3 +1311,9 @@ body {
 .knob, .slider-track, .wheel-track { touch-action: none; }
 .keyboard { touch-action: pan-x; }
 .synth-button, .switch-option, .jack { touch-action: manipulation; }
+
+/* On-page sound check (js/ui/diagnostics.js): errors, and with ?debug the audio's state */
+.diag { position: fixed; left: 8px; right: 8px; bottom: 8px; z-index: 10000; background: #2a1610; color: #f3e6d8;
+  border: 1px solid #d98463; border-radius: 4px; padding: 6px 10px; font: 12px/1.4 ui-monospace, monospace;
+  white-space: pre-wrap; }
+.diag[hidden] { display: none; }

@@ -29,6 +29,9 @@ export async function ensureAudioContextRunning() {
   return ctx;
 }
 
+/** The context if one exists yet, without creating it. */
+export const peekAudioContext = () => audioContext;
+
 export function getAudioContextTime() {
   return getAudioContext().currentTime;
 }

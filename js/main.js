@@ -5,6 +5,8 @@ import { buildControls, readState, applyState, sendAll, encodePatch, decodePatch
 import { initMidiIn } from './vendor/midi-in.js';
 import { MidiClockFollower, ticksPerStep } from './arp-seq/midi-clock.js';
 import { CABLE_COLORS } from './utils/constants.js';
+import { report, startDiagnostics } from './ui/diagnostics.js';
+import { peekAudioContext } from './audio/audio-context.js';
 
 /**
  * Main entry point - bootstraps the synth application.
@@ -134,19 +136,36 @@ function saveToLink() {
   if (hash !== location.hash) history.replaceState(null, '', hash || location.pathname + location.search);
 }
 
+let startStep = 'not started';
 function initAudio() {
   if (initPromise) return initPromise;
   initPromise = (async () => {
+    startStep = 'audio context';
     const ctx = await ensureAudioContextRunning();
+    startStep = 'building the engine';
     engine = await AudioEngine.create(ctx);
+    startStep = 'wiring the panel';
     layout.wireToEngine(engine);
     sendAll(controls);                 // the engine starts from its own defaults: give it the panel's settings
     for (const [patchId, [sourceId, destId]] of [...cables]) {
       if (!engine.createPatch(sourceId, destId)) { cables.delete(patchId); layout.patchCables.removeCable(patchId); }
     }
     window.__synth = { engine, layout, controls };     // for the browser tests and for poking at it from the console
-  })();
+    startStep = 'done';
+  })().catch(e => {
+    report(`Sound couldn't start (${startStep}): ${e?.message || e}`);
+    initPromise = null;                                  // the next press tries again
+    if (e && typeof e === 'object') e.reported = true;
+    throw e;
+  });
   return initPromise;
+}
+
+/** The live line for ?debug: is the audio running, and did the engine get built? */
+function audioProbe() {
+  const ctx = peekAudioContext();
+  if (!ctx) return `audio: not created yet (tap to start) · start: ${startStep}`;
+  return `audio: ${ctx.state} · ${ctx.sampleRate} Hz · start: ${startStep} · engine: ${engine ? 'yes' : 'no'}`;
 }
 
 async function loadPresetSelector() {
@@ -190,4 +209,4 @@ function applyPreset(preset) {
 }
 
 // Build UI immediately on load — audio deferred to first user interaction
-document.addEventListener('DOMContentLoaded', () => buildUI());
+document.addEventListener('DOMContentLoaded', () => { buildUI(); startDiagnostics(audioProbe); });

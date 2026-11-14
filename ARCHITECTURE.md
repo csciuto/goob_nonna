@@ -51,6 +51,7 @@ js/ui/
   panels/*.js                  one per front-panel section
   components/*.js              knob, slider, switch, button, LED, jack, mod wheel
   keyboard.js                  on-screen and computer keyboard (polyphonic into the arp, monophonic voice)
+  diagnostics.js               on-page sound check: start-up errors always; with ?debug, the audio's live state
   patch-cables.js              click-to-connect cables, drawn in SVG
 js/presets.js                  factory presets
 js/vendor/midi-in.js           the shared MIDI input module (pinned in package.json; `npm run vendor` refreshes it)
