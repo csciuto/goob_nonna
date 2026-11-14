@@ -24,7 +24,7 @@ All design decisions must match the reference hardware (the semi-modular this ap
 ## Architecture
 - Vanilla JS with ES modules, Web Audio API, no frameworks
 - Semi-modular patch system with normalled connections
-- Audio engine built on the first press; the browser lets sound start only inside a gesture that counts (for touch, the finger lifting), so `audio-context.js` asks to resume on every gesture until it runs. `touch.spec.js` imposes that rule, which test browsers otherwise skip
+- Audio is created only inside a gesture the browser counts (a key, a mouse press, or a finger lifting at the end of a tap, not a scroll): on Android, audio created outside one can stay stuck. Notes pressed before then are queued in order. `touch.spec.js` imposes that phone rule, which test browsers skip
 - Controls use pointer events (mouse, pen and touch alike), never mouse-only events; `tests/e2e/touch.spec.js` drives them with real touch events
 - Keyboard Shift key = hardware HOLD-as-modifier (for combos like legato glide)
 

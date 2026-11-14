@@ -37,20 +37,29 @@ function buildUI() {
     if (engine) {
       engine.noteOn(note, vel);
     } else {
-      initAudio().then(() => engine.noteOn(note, vel));
+      started.then(() => engine.noteOn(note, vel));       // queued in order until a gesture starts the audio
     }
   };
   layout.keyboard.onNoteOff = (note) => {
     if (engine) {
       engine.noteOff(note);
     } else {
-      initAudio().then(() => engine.noteOff(note));
+      started.then(() => engine.noteOff(note));
     }
   };
 
-  // Start the audio on the first press anywhere, mouse or touch (so arp buttons work without playing a note
-  // first). Not 'click': iPhone Safari only sends clicks to elements it thinks are clickable.
-  for (const ev of ['pointerdown', 'keydown']) document.addEventListener(ev, () => initAudio(), { once: true });
+  // Start the audio inside the first gesture the browser counts: a key, a mouse press, or a finger lifting at the
+  // end of a tap. Not a finger landing or a scroll: audio created then can stay stuck on Android.
+  let dragged = false;                                   // a finger that moved was scrolling, not tapping
+  document.addEventListener('touchstart', () => { dragged = false; }, true);
+  document.addEventListener('touchmove', () => { dragged = true; }, true);
+  const onGesture = e => {
+    if (e.type === 'pointerdown' && e.pointerType !== 'mouse') return;
+    if (dragged && (e.type === 'touchend' || (e.type === 'pointerup' && e.pointerType !== 'mouse'))) return;
+    if (navigator.userActivation && !navigator.userActivation.isActive) return;
+    initAudio(true);
+  };
+  for (const ev of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']) document.addEventListener(ev, onGesture, true);
 
   // Wire patch cables
   layout.patchCables.onConnect = (sourceId, destId, color) => { addCable(sourceId, destId, color); saveToLink(); };
@@ -137,8 +146,18 @@ function saveToLink() {
 }
 
 let startStep = 'not started';
-function initAudio() {
+let started = null;            // resolves once a gesture has started the audio (see onGesture)
+let signalStarted = () => {};
+const resetStarted = () => { started = new Promise(r => { signalStarted = r; }); };
+resetStarted();
+
+/**
+ * The engine, once a gesture has started it. Called from a gesture (fromGesture), it creates the audio there and
+ * then; called from anywhere else (a note before the first tap ends, a preset, MIDI), it waits for that gesture.
+ */
+function initAudio(fromGesture = false) {
   if (initPromise) return initPromise;
+  if (!fromGesture) return started;
   initPromise = (async () => {
     startStep = 'audio context';
     const ctx = await ensureAudioContextRunning();
@@ -154,17 +173,19 @@ function initAudio() {
     startStep = 'done';
   })().catch(e => {
     report(`Sound couldn't start (${startStep}): ${e?.message || e}`);
-    initPromise = null;                                  // the next press tries again
+    initPromise = null;                                  // the next gesture tries again
+    resetStarted();
     if (e && typeof e === 'object') e.reported = true;
     throw e;
   });
+  signalStarted(initPromise);
   return initPromise;
 }
 
 /** The live line for ?debug: is the audio running, and did the engine get built? */
 function audioProbe() {
   const ctx = peekAudioContext();
-  if (!ctx) return `audio: not created yet (tap to start) · start: ${startStep}`;
+  if (!ctx) return `audio: not created yet (tap to start) · start: ${startStep} · gesture: ${navigator.userActivation ? navigator.userActivation.isActive : '?'}`;
   let meter = '';
   if (engine) {
     if (!audioProbe.an) { audioProbe.an = engine.ctx.createAnalyser(); audioProbe.an.fftSize = 2048; engine.limiter.connect(audioProbe.an); }

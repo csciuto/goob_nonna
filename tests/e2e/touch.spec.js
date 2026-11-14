@@ -11,14 +11,20 @@ import { test, expect } from '@playwright/test';
  * promise never settles, as on a phone.
  */
 const PHONE_AUTOPLAY_RULE = () => {
-  let gesture = false;
+  let gesture = false, moved = false;
+  addEventListener('touchstart', () => { moved = false; }, true);
+  addEventListener('touchmove', () => { moved = true; }, true);           // a drag is a scroll, not a tap
   for (const ev of ['pointerup', 'touchend', 'click', 'keydown']) {
-    addEventListener(ev, () => { gesture = true; queueMicrotask(() => setTimeout(() => { gesture = false; })); }, true);
+    addEventListener(ev, () => {
+      if (moved && (ev === 'pointerup' || ev === 'touchend')) return;
+      gesture = true; queueMicrotask(() => setTimeout(() => { gesture = false; }));
+    }, true);
   }
+  // as seen on Android: audio created outside a gesture (say, as a scroll began) never starts
   const resume = AudioContext.prototype.resume;
-  AudioContext.prototype.resume = function () { return gesture ? resume.call(this) : new Promise(() => {}); };
+  AudioContext.prototype.resume = function () { return gesture && this.bornInGesture ? resume.call(this) : new Promise(() => {}); };
   const Real = AudioContext;
-  window.AudioContext = class extends Real { constructor(...a) { super(...a); this.suspend(); } };
+  window.AudioContext = class extends Real { constructor(...a) { super(...a); this.bornInGesture = gesture; if (!gesture) this.suspend(); } };
 };
 
 test.describe('touch', () => {
@@ -55,6 +61,21 @@ test.describe('touch', () => {
     await expect(page.locator('.key[data-note="60"]')).toHaveClass(/active/);
     await release();
     await expect.poll(() => gate(page)).toBe(0);
+  });
+
+  test('scrolling down to the keys first, then tapping one, starts the sound', async ({ page }) => {
+    const cdp = await page.context().newCDPSession(page);
+    const drag = async (x, y0, y1) => {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y: y0 }] });
+      for (let i = 1; i <= 8; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y: y0 + (y1 - y0) * i / 8 }] });
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    };
+    await drag(200, 600, 100);                                   // a scroll, landing on the panels
+    (await touch(page, page.locator('.key[data-note="64"]')))();
+    await expect.poll(() => page.evaluate(() => window.__synth?.engine?.ctx.state)).toBe('running');
+    const release = await touch(page, page.locator('.key[data-note="60"]'));
+    await expect.poll(() => gate(page)).toBeCloseTo(1.6, 2);
+    await release();
   });
 
   test('the LFO light blinks once the sound is on', async ({ page }) => {
