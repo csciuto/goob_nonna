@@ -3,7 +3,7 @@
 A static site: HTML, one stylesheet and plain ES modules, no framework, no bundler, no runtime dependencies. The
 synthesizer is a graph of Web Audio nodes wired like a legendary semi-modular's signal path, with a patch
 bay you can re-cable. The parts that give it its sound (oscillators, ladder filter, envelope, LFO) are small DSP
-programs running in an AudioWorklet. About 5,900 lines of app code (`js/`) in 48 small modules.
+programs running in an AudioWorklet. About 6,000 lines of app code (`js/`) in 47 small modules.
 
 The intended behavior, panel by panel, is in [docs/synth-spec.md](docs/synth-spec.md); the user guide is
 `docs/getting-started.html`.
@@ -25,11 +25,12 @@ Dev only: Vitest (unit tests), Playwright + axe-core (browser and accessibility 
 
 ```
 index.html, style.css          the page and all styles
-js/main.js                     startup: builds the UI, starts audio on the first note (browser rule)
+js/main.js                     startup: builds the UI, starts audio on the first press or key (browser rule)
 js/audio/
   audio-context.js             the shared AudioContext
-  worklets.js                  the DSP cores (oscillator with sync and pulse width, ladder filter, envelope,
-                               LFO with sample and hold, one-pole high-pass) and their AudioWorklet wrappers
+  worklets.js                  the DSP cores (oscillator with sync and pulse width, mixer with cable loops,
+                               ladder filter, envelope, LFO with sample and hold, one-pole high-pass) and their
+                               AudioWorklet wrappers
   engine.js                    creates every module, registers patch points, wires what the hardware wires
                                without a jack, keyboard pitch/gate/velocity as signals, notes, output limiter
   glide.js                     tracks the scheduled pitch so a glide starts from the pitch that is sounding
@@ -126,6 +127,9 @@ flowchart LR
 - **State in the address.** `controls.js` names every sound-shaping control once. That table sends the panel to
   the engine when audio starts, loads presets (every control, defaults where a preset is silent) and encodes
   the panel plus cables as base64url JSON in `#patch=`. Decoding drops anything unknown or out of range.
+- **Touch and screen sizes.** Every control listens for pointer events, so mouse, pen and touch work alike;
+  knobs, sliders and wheels take `touch-action: none` so a drag turns them, and the keys `pan-x` so a tap plays
+  and a sideways swipe scrolls them. One row of panels above 1400 px, two rows of four from 900, stacked below.
 - **Arp and sequencer.** Pure classes (tested without Web Audio by mocking `performance.now()`); the controller
   turns their output into engine notes on the clock, which can also be CLOCK IN's edges (reported by a small
   worklet) or MIDI clock. Shift acts as the hardware's HOLD modifier (legato glide).
@@ -151,10 +155,11 @@ flowchart LR
 ## Known limits
 
 - Monophonic voice (as the hardware); the computer keyboard is polyphonic only into the arpeggiator.
-- Values the manual doesn't give (modulation depths, linear-FM scaling, the drift amount) are choices, marked
-  **model value** in the spec.
+- Values the manual doesn't give (envelope times, modulation depths and curves, the high-pass range, how hard the
+  mixer drives, linear-FM scaling, the drift amount) are choices, marked **model value** in the spec.
 - The filter and oscillators are models, not circuit simulations. The oscillators run at the output sample rate;
   the filter runs at twice the rate, so its saturation barely aliases.
 - The arpeggiator's own clock runs on `setInterval`, so its timing is only as steady as the page's timers.
 - Sequences aren't saved in the link; patches are.
+- On a touchscreen a drag across the keys scrolls them rather than gliding from key to key.
 - No audio input, Eurorack output or MIDI output.
