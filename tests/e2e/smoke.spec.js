@@ -15,10 +15,19 @@ test('app loads without errors', async ({ page }) => {
   await page.waitForLoadState('networkidle');
   await expect(page.locator(READY).first()).toBeVisible();
   expect(errors).toEqual([]);
-  if (process.env.UPDATE_PREVIEW) {
-    await page.waitForTimeout(750);
-    await page.screenshot({ path: PREVIEW });
-  }
+});
+
+// The preview: the whole synth, keyboard included. At 1200 px the panels wrap, so the page is laid out wider
+// (same 1200:630 shape) and scaled down to 1200 x 630.
+test('preview image', async ({ browser }) => {
+  test.skip(!process.env.UPDATE_PREVIEW, 'npm run screenshot');
+  const ctx = await browser.newContext({ viewport: { width: 1520, height: 798 }, deviceScaleFactor: 1200 / 1520 });
+  const page = await ctx.newPage();
+  await page.goto(APP);
+  await expect(page.locator(READY).first()).toBeVisible();
+  await page.waitForTimeout(750);
+  await page.screenshot({ path: PREVIEW });
+  await ctx.close();
 });
 
 test('contact and a link back to the projects page', async ({ page }) => {
