@@ -1261,15 +1261,10 @@ body {
   opacity: 0.7;
 }
 
-/* Responsive adjustments */
-@media (max-width: 1400px) {
-  .panel-row {
-    flex-wrap: wrap;
-  }
-
-  .panel {
-    min-width: 120px;
-  }
+/* Narrower windows: two even rows of four panels, rather than OUTPUT wrapping onto a row of its own */
+@media (min-width: 900px) and (max-width: 1400px) {
+  .panel-row { flex-wrap: wrap; }
+  .panel-row > .panel { flex: 1 1 calc(25% - 2px); }
 }
 
 /* Toast notification */

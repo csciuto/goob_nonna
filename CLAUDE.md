@@ -45,4 +45,4 @@ All design decisions must match the reference hardware (the semi-modular this ap
 Follows [csciuto/app-template STANDARDS.md](https://github.com/csciuto/app-template/blob/main/STANDARDS.md). Commit and
 push freely once tests pass. `.github/workflows/deploy.yml` runs the Vitest unit tests and the Playwright tests
 (desktop and phone, axe in `tests/e2e/a11y.spec.js`) and only then deploys, stamping `dev` in the footer's
-`.version`. Below 900px the panels stack full width and the keys scroll sideways in their own strip.
+`.version`. Below 900px the panels stack full width and the keys scroll sideways in their own strip; from 900 to 1400px they sit in two even rows of four.
