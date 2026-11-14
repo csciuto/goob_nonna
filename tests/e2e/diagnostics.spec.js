@@ -12,6 +12,16 @@ test.describe('sound check', () => {
     await expect(page.locator('.diag')).toContainText('engine: yes');
   });
 
+  test('if the browser switches the running audio off, it comes straight back on', async ({ page }) => {
+    await page.goto('/?debug');
+    await page.locator('.title-goob').click();
+    await expect.poll(() => page.evaluate(() => window.__synth?.engine?.ctx.state)).toBe('running');
+    await page.evaluate(() => window.__synth.engine.ctx.suspend());
+    await expect.poll(() => page.evaluate(() => window.__synth.engine.ctx.state)).toBe('running');
+    await expect(page.locator('.diag')).toContainText('suspended (visible');
+    await expect(page.locator('.diag')).toContainText('resuming');
+  });
+
   test('without it, nothing shows when all is well', async ({ page }) => {
     await page.goto('/');
     await page.locator('.title-goob').click();

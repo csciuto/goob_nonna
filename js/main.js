@@ -6,7 +6,7 @@ import { initMidiIn } from './vendor/midi-in.js';
 import { MidiClockFollower, ticksPerStep } from './arp-seq/midi-clock.js';
 import { CABLE_COLORS } from './utils/constants.js';
 import { report, startDiagnostics } from './ui/diagnostics.js';
-import { peekAudioContext, attempts } from './audio/audio-context.js';
+import { peekAudioContext, attempts, changes } from './audio/audio-context.js';
 
 /**
  * Main entry point - bootstraps the synth application.
@@ -195,6 +195,7 @@ function audioProbe() {
   }
   const browser = (navigator.userAgent.match(/(SamsungBrowser|Firefox|EdgA|OPR|Chrome)\/[\d.]+/) || [navigator.userAgent.slice(0, 40)])[0];
   return [`audio: ${ctx.state} · ${ctx.sampleRate} Hz · start: ${startStep} · engine: ${engine ? 'yes' : 'no'} · ${browser}${meter}`,
+    ...changes.map(c => '  ' + c),
     ...(ctx.state === 'running' ? [] : attempts.slice(-3).map(a => '  try: ' + a))].join('\n');
 }
 
