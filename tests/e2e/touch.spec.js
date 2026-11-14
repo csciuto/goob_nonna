@@ -53,17 +53,7 @@ test.describe('touch', () => {
     return d[d.length - 1];
   });
 
-  test('the first tap starts the sound (as the finger lifts); then a key holds its note until the finger lifts', async ({ page }) => {
-    (await touch(page, page.locator('.key[data-note="64"]')))();
-    await expect.poll(() => page.evaluate(() => window.__synth?.engine?.ctx.state)).toBe('running');
-    const release = await touch(page, page.locator('.key[data-note="60"]'));
-    await expect.poll(() => gate(page)).toBeCloseTo(1.6, 2);
-    await expect(page.locator('.key[data-note="60"]')).toHaveClass(/active/);
-    await release();
-    await expect.poll(() => gate(page)).toBe(0);
-  });
-
-  test('scrolling down to the keys first, then tapping one, starts the sound', async ({ page }) => {
+  test('scrolling down to the keys first, then tapping for sound, makes the keys play', async ({ page }) => {
     const cdp = await page.context().newCDPSession(page);
     const drag = async (x, y0, y1) => {
       await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y: y0 }] });
@@ -71,7 +61,8 @@ test.describe('touch', () => {
       await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     };
     await drag(200, 600, 100);                                   // a scroll, landing on the panels
-    (await touch(page, page.locator('.key[data-note="64"]')))();
+    (await touch(page, page.locator('.sound-on')))();
+    await expect(page.locator('.sound-on')).toBeHidden();
     await expect.poll(() => page.evaluate(() => window.__synth?.engine?.ctx.state)).toBe('running');
     const release = await touch(page, page.locator('.key[data-note="60"]'));
     await expect.poll(() => gate(page)).toBeCloseTo(1.6, 2);
@@ -79,10 +70,11 @@ test.describe('touch', () => {
   });
 
   test('a button over the keys turns the sound on; after it, the very first key plays', async ({ page }) => {
-    const button = page.getByRole('button', { name: 'Tap for sound' });
-    await expect(button).toBeVisible();
+    const button = page.locator('.sound-on');
+    await expect(button).toHaveText('Tap for sound');
     (await touch(page, button))();
-    await expect(button).toBeHidden();
+    await expect(button).toBeHidden();                          // only once the engine runs and its clock moves
+    expect(await page.evaluate(() => window.__synth.engine.ctx.currentTime)).toBeGreaterThan(0.05);
     await expect.poll(() => page.evaluate(() => window.__synth?.engine?.ctx.state)).toBe('running');
     const release = await touch(page, page.locator('.key[data-note="60"]'));
     await expect.poll(() => gate(page)).toBeCloseTo(1.6, 2);
@@ -90,7 +82,7 @@ test.describe('touch', () => {
   });
 
   test('the LFO light blinks once the sound is on', async ({ page }) => {
-    (await touch(page, page.locator('.key[data-note="60"]')))();
+    (await touch(page, page.locator('.sound-on')))();
     await expect.poll(() => page.evaluate(() => !!window.__synth)).toBe(true);
     const led = page.locator('.panel-modulation .led').first();
     const seen = new Set();

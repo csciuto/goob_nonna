@@ -186,8 +186,9 @@ function initAudio(fromGesture = false) {
 
 /**
  * On a touchscreen a key can't turn the sound on: the browser only allows it as a finger lifts, so the first key
- * would be silent. Until the sound is on, a button over the keys does it instead. It comes back if the phone
- * switches the sound off and it doesn't return by itself within half a second.
+ * would be silent. Until the keys are playable, a button over them does it instead. Playable means the engine
+ * is built and the audio is running with its clock moving: on a phone it can report running and then flick off
+ * again for a second or two while the phone opens its audio output. The button comes back if the sound stops.
  */
 function soundButton(keyboardArea) {
   if (!matchMedia('(pointer: coarse)').matches || !keyboardArea) return;
@@ -196,28 +197,26 @@ function soundButton(keyboardArea) {
   btn.type = 'button';
   btn.textContent = 'Tap for sound';
   keyboardArea.appendChild(btn);
-  let timer = null;
-  const update = () => {
+  let lastClock = -1, tapped = false;
+  const playable = () => {
     const ctx = peekAudioContext();
-    const on = !!ctx && ctx.state === 'running';
-    clearTimeout(timer);
-    if (on) btn.hidden = true;
-    else if (!ctx) btn.hidden = false;
-    else timer = setTimeout(() => { btn.hidden = ctx.state === 'running'; }, 500);
+    if (!engine || !ctx || ctx.state !== 'running') { lastClock = -1; return false; }
+    const moving = lastClock >= 0 && ctx.currentTime > lastClock + 0.05;
+    if (lastClock < 0 || moving) lastClock = ctx.currentTime;
+    return moving;
   };
-  const watch = () => {     // follow the context's state once it exists, however it was started
-    const ctx = peekAudioContext();
-    if (ctx && !ctx.__soundButton) { ctx.__soundButton = true; ctx.addEventListener('statechange', update); }
-    update();
-  };
+  setInterval(() => {
+    const ok = playable();
+    btn.hidden = ok;
+    if (!ok) btn.textContent = tapped && peekAudioContext() ? 'Starting…' : 'Tap for sound';
+  }, 150);
   btn.addEventListener('click', () => {
-    initAudio(true).then(watch, watch);
+    tapped = true;
+    btn.textContent = 'Starting…';
+    initAudio(true).catch(() => { tapped = false; });
     const ctx = getAudioContext();
-    if (ctx.state !== 'running') ctx.resume().then(watch, watch);
-    watch();
+    if (ctx.state !== 'running') ctx.resume().catch(() => {});
   });
-  for (const ev of ['pointerup', 'keydown']) document.addEventListener(ev, () => setTimeout(watch, 0), true);
-  update();
 }
 
 /** The live line for ?debug: is the audio running, and did the engine get built? */

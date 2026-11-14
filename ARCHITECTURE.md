@@ -130,7 +130,9 @@ flowchart LR
   the panel plus cables as base64url JSON in `#patch=`. Decoding drops anything unknown or out of range.
 - **Touch and screen sizes.** Every control listens for pointer events, so mouse, pen and touch work alike;
   knobs, sliders and wheels take `touch-action: none` so a drag turns them, and the keys `pan-x` so a tap plays
-  and a sideways swipe scrolls them. One row of panels above 1400 px, two rows of four from 900, stacked below.
+  and a sideways swipe scrolls them. One row of panels above 1400 px, two rows of four below that; under 900 px that layout scrolls sideways in its
+  own box. On touchscreens a "Tap for sound" button covers the keys until they are playable: the browser only lets
+  sound start as a finger lifts, so a key could never be the first thing pressed.
 - **Arp and sequencer.** Pure classes (tested without Web Audio by mocking `performance.now()`); the controller
   turns their output into engine notes on the clock, which can also be CLOCK IN's edges (reported by a small
   worklet) or MIDI clock. Shift acts as the hardware's HOLD modifier (legato glide).
@@ -162,5 +164,5 @@ flowchart LR
   the filter runs at twice the rate, so its saturation barely aliases.
 - The arpeggiator's own clock runs on `setInterval`, so its timing is only as steady as the page's timers.
 - Sequences aren't saved in the link; patches are.
-- On a touchscreen a drag across the keys scrolls them rather than gliding from key to key.
+- On a touchscreen a drag across the keys scrolls the synth rather than gliding from key to key.
 - No audio input, Eurorack output or MIDI output.

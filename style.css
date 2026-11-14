@@ -1261,8 +1261,9 @@ body {
   opacity: 0.7;
 }
 
-/* Narrower windows: two even rows of four panels, rather than OUTPUT wrapping onto a row of its own */
-@media (min-width: 900px) and (max-width: 1400px) {
+/* Narrower windows: two even rows of four panels, rather than OUTPUT wrapping onto a row of its own. Below
+   900 px (a phone held upright) the page keeps that 900 px layout and scrolls sideways, as Meow Piano does. */
+@media (max-width: 1400px) {
   .panel-row { flex-wrap: wrap; }
   .panel-row > .panel { flex: 1 1 calc(25% - 2px); }
 }
@@ -1293,19 +1294,6 @@ body {
 .app-foot a { color: inherit; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* Phones and narrow windows: panels stack full width instead of the page being clipped at 900px */
-@media (max-width: 899.98px) {
-  body { min-width: 0; }
-  .panel-row { flex-wrap: wrap; }
-  .panel { flex: 1 1 100%; }
-  .title-subtitle { display: none; }
-  .synth-title-strip { flex-wrap: wrap; gap: 6px; padding: 6px 10px; }
-  /* keys keep a playable width and scroll sideways in their own strip */
-  .keyboard-area { flex-wrap: wrap; overflow-x: auto; }
-  .keyboard { flex: 1 0 560px; height: 200px; }
-  .white-key { height: 200px; }
-}
-
 /* Touch: a drag on a knob, slider or wheel turns it instead of scrolling the page; the keys play on a tap and
    scroll sideways on a swipe; buttons don't wait for a double-tap zoom */
 .knob, .slider-track, .wheel-track { touch-action: none; }
@@ -1324,3 +1312,11 @@ body {
   background: rgba(47, 38, 34, 0.86); color: #f3e6d8; font: bold 18px/1.2 system-ui, sans-serif; letter-spacing: 1px;
   cursor: pointer; touch-action: manipulation; }
 .sound-on[hidden] { display: none; }
+
+/* A phone held upright: the page stays phone-width and the synth, at its 900 px layout, scrolls sideways in
+   its own box (as in Meow Piano), rather than the whole page panning */
+@media (max-width: 899.98px) {
+  body { min-width: 0; }
+  #synth { overflow-x: auto; padding: 4px; }
+  #synth > :not(h1) { min-width: 880px; }
+}
