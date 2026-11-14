@@ -165,8 +165,15 @@ function initAudio() {
 function audioProbe() {
   const ctx = peekAudioContext();
   if (!ctx) return `audio: not created yet (tap to start) · start: ${startStep}`;
+  let meter = '';
+  if (engine) {
+    if (!audioProbe.an) { audioProbe.an = engine.ctx.createAnalyser(); audioProbe.an.fftSize = 2048; engine.limiter.connect(audioProbe.an); }
+    const d = new Float32Array(2048); audioProbe.an.getFloatTimeDomainData(d);
+    const rms = Math.sqrt(d.reduce((s, v) => s + v * v, 0) / d.length);
+    meter = `\nout: ${rms > 1e-5 ? (20 * Math.log10(rms)).toFixed(0) + ' dB' : 'silent'}${d.some(v => !Number.isFinite(v)) ? ' (NaN!)' : ''} · lfo: ${engine.getLFOValue().toFixed(2)} · time ${engine.ctx.currentTime.toFixed(1)} s`;
+  }
   const browser = (navigator.userAgent.match(/(SamsungBrowser|Firefox|EdgA|OPR|Chrome)\/[\d.]+/) || [navigator.userAgent.slice(0, 40)])[0];
-  return [`audio: ${ctx.state} · ${ctx.sampleRate} Hz · start: ${startStep} · engine: ${engine ? 'yes' : 'no'} · ${browser}`,
+  return [`audio: ${ctx.state} · ${ctx.sampleRate} Hz · start: ${startStep} · engine: ${engine ? 'yes' : 'no'} · ${browser}${meter}`,
     ...attempts.map(a => '  try: ' + a)].join('\n');
 }
 
