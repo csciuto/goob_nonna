@@ -39,13 +39,13 @@ test.describe('presets and links @desktop', () => {
   });
 
   test('the switches on the panel show what the preset set', async ({ page }) => {
-    await page.selectOption('#preset-select', 'Bag Pipes');
+    await page.selectOption('#preset-select', 'Lift Off');
     const lit = await page.evaluate(() => {
       const c = window.__synth.layout.panels;
       const shown = sw => sw.getElement().querySelector('.active')?.textContent;
       return { osc1: shown(c.oscillators.osc1Waveform), osc2Octave: shown(c.oscillators.osc2Octave), sync: c.oscillators.syncButton.classList.contains('active') };
     });
-    expect(lit).toEqual({ osc1: '⊔', osc2Octave: "4'", sync: true });
+    expect(lit).toEqual({ osc1: '⊓', osc2Octave: "4'", sync: true });
     await page.selectOption('#preset-select', 'Default');
     expect(await page.evaluate(() => window.__synth.layout.panels.oscillators.syncButton.classList.contains('active'))).toBe(false);
   });
@@ -71,11 +71,11 @@ test.describe('presets and links @desktop', () => {
     await page.locator('.title-goob').click();
     await expect.poll(() => page.url()).not.toBe(presetOnly);
     const before = await state(page), cables = await cablesOf(page);
-    expect(cables).toEqual([['lfo-sh-out', 'cutoff-in']]);
+    expect(cables).toEqual([['osc2-wave-out', 'atten-in'], ['atten-out', 'env-amt-in']]);
 
     const other = await context.newPage();
     await other.goto(page.url());
-    await expect(other.locator('.patch-cable:not(.pending)')).toHaveCount(1);     // drawn before any click
+    await expect(other.locator('.patch-cable:not(.pending)')).toHaveCount(2);     // drawn before any click
     expect(await other.evaluate(() => window.__synth)).toBeUndefined();
     await other.locator('.title-goob').click();
     await expect.poll(() => other.evaluate(() => !!window.__synth)).toBe(true);
