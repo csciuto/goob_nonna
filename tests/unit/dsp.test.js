@@ -161,11 +161,14 @@ describe('ladder filter, four saturating stages (NEW)', () => {
     expect(rms(y.slice(SR / 2))).toBeLessThan(0.001);
   });
 
-  it('driven hard, resonance softens and harmonics appear', () => {
+  it('driven hard, resonance softens and it thickens a little', () => {
     const lift = amp => gainNL(1000, 1000, 3.5, amp) - gainNL(1000, 1000, 0, amp);
     expect(lift(0.02) - lift(2)).toBeGreaterThan(6);
-    const l = new LadderCoreNL(SR), y = sine(200, 3, 0.5).map(v => l.tick(v, 500, 2)).slice(SR / 4);
-    expect(level(y, 600) / level(y, 200)).toBeGreaterThan(0.03);
+    // a little thicker than the first filter, not much: the difference is kept subtle
+    const third = C => { const l = new C(SR), y = sine(200, 3, 0.5).map(v => l.tick(v, 500, 2)).slice(SR / 4); return dB(level(y, 600) / level(y, 200)); };
+    const more = third(LadderCoreNL) - third(LadderCore);
+    expect(more).toBeGreaterThan(2);
+    expect(more).toBeLessThan(8);
   });
 
   it('oversampled: a driven high note folds back much less than the first filter', () => {

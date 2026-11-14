@@ -152,7 +152,11 @@ export class LadderCore {
 /** The ladder's soft saturation, 2·tanh(z/2), as a gain: sat(z) = z · satGain(z). */
 const satGain = z => { const a = 0.5 * z; return a > -1e-4 && a < 1e-4 ? 1 : Math.tanh(a) / a; };
 
-const SELF_OSC_TRIM = 23 / 1200 * Math.LN2;
+/** How much more level the four stages take than the input stage before saturating: higher is subtler,
+ *  closer to the first filter (model value; kept subtle by ear). */
+const STAGE_HEADROOM = 2;
+
+const SELF_OSC_TRIM = 5.6 / 1200 * Math.LN2;
 
 /** Half-band low-pass for 2× oversampling: a Blackman-windowed sinc at a quarter of the doubled rate. */
 const HB_TAPS = 47;
@@ -193,7 +197,8 @@ export class LadderCoreNL {
 
   solve(x, g, k, eu, e0, e1, e2, e3, commit = false) {
     const s = this.s, y = this.y;
-    const tu = satGain(eu), t0 = satGain(e0), t1 = satGain(e1), t2 = satGain(e2), t3 = satGain(e3);
+    const h = 1 / STAGE_HEADROOM;
+    const tu = satGain(eu), t0 = satGain(e0 * h), t1 = satGain(e1 * h), t2 = satGain(e2 * h), t3 = satGain(e3 * h);
     // each stage: y_i = a_i · in_i + b_i
     const d0 = 1 / (1 + g * t0), d1 = 1 / (1 + g * t1), d2 = 1 / (1 + g * t2), d3 = 1 / (1 + g * t3);
     const a0 = g * tu * d0, b0 = s[0] * d0;
@@ -216,7 +221,7 @@ export class LadderCoreNL {
   tick(x, fc, k) {
     const max = this.sr * 0.45;
     fc = fc < 5 ? 5 : fc > max ? max : fc;
-    // Self-oscillating, the saturating input stage pulls the pitch about 23 cents flat; trim it back, as the
+    // Self-oscillating, the saturating stages pull the pitch about 6 cents flat; trim it back, as the
     // hardware is calibrated to play in tune from the keys. Below self-oscillation nothing changes.
     if (k > 4) fc *= Math.exp(SELF_OSC_TRIM * Math.min(1, (k - 4) / 0.24));
     const g = Math.tan(Math.PI * fc / (2 * this.sr));

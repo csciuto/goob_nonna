@@ -106,8 +106,9 @@ flowchart LR
   sat(y)), solved without delay with the saturations folded in as gains estimated from the last step and
   refined once (Huovilainen's model, in a cheap zero-delay form). Quiet, it matches the first model; driven,
   resonance softens and passband stays clean while notes near the cutoff thicken. It runs at twice the sample
-  rate (linear interpolation up, a 47-tap half-band FIR down) and trims self-oscillation 23 cents up, since the
-  saturating input stage pulls it flat.
+  rate (linear interpolation up, a 47-tap half-band FIR down). The four stages take twice the input stage's
+  level before saturating (`STAGE_HEADROOM`), which keeps the difference from the first model subtle; the
+  saturation pulls self-oscillation about 6 cents flat, so it is trimmed back up.
 - **Envelope.** A gate-driven state machine in the worklet (linear attack, exponential decay and release), so
   anything over 1.2 V can trigger it at audio rate and a retrigger continues from the current level. A second
   output is the VCA's KB RLS shape.
