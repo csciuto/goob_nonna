@@ -55,6 +55,11 @@ test.describe('Goob Nonna Synth', () => {
       await expect(link).toHaveAttribute('href', 'docs/getting-started.html');
     });
 
+    test('the menu shows the same version as the footer', async ({ page }) => {
+      const footer = await page.locator('.app-foot .version').textContent();
+      await expect(page.locator('.version-label')).toHaveText(footer);
+    });
+
     test('no console errors on load', async ({ page }) => {
       const errors = [];
       page.on('pageerror', (err) => errors.push(err.message));

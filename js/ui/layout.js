@@ -115,7 +115,7 @@ export class Layout {
 
     const versionLabel = document.createElement('div');
     versionLabel.className = 'version-label';
-    versionLabel.textContent = 'v0.1';
+    versionLabel.textContent = document.querySelector('.version')?.textContent || 'dev';   // the deploy stamps the footer's
     backPopover.appendChild(versionLabel);
     titleStrip.querySelector('.title-right').appendChild(backPopover);
 
