@@ -14,7 +14,7 @@ test.describe('sound @desktop', () => {
 
   test('a note plays at its pitch, and silence before and after', async ({ page }) => {
     const r = await inPage(page, async ({ render, slice, pitch, rms, cents, midi }) => {
-      const y = await render({ seconds: 1.5, setup: e => { e.setEnvRelease(1); }, events: [[0.2, e => e.noteOn(69)], [0.8, e => e.noteOff(69)]] });
+      const y = await render({ seconds: 1.5, setup: e => { e.setEnvRelease(0.53); }, events: [[0.2, e => e.noteOn(69)], [0.8, e => e.noteOff(69)]] });
       return { before: rms(slice(y, 0, 0.19)), during: rms(slice(y, 0.4, 0.8)), after: rms(slice(y, 1.3, 1.5)), off: cents(pitch(slice(y, 0.4, 0.8)), midi(69)) };
     });
     expect(r.before).toBeLessThan(1e-4);
@@ -122,7 +122,7 @@ test.describe('sound @desktop', () => {
   test('the envelope takes its attack and release times', async ({ page }) => {
     const r = await inPage(page, async ({ render, envelope }) => {
       // ATTACK and RELEASE at 5 are 100 ms each; full sustain
-      const env = envelope(await render({ seconds: 1, setup: e => { e.setEnvAttack(5); e.setEnvRelease(5); e.setEnvSustain(10); e.setOsc1Waveform('triangle'); }, events: [[0.1, e => e.noteOn(69)], [0.6, e => e.noteOff(69)]] }), 10);
+      const env = envelope(await render({ seconds: 1, setup: e => { e.setEnvAttack(2.15); e.setEnvRelease(2.15); e.setEnvSustain(10); e.setOsc1Waveform('triangle'); }, events: [[0.1, e => e.noteOn(69)], [0.6, e => e.noteOff(69)]] }), 10);
       const full = env[50];
       return { early: env[12] / full, half: env[15] / full, up: env[22] / full, release: env[63] / full, gone: env[85] / full };
     });
@@ -137,7 +137,7 @@ test.describe('sound @desktop', () => {
 
   test('a note played while the last one fades starts from that level, with no drop to silence', async ({ page }) => {
     const r = await inPage(page, async ({ render, envelope }) => {
-      const env = envelope(await render({ seconds: 1, setup: e => { e.setEnvAttack(6); e.setEnvRelease(7); e.setEnvSustain(10); e.setOsc1Waveform('triangle'); }, events: [[0.05, e => e.noteOn(69)], [0.5, e => e.noteOff(69)], [0.6, e => e.noteOn(69)]] }), 5);
+      const env = envelope(await render({ seconds: 1, setup: e => { e.setEnvAttack(2.92); e.setEnvRelease(3.98); e.setEnvSustain(10); e.setOsc1Waveform('triangle'); }, events: [[0.05, e => e.noteOn(69)], [0.5, e => e.noteOff(69)], [0.6, e => e.noteOn(69)]] }), 5);
       return { before: env[118], lowest: Math.min(...env.slice(119, 130)), later: env[150] };
     });
     expect(r.lowest).toBeGreaterThan(r.before * 0.8);
@@ -147,7 +147,7 @@ test.describe('sound @desktop', () => {
   test('two notes in a row both sound: the gate drops between them', async ({ page }) => {
     const r = await inPage(page, async ({ render, envelope }) => {
       // long decay to zero sustain: the second note is only heard if the envelope starts again
-      const env = envelope(await render({ seconds: 1, setup: e => { e.setEnvDecay(4.5); e.setEnvSustain(0); }, events: [[0.05, e => e.noteOn(60)], [0.5, e => { e.noteOff(60); e.noteOn(64); }]] }), 10);
+      const env = envelope(await render({ seconds: 1, setup: e => { e.setEnvDecay(1.84); e.setEnvSustain(0); }, events: [[0.05, e => e.noteOn(60)], [0.5, e => { e.noteOff(60); e.noteOn(64); }]] }), 10);
       return { faded: env[48], second: env[52] };
     });
     expect(r.second).toBeGreaterThan(r.faded * 5);
@@ -156,7 +156,7 @@ test.describe('sound @desktop', () => {
   test('ENVELOPE AMT sweeps the filter, up or down', async ({ page }) => {
     const r = await inPage(page, async ({ render, slice, level, midi, dB }) => {
       const bright = async amt => {
-        const y = await render({ seconds: 0.9, setup: e => { e.setFilterCutoff(0.45); e.setFilterKbTrack(0); e.setEnvAttack(0); e.setEnvDecay(6); e.setEnvSustain(0); e.setFilterEnvAmount(amt); e.setVCAMode('drone'); }, events: [[0.05, e => e.noteOn(45)]] });
+        const y = await render({ seconds: 0.9, setup: e => { e.setFilterCutoff(0.45); e.setFilterKbTrack(0); e.setEnvAttack(0.0); e.setEnvDecay(2.92); e.setEnvSustain(0); e.setFilterEnvAmount(amt); e.setVCAMode('drone'); }, events: [[0.05, e => e.noteOn(45)]] });
         const h = sig => level(sig, 8 * midi(45));
         return dB(h(slice(y, 0.06, 0.16)) / h(slice(y, 0.75, 0.85)));      // windows of whole cycles
       };
@@ -170,7 +170,7 @@ test.describe('sound @desktop', () => {
   test('VCA modes: DRONE sounds with no key, KB RLS starts at once, ENV follows the attack', async ({ page }) => {
     const r = await inPage(page, async ({ render, slice, rms }) => {
       const run = async mode => {
-        const y = await render({ seconds: 0.5, setup: e => { e.setVCAMode(mode); e.setEnvAttack(7); }, events: [[0.2, e => e.noteOn(57)]] });
+        const y = await render({ seconds: 0.5, setup: e => { e.setVCAMode(mode); e.setEnvAttack(3.98); }, events: [[0.2, e => e.noteOn(57)]] });
         return { idle: rms(slice(y, 0.05, 0.19)), start: rms(slice(y, 0.21, 0.26)) };
       };
       return { env: await run('env'), kb: await run('kb-release'), drone: await run('drone') };
@@ -243,7 +243,7 @@ test.describe('sound @desktop', () => {
     const r = await inPage(page, async ({ render, slice, pitch, cents, level, midi, dB }) => {
       const selfOsc = async amount => pitch(slice(await render({ seconds: 1.2, setup: e => { e.setMixerOsc1Level(0); e.setVCAMode('drone'); e.setFilterResonance(4); e.setFilterCutoff(0.45); e.setAttenuatorAmount(amount); e.createPatch('atten-out', 'cutoff-in'); } }), 0.7, 1.2));
       const sweep = async amount => {
-        const y = await render({ seconds: 0.9, setup: e => { e.setFilterCutoff(0.45); e.setFilterKbTrack(0); e.setEnvAttack(0); e.setEnvDecay(6); e.setEnvSustain(0); e.setVCAMode('drone'); e.setAttenuatorAmount(amount); e.createPatch('atten-out', 'env-amt-in'); }, events: [[0.05, e => e.noteOn(45)]] });
+        const y = await render({ seconds: 0.9, setup: e => { e.setFilterCutoff(0.45); e.setFilterKbTrack(0); e.setEnvAttack(0.0); e.setEnvDecay(2.92); e.setEnvSustain(0); e.setVCAMode('drone'); e.setAttenuatorAmount(amount); e.createPatch('atten-out', 'env-amt-in'); }, events: [[0.05, e => e.noteOn(45)]] });
         const h = sig => level(sig, 8 * midi(45));
         return dB(h(slice(y, 0.06, 0.16)) / h(slice(y, 0.75, 0.85)));
       };
@@ -257,7 +257,7 @@ test.describe('sound @desktop', () => {
   test('TRIGGER IN starts the envelope from any signal over 1.2 volts', async ({ page }) => {
     const r = await inPage(page, async ({ render, envelope }) => {
       const bursts = async patch => {
-        const env = envelope(await render({ seconds: 2, setup: e => { e.setLFOWaveform('square'); e.setLFORate(3.4); e.setEnvDecay(3); e.setEnvSustain(0); if (patch) e.createPatch('lfo-wave-out', 'env-gate-in'); } }), 10);
+        const env = envelope(await render({ seconds: 2, setup: e => { e.setLFOWaveform('square'); e.setLFORate(3.4); e.setEnvDecay(1.14); e.setEnvSustain(0); if (patch) e.createPatch('lfo-wave-out', 'env-gate-in'); } }), 10);
         const top = Math.max(...env); let n = 0;
         for (let i = 1; i < env.length; i++) if (env[i - 1] < top / 4 && env[i] >= top / 4) n++;
         return top > 0.01 ? n : 0;
@@ -270,7 +270,7 @@ test.describe('sound @desktop', () => {
 
   test('+ENV OUT and -ENV OUT carry the envelope, right way up and inverted', async ({ page }) => {
     const r = await inPage(page, async ({ render, slice, pitch, cents, midi }) => {
-      const at = async jack => { const y = await render({ seconds: 0.8, setup: e => { e.setOsc1Waveform('triangle'); e.setEnvAttack(0); e.setEnvSustain(1.25); e.setEnvDecay(4); e.setVCAMode('drone'); e.createPatch(jack, 'osc1-pitch-in'); }, events: [[0.05, e => e.noteOn(57)]] }); return cents(pitch(slice(y, 0.6, 0.8)), midi(57)); };
+      const at = async jack => { const y = await render({ seconds: 0.8, setup: e => { e.setOsc1Waveform('triangle'); e.setEnvAttack(0.0); e.setEnvSustain(1.25); e.setEnvDecay(1.57); e.setVCAMode('drone'); e.createPatch(jack, 'osc1-pitch-in'); }, events: [[0.05, e => e.noteOn(57)]] }); return cents(pitch(slice(y, 0.6, 0.8)), midi(57)); };
       return { plus: await at('env-out'), minus: await at('env-neg-out') };
     });
     expect(r.plus).toBeCloseTo(1200, -1.5);       // sustain at 1/8 of +8 V is 1 volt
@@ -368,7 +368,7 @@ test.describe('sound @desktop', () => {
 
   test('the spring reverb rings on after the note, the same way every time', async ({ page }) => {
     const r = await inPage(page, async ({ render, slice, rms }) => {
-      const run = mix => render({ seconds: 2, reverb: mix, setup: e => { e.setEnvRelease(0); }, events: [[0.05, e => e.noteOn(57)], [0.3, e => e.noteOff(57)]] });
+      const run = mix => render({ seconds: 2, reverb: mix, setup: e => { e.setEnvRelease(0.0); }, events: [[0.05, e => e.noteOn(57)], [0.3, e => e.noteOff(57)]] });
       const dry = await run(0), wet = await run(10), again = await run(10);
       return { dryTail: rms(slice(dry, 0.5, 1)), wetTail: rms(slice(wet, 0.5, 1)), wetLate: rms(slice(wet, 1.6, 2)), wetNote: rms(slice(wet, 0.1, 0.3)), same: wet.every((v, i) => v === again[i]) };
     });

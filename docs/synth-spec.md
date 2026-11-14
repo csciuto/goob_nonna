@@ -69,8 +69,9 @@ five octaves. A trigger is any signal over 1.2 V (0.24). Clock, ON/OFF and RESET
   twice the sample rate. How hard the mixer drives the filter is a **model value**.
 
 ### Envelope (ADSR)
-- Attack, Decay, Release: 1 ms - 10 s, each knob step multiplying the time by the same amount (noon = 100 ms)
-  (**model value**: the manual gives no times or curve). Sustain: 0-10 (0-100%).
+- Attack, Decay, Release: 1 ms - 10 s on a cubic curve: 1 ms + 10 s × (knob/10)³, so 2.5 is about 160 ms and noon
+  about 1.25 s (**model value**: the manual gives no times or curve; the factory patch sheets' basses set decay
+  near 2.5 with sustain at 0, which only plucks if the lower knob reaches a few hundred ms). Sustain: 0-10 (0-100%).
 - Attack is linear; decay and release are exponential (95% of the way in the time set) (**model value**).
 - Driven by a gate: the keyboard's GATE (also arpeggiator and sequencer) unless a cable is in **TRIGGER IN**,
   where any signal over 1.2 V starts the envelope and holds it while high.
@@ -122,7 +123,8 @@ five octaves. A trigger is any signal over 1.2 V (0.24). Clock, ON/OFF and RESET
   never clips, whatever the resonance and levels.
 
 ### High-Pass Filter (Utility)
-- Static -6 dB/oct (one pole), 20 Hz - 20 kHz. Not in the signal path until patched (INPUT, OUTPUT).
+- Static -6 dB/oct (one pole), 20 Hz - 2 kHz, noon about 200 Hz (**model value**: the manual gives no range, but
+  pitches it as a way to "vary the low-end weight of a sound"). Not in the signal path until patched (INPUT, OUTPUT).
 
 ### Attenuator (Utility)
 - Bipolar: center is fully attenuated, clockwise passes the signal, counterclockwise passes it inverted.

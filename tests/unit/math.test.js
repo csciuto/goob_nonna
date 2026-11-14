@@ -159,6 +159,11 @@ describe('envTimeKnobToMs', () => {
       prev = val;
     }
   });
+  it('the lower half of the knob covers plucks: 2.5 is about 160 ms, noon about 1.25 s', () => {
+    expect(envTimeKnobToMs(2.5)).toBeCloseTo(157, 0);
+    expect(envTimeKnobToMs(5)).toBeCloseTo(1251, 0);
+    expect(envTimeKnobToMs(0.5)).toBeLessThan(3);
+  });
 });
 
 describe('detuneFrequency', () => {

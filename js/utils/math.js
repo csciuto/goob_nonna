@@ -69,12 +69,12 @@ export function bipolarKnobToNormalized(knobValue) {
 }
 
 /**
- * Convert envelope time knob (0-10) to milliseconds.
- * Range: 1ms to 10000ms (10s), logarithmic.
+ * Envelope time knob (0-10) to milliseconds: 1 ms to 10 s on a cubic curve, so the lower half of the knob
+ * covers the useful short times (2.5 is about 160 ms, a pluck) and noon is about 1.25 s.
  */
 export function envTimeKnobToMs(knobValue) {
-  if (knobValue === 0) return 1;
-  return mapToLogRange(knobValue / 10, 1, 10000);
+  const k = Math.max(0, Math.min(10, knobValue)) / 10;
+  return 1 + 9999 * k * k * k;
 }
 
 /**
