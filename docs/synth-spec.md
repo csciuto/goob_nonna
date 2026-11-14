@@ -51,6 +51,10 @@ five octaves. A trigger is any signal over 1.2 V (0.24). Clock, ON/OFF and RESET
 - 3 channels: OSC 1, OSC 2, Noise, each 0-10. Each input jack replaces its normalled source.
 - Above about 1 o'clock (6 of 10) a level starts to overdrive gently, and harder as levels rise (a soft
   saturation on the sum). OUTPUT is the saturated sum.
+- Feedback: a cable from MIXER OUTPUT back into one of the mixer's own inputs (directly, or through the mult,
+  the high-pass and the attenuator) feeds the mixer's output back into itself, as on the hardware, where this
+  overdrives the mixer and adds grit (the factory Bag Pipes, Cyclical Patterns and Piano Bass use it). That
+  input's level knob sets how much comes back, along with the attenuator and high-pass if they are in the loop.
 
 ### Filter (Transistor Ladder -24dB/oct Low-Pass)
 - Cutoff: 10 Hz - 20 kHz (logarithmic)

@@ -13,7 +13,8 @@ export class HighPassFilterModule {
   }
 
   setCutoff(normalized) {
-    this.node.parameters.get('cutoff').setTargetAtTime(mapToLogRange(normalized, 20, 2000), this.ctx.currentTime, 0.012);
+    this.hz = mapToLogRange(normalized, 20, 2000);
+    this.node.parameters.get('cutoff').setTargetAtTime(this.hz, this.ctx.currentTime, 0.012);
   }
 
   destroy() {

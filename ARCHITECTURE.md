@@ -12,7 +12,7 @@ The intended behavior, panel by panel, is in [docs/synth-spec.md](docs/synth-spe
 
 | Piece | What it uses |
 |---|---|
-| Sound | **Web Audio API**. `AudioWorklet` processors for the oscillators, ladder filter, envelope, LFO and high-pass (`js/audio/worklets.js`); `ConstantSourceNode` (keyboard pitch, gate and velocity as signals), `ConvolverNode` (spring reverb), `WaveShaperNode` (mixer overdrive, output limiter), `GainNode` |
+| Sound | **Web Audio API**. `AudioWorklet` processors for the oscillators, mixer, ladder filter, envelope, LFO and high-pass (`js/audio/worklets.js`); `ConstantSourceNode` (keyboard pitch, gate and velocity as signals), `ConvolverNode` (spring reverb), `WaveShaperNode` (output limiter), `GainNode` |
 | MIDI | **Web MIDI API**, through the shared `midi-in` module, vendored at a pinned version |
 | State | The address bar: every knob, switch and cable as `#patch=…` |
 | Patch cables | SVG drawn over the panels |
@@ -57,7 +57,9 @@ js/utils/constants.js, math.js patch point IDs, ranges; pure helpers (curves, no
 tests/unit/                    Vitest: the DSP cores measured in Node (dsp.test.js), arpeggiator, sequencer, clock,
                                glide, outside clocking, keyboard octave, patching, reverb, math
 tests/sound-kit.js             renders the real engine offline and measures it (pitch, levels, envelopes)
-tests/e2e/                     Playwright: sound (28 measured tests), presets and links, MIDI, synth flows, smoke, axe
+tests/e2e/                     Playwright: sound (29 measured tests), presets and links, MIDI, synth flows, smoke, axe;
+                               fingerprint.spec.js, a by-hand sound regression check over every preset
+tools/fingerprint-compare.mjs  compares two fingerprints band by band
 ```
 
 ## How it fits together
@@ -70,7 +72,7 @@ flowchart LR
   AS -->|notes on the clock| EN
   EN -->|pitch, gate, velocity<br/>as signals| BUS[signal bus<br/>the jacks]
   EN -->|pitch| OSC
-  BUS --> OSC[oscillators<br/>worklet] --> MIX[mixer<br/>overdrive] --> FLT[ladder filter<br/>worklet] --> VCA[vca] --> REV[spring reverb] --> VOL[volume] --> LIM[soft limiter] --> OUT[output]
+  BUS --> OSC[oscillators<br/>worklet] --> MIX[mixer<br/>worklet] --> FLT[ladder filter<br/>worklet] --> VCA[vca] --> REV[spring reverb] --> VOL[volume] --> LIM[soft limiter] --> OUT[output]
   ENV[envelope<br/>worklet] --> FLT & VCA
   ENV --> BUS
   LFO[lfo<br/>worklet] -->|mod wheel × AMT| OSC & FLT
@@ -105,6 +107,12 @@ flowchart LR
   1/(1+k), the bass loss the hardware has. Quiet it is linear; driven, resonance softens while notes near the
   cutoff thicken. It runs at twice the sample rate (linear interpolation up, a 47-tap half-band FIR down) and
   trims self-oscillation 23 cents up, since the saturation pulls it flat.
+- **Mixer and cable loops.** The mixer sums its three inputs and overdrives them softly (at twice the sample
+  rate, filtered back down). Web Audio mutes any loop in the graph, so a cable from MIXER OUTPUT back into a
+  mixer input never reaches the browser's graph: `engine.findMixerLoop()` follows the cables (through the mult,
+  high-pass and attenuator), leaves the closing cable unconnected underneath, and tells the mixer worklet to run
+  the loop itself one sample later, through the same high-pass and gain. Inside a loop the overdrive runs at the
+  plain rate, since the downsampling filter's delay would turn the feedback into a comb.
 - **Envelope.** A gate-driven state machine in the worklet (linear attack, exponential decay and release), so
   anything over 1.2 V can trigger it at audio rate and a retrigger continues from the current level. A second
   output is the VCA's KB RLS shape.
@@ -130,6 +138,10 @@ flowchart LR
   per jack (for example, the attenuator's 1 volt into PITCH IN must raise the pitch exactly an octave).
   `presets.spec.js` loads every preset in two orders and round-trips a share link; `midi.spec.js` feeds MIDI
   bytes; plus synth flows and axe accessibility checks.
+- Around a change to the engine: `FP_OUT=before.json npx playwright test fingerprint --project desktop`, then
+  the same after, then `node tools/fingerprint-compare.mjs before.json after.json`. It records every preset's
+  loudness in octave bands at two notes. Two runs of the same code differ by up to about 5 dB in a band (the
+  presets play in real time), so a preset that moves much more than that has changed.
 - Pushing to `main` runs both in GitHub Actions (the shared workflow in
   [csciuto/app-template](https://github.com/csciuto/app-template)); only if they pass is the site stamped with a
   version and published to GitHub Pages.

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { OscCore, LadderCore, EnvCore, LfoCore, Hp1Core, SHAPE, LFO_OUT, C4, resonanceToFeedback } from '../../js/audio/worklets.js';
+import { OscCore, LadderCore, MixerCore, mixSaturate, EnvCore, LfoCore, Hp1Core, SHAPE, LFO_OUT, C4, resonanceToFeedback } from '../../js/audio/worklets.js';
 
 /** These tests run the synth's DSP in Node and measure what comes out. */
 const SR = 48000;
@@ -163,6 +163,34 @@ describe('ladder filter, driven', () => {
     // 3.1 kHz driven hard: its 11th harmonic (34.1 kHz) would fold back to 13.9 kHz
     const l = new LadderCore(SR), y = sine(3100, 3, 1).map(v => l.tick(v, 20000, 0)).slice(SR / 2);
     expect(dB(level(y, 13900) / level(y, 3100))).toBeLessThan(-80);
+  });
+});
+
+describe('mixer', () => {
+  const run = (l3, opts = {}) => {
+    const { slot = 3, gain = 0.8, hp = 200 } = opts, m = new MixerCore(SR), x = sine(220, 1, 0.5);
+    return x.map(v => m.tick(v, 0, 0, 0.6, 0, l3, slot, gain, hp)).slice(SR / 4);
+  };
+  const third = y => dB(level(y, 660) / level(y, 220));
+
+  it('with no loop it is the soft overdrive of the sum', () => {
+    const m = new MixerCore(SR);
+    let y = 0;
+    for (let i = 0; i < 100; i++) y = m.tick(0.3, 0.2, 0, 1, 1, 0);
+    expect(y).toBeCloseTo(mixSaturate(0.5), 6);
+  });
+
+  it('a cable loop back into NOISE IN, through the high-pass, adds grit, more as NOISE goes up', () => {
+    expect(third(run(0.9))).toBeGreaterThan(third(run(0)) + 6);
+    expect(third(run(0.9))).toBeGreaterThan(third(run(0.4)));
+    expect(Math.max(...run(1, { gain: 1 }).map(Math.abs))).toBeLessThanOrEqual(1 / 0.7);   // bounded by the overdrive
+  });
+
+  it('the loop replaces what that input was playing', () => {
+    const m = new MixerCore(SR);
+    let y = 0;
+    for (let i = 0; i < 100; i++) y = m.tick(0, 0, 0.5, 0, 0, 1, 3, 0, 0);    // noise input says 0.5, but the loop gain is 0
+    expect(y).toBe(0);
   });
 });
 

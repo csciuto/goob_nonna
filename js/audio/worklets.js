@@ -286,6 +286,49 @@ export class Hp1Core {
   }
 }
 
+/** The mixer's saturation: about 5% compression at a level of 0.6, clearly overdriven by 2. */
+export const mixSaturate = x => Math.tanh(x * 0.7) / 0.7;
+export const MIXER_RANGE = 4;   // the sum is limited here: three full sources still fit
+
+/**
+ * The mixer: three inputs at their level knobs, summed and softly overdriven. A cable from MIXER OUTPUT back
+ * into one of its own inputs (through the high-pass, attenuator and mult, as the cables say) is run here,
+ * one sample later: on the hardware that loop is nearly instant, and in a Web Audio graph a loop is muted.
+ */
+export class MixerCore {
+  constructor(sampleRate) {
+    this.y = 0; this.hp = new Hp1Core(sampleRate);
+    this.prevS = 0; this.buf = new Float64Array(HB_TAPS); this.pos = 0;   // for the oversampled overdrive
+  }
+
+  /** The overdrive at twice the sample rate, filtered back down: its harmonics fold back far less. */
+  oversampled(s) {
+    const b = this.buf;
+    b[this.pos] = mixSaturate(0.5 * (this.prevS + s)); this.pos = (this.pos + 1) % HB_TAPS;
+    b[this.pos] = mixSaturate(s); this.pos = (this.pos + 1) % HB_TAPS;
+    this.prevS = s;
+    let out = 0;
+    for (let n = 0, j = this.pos; n < HB_TAPS; n++, j = (j + 1) % HB_TAPS) out += HALF_BAND[n] * b[j];
+    return out;
+  }
+
+  /**
+   * @param slot  which input the loop comes back into: 0 none, 1 OSC 1, 2 OSC 2, 3 NOISE
+   * @param gain  the loop's gain outside the mixer (the attenuator, if it is in the loop)
+   * @param hpHz  the high-pass cutoff if the loop runs through it, else 0
+   */
+  tick(x1, x2, x3, l1, l2, l3, slot = 0, gain = 0, hpHz = 0) {
+    if (slot) {
+      const f = (hpHz > 0 ? this.hp.tick(this.y, hpHz) : this.y) * gain;
+      if (slot === 1) x1 = f; else if (slot === 2) x2 = f; else x3 = f;
+    }
+    let s = l1 * x1 + l2 * x2 + l3 * x3;
+    if (s > MIXER_RANGE) s = MIXER_RANGE; else if (s < -MIXER_RANGE) s = -MIXER_RANGE;
+    // In a loop the filter's delay would turn the feedback into a comb, so the loop runs at the plain rate.
+    return (this.y = slot ? mixSaturate(s) : this.oversampled(s));
+  }
+}
+
 // ── AudioWorklet wrappers ───────────────────────────────────────────────────────────────────────────
 
 if (typeof registerProcessor === 'function') {
@@ -385,6 +428,29 @@ if (typeof registerProcessor === 'function') {
     process(inputs, outputs, p) {
       const out = outputs[0][0], x = inputs[0][0], fc = p.cutoff[0];
       for (let i = 0; i < out.length; i++) out[i] = this.core.tick(x ? x[i] : 0, fc);
+      return true;
+    }
+  });
+
+  registerProcessor('gn-mixer', class extends AudioWorkletProcessor {
+    static get parameterDescriptors() {
+      return [
+        { name: 'l1', defaultValue: 0.8, automationRate: A },
+        { name: 'l2', defaultValue: 0, automationRate: A },
+        { name: 'l3', defaultValue: 0, automationRate: A },
+        { name: 'fbSlot', defaultValue: 0, automationRate: K },
+        { name: 'fbGain', defaultValue: 0, automationRate: A },
+        { name: 'fbHp', defaultValue: 0, automationRate: K },
+      ];
+    }
+    constructor() { super(); this.core = new MixerCore(sampleRate); }
+    process(inputs, outputs, p) {
+      const out = outputs[0][0], x1 = inputs[0][0], x2 = inputs[1][0], x3 = inputs[2][0];
+      const slot = Math.round(p.fbSlot[0]), hp = p.fbHp[0];
+      for (let i = 0; i < out.length; i++) {
+        out[i] = this.core.tick(x1 ? x1[i] : 0, x2 ? x2[i] : 0, x3 ? x3[i] : 0,
+          at(p.l1, i), at(p.l2, i), at(p.l3, i), slot, at(p.fbGain, i), hp);
+      }
       return true;
     }
   });

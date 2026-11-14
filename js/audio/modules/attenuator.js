@@ -16,6 +16,7 @@ export class AttenuatorModule {
     this.input = this.ctx.createGain();
     this.attenuator = this.ctx.createGain();
     this.attenuator.gain.value = 0;            // center: fully attenuated
+    this.amount = 0;
     this.output = this.ctx.createGain();
     this.input.connect(this.attenuator);
     this.attenuator.connect(this.output);
@@ -23,6 +24,7 @@ export class AttenuatorModule {
 
   /** -1 to +1 */
   setAmount(bipolarValue) {
+    this.amount = bipolarValue;
     this.attenuator.gain.setTargetAtTime(bipolarValue, this.ctx.currentTime, 0.012);
   }
 

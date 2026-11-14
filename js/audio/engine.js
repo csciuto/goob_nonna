@@ -376,17 +376,66 @@ export class AudioEngine {
   setModWheel(value) { this._modWheel = value; this._updateModulation(); }
 
   setReverbMix(value) { this.reverb.setMix(value); }
-  setHPFCutoff(normalized) { this.hpf.setCutoff(normalized); }
-  setAttenuatorAmount(value) { this.attenuator.setAmount(value); }
+  setHPFCutoff(normalized) { this.hpf.setCutoff(normalized); this._updateMixerLoop(); }
+  setAttenuatorAmount(value) { this.attenuator.setAmount(value); this._updateMixerLoop(); }
+
+  /**
+   * A cable path from MIXER OUTPUT back into one of the mixer's inputs, through any of the mult, the high-pass
+   * and the attenuator. Web Audio mutes a loop, so the cable that closes it carries no audio here; the mixer
+   * runs the loop itself (see MixerCore), with the same high-pass and gain.
+   * @returns {{ slot: number, hp: boolean, atten: boolean, closing: {sourceId: string, destId: string} } | null}
+   */
+  findMixerLoop() {
+    const PP = PATCH_POINTS;
+    const MIX_IN = { [PP.MIXER_OSC1_IN]: 1, [PP.MIXER_OSC2_IN]: 2, [PP.MIXER_NOISE_IN]: 3 };
+    const MULT = new Set([PP.MULT_1, PP.MULT_2, PP.MULT_3, PP.MULT_4]);
+    const node = id => (MULT.has(id) ? 'mult' : id);
+    const THROUGH = { [PP.HPF_IN]: [PP.HPF_OUT, 'hp'], [PP.ATTEN_IN]: [PP.ATTEN_OUT, 'atten'] };
+    const patches = this.patchManager.getPatches();
+    const seen = new Set();
+    const walk = (from, path) => {
+      if (seen.has(from)) return null;
+      seen.add(from);
+      for (const p of patches) {
+        if (node(p.sourceId) !== from) continue;
+        const to = node(p.destId);
+        if (MIX_IN[to]) return { slot: MIX_IN[to], hp: path.hp, atten: path.atten, closing: p };
+        const next = to === 'mult' ? ['mult', null] : THROUGH[to];
+        if (!next) continue;
+        const found = walk(next[0], { ...path, ...(next[1] ? { [next[1]]: true } : {}) });
+        if (found) return found;
+      }
+      return null;
+    };
+    return walk(PP.MIXER_OUT, { hp: false, atten: false });
+  }
+
+  _updateMixerLoop() {
+    if (!this.patchManager) return;
+    const loop = this.findMixerLoop(), was = this._mixerLoopCable;
+    const audio = c => [this.signalBus.getNode(c.sourceId), this.signalBus.getNode(c.destId)];
+    const stillThere = c => this.patchManager.getPatches().some(p => p.sourceId === c.sourceId && p.destId === c.destId);
+    if (was && (!loop || loop.closing.sourceId !== was.sourceId || loop.closing.destId !== was.destId)) {
+      if (stillThere(was)) { const [a, b] = audio(was); a.connect(b); }
+      this._mixerLoopCable = null;
+    }
+    if (loop && !this._mixerLoopCable) {
+      const [a, b] = audio(loop.closing);
+      try { a.disconnect(b); } catch (e) { /* not connected */ }
+      this._mixerLoopCable = { sourceId: loop.closing.sourceId, destId: loop.closing.destId };
+    }
+    if (loop) this.mixer.setFeedback(loop.slot, loop.atten ? this.attenuator.amount : 1, loop.hp ? this.hpf.hz : 0);
+    else this.mixer.setFeedback(0);
+  }
 
   setGlide(value) { this._glide = value; }
   setLegatoGlide(enabled) { this._legatoGlide = enabled; }
 
   getArpSeq() { return this.arpSeq; }
 
-  createPatch(sourceId, destId, color) { return this.patchManager.connect(sourceId, destId, color); }
-  removePatch(patchId) { this.patchManager.disconnect(patchId); }
-  removeAllPatches() { this.patchManager.disconnectAll(); }
+  createPatch(sourceId, destId, color) { const id = this.patchManager.connect(sourceId, destId, color); this._updateMixerLoop(); return id; }
+  removePatch(patchId) { this.patchManager.disconnect(patchId); this._updateMixerLoop(); }
+  removeAllPatches() { this.patchManager.disconnectAll(); this._updateMixerLoop(); }
   getPatches() { return this.patchManager.getPatches(); }
 
   destroy() {

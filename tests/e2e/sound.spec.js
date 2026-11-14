@@ -157,8 +157,9 @@ test.describe('sound @desktop', () => {
     const r = await inPage(page, async ({ render, slice, level, midi, dB }) => {
       const bright = async amt => {
         const y = await render({ seconds: 0.9, setup: e => { e.setFilterCutoff(0.45); e.setFilterKbTrack(0); e.setEnvAttack(0.0); e.setEnvDecay(2.92); e.setEnvSustain(0); e.setFilterEnvAmount(amt); e.setVCAMode('drone'); }, events: [[0.05, e => e.noteOn(45)]] });
-        const h = sig => level(sig, 8 * midi(45));
-        return dB(h(slice(y, 0.06, 0.16)) / h(slice(y, 0.75, 0.85)));      // windows of whole cycles
+        // tapered windows: the fundamental swells fast here, and a hard-edged window would leak it into the reading
+        const h = sig => level(sig.map((v, i) => v * (0.5 - 0.5 * Math.cos(2 * Math.PI * i / (sig.length - 1)))), 8 * midi(45));
+        return dB(h(slice(y, 0.06, 0.16)) / h(slice(y, 0.75, 0.85)));
       };
       return { up: await bright(0.5), none: await bright(0), down: await bright(-0.5) };
     });
@@ -377,6 +378,26 @@ test.describe('sound @desktop', () => {
     expect(r.wetLate).toBeLessThan(r.wetTail / 3);
     expect(r.wetNote).toBeGreaterThan(0.02);
     expect(r.same).toBe(true);
+  });
+
+  test('a cable loop from MIXER OUTPUT back into the mixer feeds back, and the knobs in the loop set how much', async ({ page }) => {
+    const r = await inPage(page, async ({ render, slice, level, dB, midi }) => {
+      const third = async setup => {
+        const y = slice(await render({ seconds: 0.6, setup: e => { e.setOsc1Waveform('triangle'); e.setVCAMode('drone'); e.setFilterCutoff(1); setup(e); }, events: [[0.05, e => e.noteOn(57)]] }), 0.3, 0.6);
+        return [3, 5, 7, 9].map(h => dB(level(y, h * midi(57)) / level(y, midi(57))));
+      };
+      const loop = (noise, atten) => e => {
+        e.setMixerNoiseLevel(noise); e.setHPFCutoff(0.5); e.setAttenuatorAmount(atten);
+        e.createPatch('mixer-out', 'mult-1'); e.createPatch('mult-2', 'hpf-in'); e.createPatch('hpf-out', 'atten-in'); e.createPatch('atten-out', 'mixer-noise-in');
+      };
+      return {
+        clean: await third(e => e.setMixerNoiseLevel(0)),
+        looped: await third(loop(9, 0.8)),
+        attenDown: await third(loop(9, 0)),
+      };
+    });
+    expect(r.looped[0]).toBeGreaterThan(r.clean[0] + 3);                  // the loop drives the mixer harder: more odd harmonics
+    r.attenDown.forEach((v, i) => expect(Math.abs(v - r.clean[i])).toBeLessThan(1));   // attenuator at center: no loop
   });
 
   test('every jack on the panel is wired to something', async ({ page }) => {

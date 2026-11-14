@@ -21,17 +21,17 @@ test.describe('MIDI keyboard @desktop', () => {
   test('a note lights its key, opens the gate, and sends its velocity', async ({ page }) => {
     await send(page, 0x90, 60, 64);
     await expect(page.locator('.key[data-note="60"]')).toHaveClass(/active/);
-    expect(await signal(page, '_kbGateOutput')).toBeCloseTo(1.6, 2);          // +8 V
+    await expect.poll(() => signal(page, '_kbGateOutput')).toBeCloseTo(1.6, 2);   // +8 V, once the audio has caught up
     expect(await signal(page, '_kbVelOutput')).toBeCloseTo(64 / 127, 2);
     expect(await signal(page, '_kbPitchOutput')).toBeCloseTo((60 - 41) / 12 / 5, 3);   // 1 V per octave from the lowest key
     await send(page, 0x80, 60, 0);
     await expect(page.locator('.key[data-note="60"]')).not.toHaveClass(/active/);
-    expect(await signal(page, '_kbGateOutput')).toBe(0);
+    await expect.poll(() => signal(page, '_kbGateOutput')).toBe(0);
   });
 
   test('notes beyond the on-screen keys still play', async ({ page }) => {
     await send(page, 0x90, 96, 100);
-    expect(await signal(page, '_kbGateOutput')).toBeCloseTo(1.6, 2);
+    await expect.poll(() => signal(page, '_kbGateOutput')).toBeCloseTo(1.6, 2);
     expect(await signal(page, '_kbPitchOutput')).toBeCloseTo((96 - 41) / 12 / 5, 3);
     await send(page, 0x80, 96, 0);
   });
